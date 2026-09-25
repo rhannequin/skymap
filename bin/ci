@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Runs locally the same checks as .github/workflows/ci.yml.
+# Keep both files in sync.
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  green=$'\e[32m' red=$'\e[31m' reset=$'\e[0m'
+else
+  green="" red="" reset=""
+fi
+
+report() {
+  if [[ $? -eq 0 ]]; then
+    echo "${green}[CI PASSED]${reset}"
+  else
+    echo "${red}[CI FAILED]${reset}"
+  fi
+}
+trap report EXIT
+
+echo "==> Lint"
+bundle exec rubocop
+
+echo "==> Test"
+bundle exec rspec
