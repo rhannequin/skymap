@@ -2,7 +2,9 @@
 
 require "astronoby"
 
+require_relative "skymap/canvas"
 require_relative "skymap/projection/stereographic"
+require_relative "skymap/renderer/svg"
 require_relative "skymap/version"
 
 module Skymap

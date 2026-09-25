@@ -24,9 +24,11 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "astronoby", "~> 0.10"
+  spec.add_dependency "victor", "~> 0.5"
 
   spec.add_development_dependency "irb", "~> 1.18"
   spec.add_development_dependency "rake", "~> 13.0"
+  spec.add_development_dependency "rexml", "~> 3.4"
   spec.add_development_dependency "rspec", "~> 3.13"
   spec.add_development_dependency "rubocop", "~> 1.88"
   spec.add_development_dependency "standard", "~> 1.54"
