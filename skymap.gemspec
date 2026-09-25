@@ -23,6 +23,8 @@ Gem::Specification.new do |spec|
   spec.files = Dir["lib/**/*.rb", "CHANGELOG.md", "LICENSE.txt", "README.md"]
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "astronoby", "~> 0.10"
+
   spec.add_development_dependency "irb", "~> 1.18"
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.13"
