@@ -14,3 +14,7 @@ inherit_gem:
 AllCops:
   TargetRubyVersion: 3.3
   SuggestExtensions: false
+
+Layout/LineLength:
+  Enabled: true
+  Max: 80
