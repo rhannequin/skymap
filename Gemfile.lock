@@ -2,13 +2,22 @@ PATH
   remote: .
   specs:
     skymap (0.0.1)
+      astronoby (~> 0.10)
 
 GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.3)
+    astronoby (0.10.0)
+      ephem (~> 0.5)
+      iers (~> 0.1)
+      matrix (~> 0.4.2)
     diff-lcs (1.6.2)
+    ephem (0.5.0)
+      minitar (~> 0.12)
+      zlib (~> 3.2)
     erb (6.0.7)
+    iers (0.3.1)
     io-console (0.9.4)
     irb (1.18.0)
       pp (>= 0.6.0)
@@ -19,6 +28,8 @@ GEM
     language_server-protocol (3.17.0.6)
     lint_roller (1.1.0)
     logger (1.7.0)
+    matrix (0.4.3)
+    minitar (0.12.1)
     parallel (2.2.0)
     parser (3.3.12.0)
       ast (~> 2.4.1)
@@ -90,6 +101,7 @@ GEM
     unicode-display_width (3.3.0)
       unicode-emoji (~> 4.3)
     unicode-emoji (4.3.0)
+    zlib (3.2.3)
 
 PLATFORMS
   aarch64-linux
@@ -107,15 +119,20 @@ DEPENDENCIES
 
 CHECKSUMS
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
+  astronoby (0.10.0) sha256=a12ea6f5273b41f813731b89a5eb4636c35340621603ed0c6d5799b219029287
   bundler (4.0.14) sha256=d09a0a965cf772266a7e49e83610be7c2f4e49e61134c42a56804bb383cc24b8
   diff-lcs (1.6.2) sha256=9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962
+  ephem (0.5.0) sha256=54b7e964a35f870b3aa3756e10dd03a1a838853fa00e665d12d403006ca3cc07
   erb (6.0.7) sha256=c5ca6dc25b0ef974a44dc8f59fe847577122483b1968a38dec305c60bf91ee92
+  iers (0.3.1) sha256=b67b7305fbae25b61d3209c922493a654c40f546217ad4febe5e7e23a7abfefa
   io-console (0.9.4) sha256=a403304f32928ee85e56d457b4612ca43f2703b561a3258844992bd24085fbb1
   irb (1.18.0) sha256=de9454a0703a54704b9811a5ef31a60c86949fbf4013fcf244fabc7c775248e3
   json (2.21.2) sha256=1f1d3b7cf2b3ba1a69beca0bb6db13d5438b80bff3cd54cdaaa620b9b07c1c6a
   language_server-protocol (3.17.0.6) sha256=5ef2c0c138f8267e1bc631d3328347d354f96724b0af22f2c79516120443b7f0
   lint_roller (1.1.0) sha256=2c0c845b632a7d172cb849cc90c1bce937a28c5c8ccccb50dfd46a485003cc87
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
+  matrix (0.4.3) sha256=a0d5ab7ddcc1973ff690ab361b67f359acbb16958d1dc072b8b956a286564c5b
+  minitar (0.12.1) sha256=3a1dbbae8c4c8e67ab8e3951ba36cb93b844c225b29f83e3b90f48226f3d6038
   parallel (2.2.0) sha256=e1059c5fd7b649558a0aec38a769f06a42942bdb40503d005a59c352fe011cd8
   parser (3.3.12.0) sha256=21a6d7f755d5a24dfbdc6e6b772e4e879a52e7631a88bc5a3a134606052c9828
   pp (0.6.4) sha256=dfcb0fce700c41456265922884f9fe195d7fbb0674a3578e6c0f69588e82b570
@@ -144,6 +161,7 @@ CHECKSUMS
   tsort (0.2.0) sha256=9650a793f6859a43b6641671278f79cfead60ac714148aabe4e3f0060480089f
   unicode-display_width (3.3.0) sha256=4b7aa66a4b11db50f6f7e98411215cd0dd10eaecb665d36eec5bcacb3fa0b613
   unicode-emoji (4.3.0) sha256=11c02fa73290378c066bb0562cd4c87d8e1b706fbbe0059ca12746a4244de8ce
+  zlib (3.2.3) sha256=5bd316698b32f31a64ab910a8b6c282442ca1626a81bbd6a1674e8522e319c20
 
 BUNDLED WITH
   4.0.14
