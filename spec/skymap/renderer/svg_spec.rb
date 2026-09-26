@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "rexml/document"
-
 RSpec.describe Skymap::Renderer::SVG do
   describe "#render" do
     it "sizes the SVG to the canvas" do
@@ -74,9 +72,5 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(star["cx"]).to eq("109.26")
       expect(star["cy"]).to eq("59.64")
     end
-  end
-
-  def circles_in(svg)
-    REXML::XPath.match(REXML::Document.new(svg), "/svg/circle")
   end
 end
