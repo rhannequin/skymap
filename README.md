@@ -27,6 +27,26 @@ gem install skymap
 
 Coming soon.
 
+## Data sources
+
+### Stars
+
+`data/stars.csv` is extracted from the [Yale Bright Star Catalogue, 5th
+Revised Edition][bsc5] (VizieR V/50): the 9,096 stars of the catalog with
+their Harvard Revised number (`hr`), J2000 coordinates (`right_ascension` in
+hours, `declination` in degrees) and visual magnitude (`magnitude`). The 14
+non-stellar entries kept only for numbering are left out.
+
+> Hoffleit, D., Warren Jr., W. H., 1991, _The Bright Star Catalogue, 5th
+> Revised Ed. (Preliminary Version)_, Astronomical Data Center, NSSDC/ADC.
+
+The file is generated with `bin/build_catalog`, which downloads the catalog
+from CDS.
+
+This research has made use of the VizieR catalogue access tool, CDS,
+Strasbourg, France ([DOI: 10.26093/cds/vizier][vizier-doi]). The original
+description of the VizieR service was published in 2000, A&AS 143, 23.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
@@ -65,3 +85,5 @@ rooms and mailing lists is expected to follow the
 [Standard Ruby]: https://github.com/standardrb/standard
 [trusted publishing]: https://guides.rubygems.org/trusted-publishing/
 [MIT License]: https://opensource.org/licenses/MIT
+[bsc5]: https://cdsarc.cds.unistra.fr/viz-bin/cat/V/50
+[vizier-doi]: https://doi.org/10.26093/cds/vizier
