@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "csv"
+require "net/http"
+require "zlib"
+
+SOURCE = URI("https://cdsarc.cds.unistra.fr/ftp/V/50/catalog.gz")
+OUTPUT = File.expand_path("../data/stars.csv", __dir__)
+
+def field(line, first_byte, last_byte)
+  line[(first_byte - 1)..(last_byte - 1)].to_s.strip
+end
+
+records = Zlib.gunzip(Net::HTTP.get(SOURCE)).lines
+
+CSV.open(OUTPUT, "w") do |csv|
+  csv << %w[hr right_ascension declination magnitude]
+
+  records.each do |line|
+    next if field(line, 76, 77).empty? || field(line, 103, 107).empty?
+
+    right_ascension =
+      field(line, 76, 77).to_i +
+      field(line, 78, 79).to_i / 60.0 +
+      field(line, 80, 83).to_f / 3600.0
+
+    sign = (field(line, 84, 84) == "-") ? -1 : 1
+    declination = sign * (
+      field(line, 85, 86).to_i +
+      field(line, 87, 88).to_i / 60.0 +
+      field(line, 89, 90).to_i / 3600.0
+    )
+
+    csv << [
+      field(line, 1, 4).to_i,
+      right_ascension.round(6),
+      declination.round(6),
+      field(line, 103, 107).to_f
+    ]
+  end
+end

@@ -3,6 +3,7 @@ PATH
   specs:
     skymap (0.0.1)
       astronoby (~> 0.10)
+      csv (~> 3.3)
       victor (~> 0.5)
 
 GEM
@@ -13,6 +14,7 @@ GEM
       ephem (~> 0.5)
       iers (~> 0.1)
       matrix (~> 0.4.2)
+    csv (3.3.6)
     diff-lcs (1.6.2)
     ephem (0.5.0)
       minitar (~> 0.12)
@@ -125,6 +127,7 @@ CHECKSUMS
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
   astronoby (0.10.0) sha256=a12ea6f5273b41f813731b89a5eb4636c35340621603ed0c6d5799b219029287
   bundler (4.0.14) sha256=d09a0a965cf772266a7e49e83610be7c2f4e49e61134c42a56804bb383cc24b8
+  csv (3.3.6) sha256=aba61e7e507a66f03d45cb1f3c4b6359861c3504038b422962875dce099e4456
   diff-lcs (1.6.2) sha256=9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962
   ephem (0.5.0) sha256=54b7e964a35f870b3aa3756e10dd03a1a838853fa00e665d12d403006ca3cc07
   erb (6.0.7) sha256=c5ca6dc25b0ef974a44dc8f59fe847577122483b1968a38dec305c60bf91ee92

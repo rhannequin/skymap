@@ -20,10 +20,17 @@ Gem::Specification.new do |spec|
   spec.metadata["bug_tracker_uri"] = "#{spec.homepage}/issues"
   spec.metadata["rubygems_mfa_required"] = "true"
 
-  spec.files = Dir["lib/**/*.rb", "CHANGELOG.md", "LICENSE.txt", "README.md"]
+  spec.files = Dir[
+    "lib/**/*.rb",
+    "data/**/*",
+    "CHANGELOG.md",
+    "LICENSE.txt",
+    "README.md"
+  ]
   spec.require_paths = ["lib"]
 
   spec.add_dependency "astronoby", "~> 0.10"
+  spec.add_dependency "csv", "~> 3.3"
   spec.add_dependency "victor", "~> 0.5"
 
   spec.add_development_dependency "irb", "~> 1.18"
