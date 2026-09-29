@@ -21,7 +21,7 @@ RSpec.describe Skymap::Chart do
         instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
       )
-      circumpolar_star = equatorial(right_ascension: 0, declination: 89)
+      circumpolar_star = star(right_ascension: 0, declination: 89, magnitude: 2)
 
       svg = chart.render([circumpolar_star])
       _sky, *stars = circles_in(svg)
@@ -35,12 +35,31 @@ RSpec.describe Skymap::Chart do
         instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
       )
-      never_rising_star = equatorial(right_ascension: 0, declination: -89)
+      never_rising_star = star(
+        right_ascension: 0,
+        declination: -89,
+        magnitude: 2
+      )
 
       svg = chart.render([never_rising_star])
       _sky, *stars = circles_in(svg)
 
       expect(stars).to be_empty
+    end
+
+    it "draws brighter stars bigger" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      bright_star = star(right_ascension: 0, declination: 89, magnitude: 0)
+      faint_star = star(right_ascension: 12, declination: 89, magnitude: 5)
+
+      svg = chart.render([bright_star, faint_star])
+      _sky, bright, faint = circles_in(svg)
+
+      expect(Float(bright["r"])).to be > Float(faint["r"])
     end
   end
 
@@ -51,11 +70,15 @@ RSpec.describe Skymap::Chart do
     )
   end
 
-  def equatorial(right_ascension:, declination:)
-    Astronoby::Coordinates::Equatorial.new(
-      right_ascension: Astronoby::Angle.from_hours(right_ascension),
-      declination: Astronoby::Angle.from_degrees(declination),
-      epoch: Astronoby::JulianDate::J2000
+  def star(right_ascension:, declination:, magnitude:)
+    Skymap::Star.new(
+      hr: nil,
+      equatorial_coordinates: Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(right_ascension),
+        declination: Astronoby::Angle.from_degrees(declination),
+        epoch: Astronoby::JulianDate::J2000
+      ),
+      magnitude: magnitude
     )
   end
 end

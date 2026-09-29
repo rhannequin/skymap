@@ -44,33 +44,44 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(sky["r"]).to eq("199.17")
     end
 
-    it "draws a star on top of the sky for each point" do
+    it "draws a star on top of the sky for each dot" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
+      dots = [
+        Skymap::Renderer::Dot.new(x: 100, y: 150, radius: 4),
+        Skymap::Renderer::Dot.new(x: 250, y: 300, radius: 0.5)
+      ]
 
-      svg = renderer.render([[100, 150], [250, 300]])
+      svg = renderer.render(dots)
       _sky, *stars = circles_in(svg)
 
       expect(stars.size).to eq(2)
       expect(stars[0]["cx"]).to eq("100")
       expect(stars[0]["cy"]).to eq("150")
+      expect(stars[0]["r"]).to eq("4")
       expect(stars[1]["cx"]).to eq("250")
       expect(stars[1]["cy"]).to eq("300")
+      expect(stars[1]["r"]).to eq("0.5")
       stars.each do |star|
-        expect(star["r"]).to eq("1")
         expect(star["fill"]).to eq("#ffffff")
       end
     end
 
-    it "rounds star coordinates to 2 decimals" do
+    it "rounds star coordinates and radii to 2 decimals" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
+      dot = Skymap::Renderer::Dot.new(
+        x: 109.25833333,
+        y: 59.63552,
+        radius: 1.23456
+      )
 
-      svg = renderer.render([[109.25833333, 59.63552]])
+      svg = renderer.render([dot])
       _sky, star = circles_in(svg)
 
       expect(star["cx"]).to eq("109.26")
       expect(star["cy"]).to eq("59.64")
+      expect(star["r"]).to eq("1.23")
     end
   end
 end
