@@ -2,8 +2,8 @@
 
 module Skymap
   class Chart
-    BRIGHTEST_STAR_MAGNITUDE = -1.5
-    NAKED_EYE_LIMIT_MAGNITUDE = 6.5
+    MAX_RADIUS_MAGNITUDE = -1.5
+    MIN_RADIUS_MAGNITUDE = 6.5
     MIN_STAR_RADIUS = 0.3
     MAX_STAR_RADIUS = 4
 
@@ -17,8 +17,8 @@ module Skymap
         radius: canvas.radius
       )
       @star_size = StarSize.new(
-        brightest_magnitude: BRIGHTEST_STAR_MAGNITUDE,
-        faintest_magnitude: NAKED_EYE_LIMIT_MAGNITUDE,
+        brightest_magnitude: MAX_RADIUS_MAGNITUDE,
+        faintest_magnitude: MIN_RADIUS_MAGNITUDE,
         min_radius: MIN_STAR_RADIUS,
         max_radius: MAX_STAR_RADIUS
       )

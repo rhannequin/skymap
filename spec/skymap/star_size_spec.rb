@@ -66,5 +66,18 @@ RSpec.describe Skymap::StarSize do
 
       expect(radius).to eq(0.5)
     end
+
+    it "works with whole-number magnitudes and radii" do
+      star_size = described_class.new(
+        brightest_magnitude: -1,
+        faintest_magnitude: 6,
+        min_radius: 1,
+        max_radius: 5
+      )
+
+      radius = star_size.radius(2)
+
+      expect(radius.round(2)).to eq(3.29)
+    end
   end
 end

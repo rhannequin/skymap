@@ -15,8 +15,8 @@ module Skymap
     end
 
     def radius(magnitude)
-      brightness = (@faintest_magnitude - magnitude) /
-        (@faintest_magnitude - @brightest_magnitude)
+      brightness = (@faintest_magnitude - magnitude)
+        .fdiv(@faintest_magnitude - @brightest_magnitude)
 
       @min_radius + brightness.clamp(0, 1) * (@max_radius - @min_radius)
     end
