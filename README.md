@@ -25,7 +25,57 @@ gem install skymap
 
 ## Usage
 
-Coming soon.
+Skymap draws the sky seen by an observer at a given instant, and returns it
+as an SVG string:
+
+```ruby
+require "skymap"
+
+observer = Astronoby::Observer.new(
+  latitude: Astronoby::Angle.from_degrees(48.8575),
+  longitude: Astronoby::Angle.from_degrees(2.3514)
+)
+instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22))
+canvas = Skymap::Canvas.new(size: 800, padding: 24)
+
+chart = Skymap::Chart.new(observer: observer, instant: instant, canvas: canvas)
+svg = chart.render(Skymap::Catalog::Stars.new)
+
+File.write("sky_map.svg", svg)
+```
+
+The observer and the instant are [Astronoby] objects. Astronoby computes where
+each star is in the sky and Skymap draws it.
+
+The map is a disk: the zenith is at the center and the horizon is the edge. It
+uses a [stereographic projection], the most common one for sky charts because
+it keeps the shapes of constellations, even near the horizon. North is at the
+top and East is on the left, as on a map you would hold above your head.
+
+### Canvas
+
+The canvas is the square SVG the map is drawn on. `size` is its width and
+height, and `padding` is the space between the horizon and the edge of the
+SVG. The cardinal directions (N, E, S, W) are drawn in the padding.
+
+### Stars
+
+`Skymap::Catalog::Stars` gives the 9,096 stars of the Yale Bright Star
+Catalogue (see [Data sources](#data-sources)), but `Chart#render` accepts any
+list of `Skymap::Star`.
+
+Stars are drawn bigger the brighter they are. By default, only stars of
+magnitude 5 or brighter are drawn, which is about what you can see from a
+suburban sky. Use `magnitude_limit:` to draw more or fewer stars:
+
+```ruby
+Skymap::Chart.new(
+  observer: observer,
+  instant: instant,
+  canvas: canvas,
+  magnitude_limit: 6
+)
+```
 
 ## Data sources
 
@@ -82,6 +132,8 @@ Everyone interacting in the Skymap project's codebases, issue trackers, chat
 rooms and mailing lists is expected to follow the
 [code of conduct](CODE_OF_CONDUCT.md).
 
+[Astronoby]: https://github.com/rhannequin/astronoby
+[stereographic projection]: https://en.wikipedia.org/wiki/Stereographic_map_projection
 [Standard Ruby]: https://github.com/standardrb/standard
 [trusted publishing]: https://guides.rubygems.org/trusted-publishing/
 [MIT License]: https://opensource.org/licenses/MIT
