@@ -47,6 +47,37 @@ RSpec.describe Skymap::Chart do
       expect(stars).to be_empty
     end
 
+    it "leaves out stars fainter than magnitude 5 by default" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      visible_star = star(right_ascension: 0, declination: 89, magnitude: 5)
+      faint_star = star(right_ascension: 12, declination: 89, magnitude: 5.1)
+
+      svg = chart.render([visible_star, faint_star])
+      _sky, *stars = circles_in(svg)
+
+      expect(stars.size).to eq(1)
+    end
+
+    it "leaves out stars fainter than the given magnitude limit" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        magnitude_limit: 3
+      )
+      visible_star = star(right_ascension: 0, declination: 89, magnitude: 3)
+      faint_star = star(right_ascension: 12, declination: 89, magnitude: 4)
+
+      svg = chart.render([visible_star, faint_star])
+      _sky, *stars = circles_in(svg)
+
+      expect(stars.size).to eq(1)
+    end
+
     it "draws brighter stars bigger" do
       chart = described_class.new(
         observer: observer_at(latitude: 48.8575),
