@@ -92,6 +92,25 @@ RSpec.describe Skymap::Chart do
 
       expect(Float(bright["r"])).to be > Float(faint["r"])
     end
+    it "scales stars with the size of the sky" do
+      small_chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 0)
+      )
+      large_chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 800, padding: 0)
+      )
+      faint_star = star(right_ascension: 0, declination: 89, magnitude: 5)
+
+      _sky, small = circles_in(small_chart.render([faint_star]))
+      _sky, large = circles_in(large_chart.render([faint_star]))
+
+      expect(small["r"]).to eq("0.5")
+      expect(large["r"]).to eq("1.0")
+    end
   end
 
   def observer_at(latitude:)

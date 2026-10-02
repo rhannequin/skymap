@@ -4,8 +4,8 @@ module Skymap
   class Chart
     DEFAULT_MAGNITUDE_LIMIT = 5
     MAX_RADIUS_MAGNITUDE = -1.5
-    MIN_STAR_RADIUS = 0.3
-    MAX_STAR_RADIUS = 4
+    MIN_STAR_RADIUS_RATIO = 0.0025
+    MAX_STAR_RADIUS_RATIO = 0.02
     STAR_SIZE_EXPONENT = 1.5
 
     def initialize(
@@ -26,8 +26,8 @@ module Skymap
       @star_size = StarSize.new(
         brightest_magnitude: MAX_RADIUS_MAGNITUDE,
         faintest_magnitude: magnitude_limit,
-        min_radius: MIN_STAR_RADIUS,
-        max_radius: MAX_STAR_RADIUS,
+        min_radius: MIN_STAR_RADIUS_RATIO * canvas.radius,
+        max_radius: MAX_STAR_RADIUS_RATIO * canvas.radius,
         exponent: STAR_SIZE_EXPONENT
       )
     end
