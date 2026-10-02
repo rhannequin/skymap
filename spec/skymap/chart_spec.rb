@@ -111,6 +111,38 @@ RSpec.describe Skymap::Chart do
       expect(small["r"]).to eq("0.5")
       expect(large["r"]).to eq("1.0")
     end
+    it "labels the cardinal directions in the padding" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 20)
+      )
+
+      svg = chart.render([])
+      labels = texts_in(svg).map do |text|
+        [text.text.strip, text["x"], text["y"]]
+      end
+
+      expect(labels).to contain_exactly(
+        ["N", "200.0", "10.0"],
+        ["E", "10.0", "200.0"],
+        ["S", "200.0", "390.0"],
+        ["W", "390.0", "200.0"]
+      )
+    end
+
+    it "sizes the cardinal directions to fit in the padding" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 20)
+      )
+
+      svg = chart.render([])
+      sizes = texts_in(svg).map { |text| text["font-size"] }
+
+      expect(sizes).to all(eq("12.0"))
+    end
   end
 
   def observer_at(latitude:)

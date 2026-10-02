@@ -9,12 +9,14 @@ module Skymap
       HORIZON_COLOR = "#3262a8"
       HORIZON_WIDTH = 3
       STAR_COLOR = "#ffffff"
+      LABEL_COLOR = HORIZON_COLOR
+      LABEL_FONT = "sans-serif"
 
       def initialize(canvas:)
         @canvas = canvas
       end
 
-      def render(dots)
+      def render(dots:, labels:)
         svg = Victor::SVG.new(
           viewBox: "0 0 #{@canvas.size} #{@canvas.size}",
           width: @canvas.size,
@@ -36,6 +38,19 @@ module Skymap
             cy: dot.y.round(2),
             r: dot.radius.round(2),
             fill: STAR_COLOR
+          )
+        end
+
+        labels.each do |label|
+          svg.text(
+            label.text,
+            x: label.x.round(2),
+            y: label.y.round(2),
+            font_size: label.size.round(2),
+            font_family: LABEL_FONT,
+            text_anchor: "middle",
+            dominant_baseline: "central",
+            fill: LABEL_COLOR
           )
         end
 

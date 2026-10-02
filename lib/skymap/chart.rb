@@ -7,6 +7,8 @@ module Skymap
     MIN_STAR_RADIUS_RATIO = 0.0025
     MAX_STAR_RADIUS_RATIO = 0.02
     STAR_SIZE_EXPONENT = 1.5
+    CARDINAL_DIRECTIONS = {"N" => 0, "E" => 90, "S" => 180, "W" => 270}
+    CARDINAL_SIZE_RATIO = 0.6
 
     def initialize(
       observer:,
@@ -22,6 +24,11 @@ module Skymap
         center_x: canvas.center_x,
         center_y: canvas.center_y,
         radius: canvas.radius
+      )
+      @label_projection = Projection::Stereographic.new(
+        center_x: canvas.center_x,
+        center_y: canvas.center_y,
+        radius: canvas.radius + canvas.padding / 2.0
       )
       @star_size = StarSize.new(
         brightest_magnitude: MAX_RADIUS_MAGNITUDE,
@@ -46,10 +53,27 @@ module Skymap
         Renderer::Dot.new(x: x, y: y, radius: @star_size.radius(star.magnitude))
       end
 
-      Renderer::SVG.new(canvas: @canvas).render(dots)
+      Renderer::SVG
+        .new(canvas: @canvas)
+        .render(dots: dots, labels: cardinal_labels)
     end
 
     private
+
+    def cardinal_labels
+      CARDINAL_DIRECTIONS.map do |text, azimuth|
+        x, y = @label_projection.project(
+          altitude: Astronoby::Angle.zero,
+          azimuth: Astronoby::Angle.from_degrees(azimuth)
+        )
+        Renderer::Label.new(
+          x: x,
+          y: y,
+          text: text,
+          size: @canvas.padding * CARDINAL_SIZE_RATIO
+        )
+      end
+    end
 
     def horizontal_coordinates(equatorial_coordinates)
       Astronoby::DeepSkyObject

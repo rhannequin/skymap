@@ -6,7 +6,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
 
-      svg = renderer.render([])
+      svg = renderer.render(dots: [], labels: [])
       root = REXML::Document.new(svg).root
 
       expect(root.name).to eq("svg")
@@ -19,7 +19,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
 
-      svg = renderer.render([])
+      svg = renderer.render(dots: [], labels: [])
       circles = circles_in(svg)
       sky = circles.first
 
@@ -36,7 +36,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 401, padding: 1.3333)
       renderer = described_class.new(canvas: canvas)
 
-      svg = renderer.render([])
+      svg = renderer.render(dots: [], labels: [])
       sky = circles_in(svg).first
 
       expect(sky["cx"]).to eq("200.5")
@@ -52,7 +52,7 @@ RSpec.describe Skymap::Renderer::SVG do
         Skymap::Renderer::Dot.new(x: 250, y: 300, radius: 0.5)
       ]
 
-      svg = renderer.render(dots)
+      svg = renderer.render(dots: dots, labels: [])
       _sky, *stars = circles_in(svg)
 
       expect(stars.size).to eq(2)
@@ -76,12 +76,52 @@ RSpec.describe Skymap::Renderer::SVG do
         radius: 1.23456
       )
 
-      svg = renderer.render([dot])
+      svg = renderer.render(dots: [dot], labels: [])
       _sky, star = circles_in(svg)
 
       expect(star["cx"]).to eq("109.26")
       expect(star["cy"]).to eq("59.64")
       expect(star["r"]).to eq("1.23")
+    end
+
+    it "draws each label as centered text" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      renderer = described_class.new(canvas: canvas)
+      label = Skymap::Renderer::Label.new(
+        x: 200,
+        y: 10,
+        text: "N",
+        size: 12
+      )
+
+      svg = renderer.render(dots: [], labels: [label])
+      text = texts_in(svg).first
+
+      expect(text.text.strip).to eq("N")
+      expect(text["x"]).to eq("200")
+      expect(text["y"]).to eq("10")
+      expect(text["font-size"]).to eq("12")
+      expect(text["text-anchor"]).to eq("middle")
+      expect(text["dominant-baseline"]).to eq("central")
+      expect(text["fill"]).to eq("#3262a8")
+    end
+
+    it "rounds label coordinates and sizes to 2 decimals" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      renderer = described_class.new(canvas: canvas)
+      label = Skymap::Renderer::Label.new(
+        x: 109.25833333,
+        y: 59.63552,
+        text: "N",
+        size: 1.23456
+      )
+
+      svg = renderer.render(dots: [], labels: [label])
+      text = texts_in(svg).first
+
+      expect(text["x"]).to eq("109.26")
+      expect(text["y"]).to eq("59.64")
+      expect(text["font-size"]).to eq("1.23")
     end
   end
 end
