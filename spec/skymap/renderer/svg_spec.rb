@@ -6,7 +6,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
 
-      svg = renderer.render(dots: [], labels: [])
+      svg = renderer.render(dots: [], labels: [], lines: [])
       root = REXML::Document.new(svg).root
 
       expect(root.name).to eq("svg")
@@ -19,7 +19,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
 
-      svg = renderer.render(dots: [], labels: [])
+      svg = renderer.render(dots: [], labels: [], lines: [])
       circles = circles_in(svg)
       sky = circles.first
 
@@ -36,7 +36,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 401, padding: 1.3333)
       renderer = described_class.new(canvas: canvas)
 
-      svg = renderer.render(dots: [], labels: [])
+      svg = renderer.render(dots: [], labels: [], lines: [])
       sky = circles_in(svg).first
 
       expect(sky["cx"]).to eq("200.5")
@@ -52,7 +52,7 @@ RSpec.describe Skymap::Renderer::SVG do
         Skymap::Renderer::Dot.new(x: 250, y: 300, radius: 0.5)
       ]
 
-      svg = renderer.render(dots: dots, labels: [])
+      svg = renderer.render(dots: dots, labels: [], lines: [])
       _sky, *stars = circles_in(svg)
 
       expect(stars.size).to eq(2)
@@ -76,7 +76,7 @@ RSpec.describe Skymap::Renderer::SVG do
         radius: 1.23456
       )
 
-      svg = renderer.render(dots: [dot], labels: [])
+      svg = renderer.render(dots: [dot], labels: [], lines: [])
       _sky, star = circles_in(svg)
 
       expect(star["cx"]).to eq("109.26")
@@ -94,7 +94,7 @@ RSpec.describe Skymap::Renderer::SVG do
         size: 12
       )
 
-      svg = renderer.render(dots: [], labels: [label])
+      svg = renderer.render(dots: [], labels: [label], lines: [])
       text = texts_in(svg).first
 
       expect(text.text.strip).to eq("N")
@@ -116,12 +116,58 @@ RSpec.describe Skymap::Renderer::SVG do
         size: 1.23456
       )
 
-      svg = renderer.render(dots: [], labels: [label])
+      svg = renderer.render(dots: [], labels: [label], lines: [])
       text = texts_in(svg).first
 
       expect(text["x"]).to eq("109.26")
       expect(text["y"]).to eq("59.64")
       expect(text["font-size"]).to eq("1.23")
+    end
+
+    it "draws each line between the sky and the stars" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      dot = Skymap::Renderer::Dot.new(x: 100, y: 150, radius: 4)
+      line = Skymap::Renderer::Line.new(
+        x1: 100,
+        y1: 150,
+        x2: 250,
+        y2: 300,
+        width: 1.5
+      )
+
+      svg = renderer.render(dots: [dot], labels: [], lines: [line])
+      drawn = lines_in(svg).first
+      order = REXML::Document.new(svg).root.elements.map(&:name)
+
+      expect(drawn["x1"]).to eq("100")
+      expect(drawn["y1"]).to eq("150")
+      expect(drawn["x2"]).to eq("250")
+      expect(drawn["y2"]).to eq("300")
+      expect(drawn["stroke-width"]).to eq("1.5")
+      expect(drawn["stroke"]).to eq("#46689c")
+      expect(order).to eq(%w[circle line circle])
+    end
+
+    it "rounds line coordinates and widths to 2 decimals" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      line = Skymap::Renderer::Line.new(
+        x1: 109.25833333,
+        y1: 59.63552,
+        x2: 250.004,
+        y2: 300.996,
+        width: 1.23456
+      )
+
+      svg = renderer.render(dots: [], labels: [], lines: [line])
+      drawn = lines_in(svg).first
+
+      expect(drawn["x1"]).to eq("109.26")
+      expect(drawn["y1"]).to eq("59.64")
+      expect(drawn["x2"]).to eq("250.0")
+      expect(drawn["y2"]).to eq("301.0")
+      expect(drawn["stroke-width"]).to eq("1.23")
     end
   end
 end
