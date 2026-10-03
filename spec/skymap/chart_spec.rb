@@ -143,6 +143,141 @@ RSpec.describe Skymap::Chart do
 
       expect(sizes).to all(eq("12.0"))
     end
+
+    it "draws a line between two stars, from one dot to the other" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      first = star(hr: 1, right_ascension: 0, declination: 80, magnitude: 2)
+      second = star(hr: 2, right_ascension: 6, declination: 80, magnitude: 2)
+
+      svg = chart.render([first, second], lines: [line(from: [1], to: [2])])
+      _sky, first_dot, second_dot = circles_in(svg)
+      drawn = lines_in(svg).first
+
+      expect(drawn["x1"]).to eq(first_dot["cx"])
+      expect(drawn["y1"]).to eq(first_dot["cy"])
+      expect(drawn["x2"]).to eq(second_dot["cx"])
+      expect(drawn["y2"]).to eq(second_dot["cy"])
+    end
+
+    it "draws whole figures, including stars fainter than the limit" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      bright = star(hr: 1, right_ascension: 0, declination: 80, magnitude: 2)
+      faint = star(hr: 2, right_ascension: 6, declination: 80, magnitude: 6)
+
+      svg = chart.render([bright, faint], lines: [line(from: [1], to: [2])])
+      _sky, *stars = circles_in(svg)
+
+      expect(stars.size).to eq(1)
+      expect(lines_in(svg).size).to eq(1)
+    end
+
+    it "leaves out a line below the horizon" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      first = star(hr: 1, right_ascension: 0, declination: -80, magnitude: 2)
+      second = star(hr: 2, right_ascension: 6, declination: -80, magnitude: 2)
+
+      svg = chart.render([first, second], lines: [line(from: [1], to: [2])])
+
+      expect(lines_in(svg)).to be_empty
+    end
+
+    it "stops a line that goes below the horizon at the horizon" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 90),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      above = star(hr: 1, right_ascension: 3, declination: 30, magnitude: 2)
+      below = star(hr: 2, right_ascension: 3, declination: -20, magnitude: 2)
+
+      svg = chart.render([above, below], lines: [line(from: [1], to: [2])])
+      _sky, dot = circles_in(svg)
+      drawn = lines_in(svg).first
+      dot_x, dot_y = Float(dot["cx"]) - 200, Float(dot["cy"]) - 200
+      end_x, end_y = Float(drawn["x2"]) - 200, Float(drawn["y2"]) - 200
+
+      expect(Math.hypot(end_x, end_y).round(1)).to eq(198.5)
+      expect(Math.atan2(end_y, end_x).round(2))
+        .to eq(Math.atan2(dot_y, dot_x).round(2))
+    end
+
+    it "draws a line ending between two stars to their midpoint" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      first = star(hr: 1, right_ascension: 0, declination: 80, magnitude: 2)
+      second = star(hr: 2, right_ascension: 6, declination: 80, magnitude: 2)
+      third = star(hr: 3, right_ascension: 12, declination: 80, magnitude: 2)
+
+      svg = chart.render(
+        [first, second, third],
+        lines: [line(from: [1], to: [2, 3])]
+      )
+      _sky, _first, second_dot, third_dot = circles_in(svg)
+      drawn = lines_in(svg).first
+
+      expect(Float(drawn["x2"])).to be_within(0.01).of(
+        (Float(second_dot["cx"]) + Float(third_dot["cx"])) / 2
+      )
+      expect(Float(drawn["y2"])).to be_within(0.01).of(
+        (Float(second_dot["cy"]) + Float(third_dot["cy"])) / 2
+      )
+    end
+
+    it "draws bold lines thicker than thin ones" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      first = star(hr: 1, right_ascension: 0, declination: 80, magnitude: 2)
+      second = star(hr: 2, right_ascension: 6, declination: 80, magnitude: 2)
+      lines = [
+        line(from: [1], to: [2], weight: :bold),
+        line(from: [1], to: [2], weight: :thin)
+      ]
+
+      svg = chart.render([first, second], lines: lines)
+      bold, thin = lines_in(svg)
+
+      expect(Float(bold["stroke-width"])).to be > Float(thin["stroke-width"])
+    end
+
+    it "leaves out a line to a star that was not given" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      first = star(hr: 1, right_ascension: 0, declination: 80, magnitude: 2)
+
+      svg = chart.render([first], lines: [line(from: [1], to: [2])])
+
+      expect(lines_in(svg)).to be_empty
+    end
+  end
+
+  def line(from:, to:, weight: :normal)
+    Skymap::ConstellationLine.new(
+      constellation: "UMi",
+      from: from,
+      to: to,
+      weight: weight
+    )
   end
 
   def observer_at(latitude:)
@@ -152,9 +287,9 @@ RSpec.describe Skymap::Chart do
     )
   end
 
-  def star(right_ascension:, declination:, magnitude:)
+  def star(right_ascension:, declination:, magnitude:, hr: nil)
     Skymap::Star.new(
-      hr: nil,
+      hr: hr,
       equatorial_coordinates: Astronoby::Coordinates::Equatorial.new(
         right_ascension: Astronoby::Angle.from_hours(right_ascension),
         declination: Astronoby::Angle.from_degrees(declination),
