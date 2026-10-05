@@ -48,8 +48,8 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
       dots = [
-        Skymap::Renderer::Dot.new(x: 100, y: 150, radius: 4),
-        Skymap::Renderer::Dot.new(x: 250, y: 300, radius: 0.5)
+        Skymap::Renderer::Dot.new(center: point(100, 150), radius: 4),
+        Skymap::Renderer::Dot.new(center: point(250, 300), radius: 0.5)
       ]
 
       svg = renderer.render(dots: dots, labels: [], lines: [])
@@ -71,8 +71,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
       dot = Skymap::Renderer::Dot.new(
-        x: 109.25833333,
-        y: 59.63552,
+        center: point(109.25833333, 59.63552),
         radius: 1.23456
       )
 
@@ -88,8 +87,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
       renderer = described_class.new(canvas: canvas)
       label = Skymap::Renderer::Label.new(
-        x: 200,
-        y: 10,
+        position: point(200, 10),
         text: "N",
         size: 12
       )
@@ -110,8 +108,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
       renderer = described_class.new(canvas: canvas)
       label = Skymap::Renderer::Label.new(
-        x: 109.25833333,
-        y: 59.63552,
+        position: point(109.25833333, 59.63552),
         text: "N",
         size: 1.23456
       )
@@ -127,12 +124,10 @@ RSpec.describe Skymap::Renderer::SVG do
     it "draws each line between the sky and the stars" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
-      dot = Skymap::Renderer::Dot.new(x: 100, y: 150, radius: 4)
+      dot = Skymap::Renderer::Dot.new(center: point(100, 150), radius: 4)
       line = Skymap::Renderer::Line.new(
-        x1: 100,
-        y1: 150,
-        x2: 250,
-        y2: 300,
+        from: point(100, 150),
+        to: point(250, 300),
         width: 1.5
       )
 
@@ -153,10 +148,8 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
       line = Skymap::Renderer::Line.new(
-        x1: 109.25833333,
-        y1: 59.63552,
-        x2: 250.004,
-        y2: 300.996,
+        from: point(109.25833333, 59.63552),
+        to: point(250.004, 300.996),
         width: 1.23456
       )
 
@@ -169,5 +162,9 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["y2"]).to eq("301.0")
       expect(drawn["stroke-width"]).to eq("1.23")
     end
+  end
+
+  def point(x, y)
+    Skymap::Point.new(x: x, y: y)
   end
 end
