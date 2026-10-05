@@ -25,8 +25,8 @@ module Skymap
         )
 
         svg.circle(
-          cx: @canvas.center_x.round(2),
-          cy: @canvas.center_y.round(2),
+          cx: @canvas.center.x.round(2),
+          cy: @canvas.center.y.round(2),
           r: @canvas.radius.round(2),
           fill: SKY_COLOR,
           stroke: HORIZON_COLOR,
@@ -35,10 +35,10 @@ module Skymap
 
         lines.each do |line|
           svg.line(
-            x1: line.x1.round(2),
-            y1: line.y1.round(2),
-            x2: line.x2.round(2),
-            y2: line.y2.round(2),
+            x1: line.from.x.round(2),
+            y1: line.from.y.round(2),
+            x2: line.to.x.round(2),
+            y2: line.to.y.round(2),
             stroke: LINE_COLOR,
             stroke_width: line.width.round(2),
             stroke_linecap: "round"
@@ -47,8 +47,8 @@ module Skymap
 
         dots.each do |dot|
           svg.circle(
-            cx: dot.x.round(2),
-            cy: dot.y.round(2),
+            cx: dot.center.x.round(2),
+            cy: dot.center.y.round(2),
             r: dot.radius.round(2),
             fill: STAR_COLOR
           )
@@ -57,8 +57,8 @@ module Skymap
         labels.each do |label|
           svg.text(
             label.text,
-            x: label.x.round(2),
-            y: label.y.round(2),
+            x: label.position.x.round(2),
+            y: label.position.y.round(2),
             font_size: label.size.round(2),
             font_family: LABEL_FONT,
             text_anchor: "middle",

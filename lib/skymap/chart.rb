@@ -22,13 +22,11 @@ module Skymap
       @canvas = canvas
       @magnitude_limit = magnitude_limit
       @projection = Projection::Stereographic.new(
-        center_x: canvas.center_x,
-        center_y: canvas.center_y,
+        center: canvas.center,
         radius: canvas.radius
       )
       @label_projection = Projection::Stereographic.new(
-        center_x: canvas.center_x,
-        center_y: canvas.center_y,
+        center: canvas.center,
         radius: canvas.radius + canvas.padding / 2.0
       )
       @star_size = StarSize.new(
@@ -60,8 +58,10 @@ module Skymap
         next if star.magnitude > @magnitude_limit
         next if horizontal[star].altitude.negative?
 
-        x, y = project(horizontal[star])
-        Renderer::Dot.new(x: x, y: y, radius: @star_size.radius(star.magnitude))
+        Renderer::Dot.new(
+          center: project(horizontal[star]),
+          radius: @star_size.radius(star.magnitude)
+        )
       end
     end
 
@@ -77,20 +77,18 @@ module Skymap
         end
         next if directions.all? { |direction| direction.last.negative? }
 
-        (x1, y1), (x2, y2) = ends.each_with_index.map do |end_stars, index|
+        from, to = ends.each_with_index.map do |end_stars, index|
           if directions[index].last.negative?
             project_direction(
               horizon_crossing(directions[1 - index], directions[index])
             )
           else
-            midpoint(end_stars.map { |star| project(horizontal[star]) })
+            Point.midpoint(end_stars.map { |star| project(horizontal[star]) })
           end
         end
         Renderer::Line.new(
-          x1: x1,
-          y1: y1,
-          x2: x2,
-          y2: y2,
+          from: from,
+          to: to,
           width: LINE_WIDTH_RATIOS.fetch(line.weight) * @canvas.radius
         )
       end
@@ -128,19 +126,14 @@ module Skymap
       )
     end
 
-    def midpoint(points)
-      [points.sum(&:first) / points.size, points.sum(&:last) / points.size]
-    end
-
     def cardinal_labels
       CARDINAL_DIRECTIONS.map do |text, azimuth|
-        x, y = @label_projection.project(
+        position = @label_projection.project(
           altitude: Astronoby::Angle.zero,
           azimuth: Astronoby::Angle.from_degrees(azimuth)
         )
         Renderer::Label.new(
-          x: x,
-          y: y,
+          position: position,
           text: text,
           size: @canvas.padding * CARDINAL_SIZE_RATIO
         )

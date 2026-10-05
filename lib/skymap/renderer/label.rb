@@ -2,6 +2,6 @@
 
 module Skymap
   module Renderer
-    Label = Data.define(:x, :y, :text, :size)
+    Label = Data.define(:position, :text, :size)
   end
 end

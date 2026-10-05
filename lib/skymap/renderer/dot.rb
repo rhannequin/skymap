@@ -2,6 +2,6 @@
 
 module Skymap
   module Renderer
-    Dot = Data.define(:x, :y, :radius)
+    Dot = Data.define(:center, :radius)
   end
 end

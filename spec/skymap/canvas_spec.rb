@@ -1,19 +1,11 @@
 # frozen_string_literal: true
 
 RSpec.describe Skymap::Canvas do
-  describe "#center_x" do
+  describe "#center" do
     it "is the middle of the canvas" do
       canvas = described_class.new(size: 400, padding: 1.5)
 
-      expect(canvas.center_x).to eq(200)
-    end
-  end
-
-  describe "#center_y" do
-    it "is the middle of the canvas" do
-      canvas = described_class.new(size: 400, padding: 1.5)
-
-      expect(canvas.center_y).to eq(200)
+      expect(canvas.center).to eq(Skymap::Point.new(x: 200, y: 200))
     end
   end
 
