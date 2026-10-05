@@ -6,7 +6,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
 
-      svg = renderer.render(dots: [], labels: [], lines: [])
+      svg = renderer.render([])
       root = REXML::Document.new(svg).root
 
       expect(root.name).to eq("svg")
@@ -19,7 +19,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
 
-      svg = renderer.render(dots: [], labels: [], lines: [])
+      svg = renderer.render([])
       circles = circles_in(svg)
       sky = circles.first
 
@@ -36,7 +36,7 @@ RSpec.describe Skymap::Renderer::SVG do
       canvas = Skymap::Canvas.new(size: 401, padding: 1.3333)
       renderer = described_class.new(canvas: canvas)
 
-      svg = renderer.render(dots: [], labels: [], lines: [])
+      svg = renderer.render([])
       sky = circles_in(svg).first
 
       expect(sky["cx"]).to eq("200.5")
@@ -52,7 +52,7 @@ RSpec.describe Skymap::Renderer::SVG do
         Skymap::Renderer::Dot.new(center: point(250, 300), radius: 0.5)
       ]
 
-      svg = renderer.render(dots: dots, labels: [], lines: [])
+      svg = renderer.render(dots)
       _sky, *stars = circles_in(svg)
 
       expect(stars.size).to eq(2)
@@ -75,7 +75,7 @@ RSpec.describe Skymap::Renderer::SVG do
         radius: 1.23456
       )
 
-      svg = renderer.render(dots: [dot], labels: [], lines: [])
+      svg = renderer.render([dot])
       _sky, star = circles_in(svg)
 
       expect(star["cx"]).to eq("109.26")
@@ -92,7 +92,7 @@ RSpec.describe Skymap::Renderer::SVG do
         size: 12
       )
 
-      svg = renderer.render(dots: [], labels: [label], lines: [])
+      svg = renderer.render([label])
       text = texts_in(svg).first
 
       expect(text.text.strip).to eq("N")
@@ -113,7 +113,7 @@ RSpec.describe Skymap::Renderer::SVG do
         size: 1.23456
       )
 
-      svg = renderer.render(dots: [], labels: [label], lines: [])
+      svg = renderer.render([label])
       text = texts_in(svg).first
 
       expect(text["x"]).to eq("109.26")
@@ -121,7 +121,7 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(text["font-size"]).to eq("1.23")
     end
 
-    it "draws each line between the sky and the stars" do
+    it "draws each line" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
       dot = Skymap::Renderer::Dot.new(center: point(100, 150), radius: 4)
@@ -131,9 +131,8 @@ RSpec.describe Skymap::Renderer::SVG do
         width: 1.5
       )
 
-      svg = renderer.render(dots: [dot], labels: [], lines: [line])
+      svg = renderer.render([line, dot])
       drawn = lines_in(svg).first
-      order = REXML::Document.new(svg).root.elements.map(&:name)
 
       expect(drawn["x1"]).to eq("100")
       expect(drawn["y1"]).to eq("150")
@@ -141,7 +140,6 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["y2"]).to eq("300")
       expect(drawn["stroke-width"]).to eq("1.5")
       expect(drawn["stroke"]).to eq("#46689c")
-      expect(order).to eq(%w[circle line circle])
     end
 
     it "rounds line coordinates and widths to 2 decimals" do
@@ -153,7 +151,7 @@ RSpec.describe Skymap::Renderer::SVG do
         width: 1.23456
       )
 
-      svg = renderer.render(dots: [], labels: [], lines: [line])
+      svg = renderer.render([line])
       drawn = lines_in(svg).first
 
       expect(drawn["x1"]).to eq("109.26")
@@ -161,6 +159,37 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["x2"]).to eq("250.0")
       expect(drawn["y2"]).to eq("301.0")
       expect(drawn["stroke-width"]).to eq("1.23")
+    end
+
+    it "draws elements in the given order, on top of the sky" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      renderer = described_class.new(canvas: canvas)
+      elements = [
+        Skymap::Renderer::Label.new(
+          position: point(200, 10),
+          text: "N",
+          size: 12
+        ),
+        Skymap::Renderer::Dot.new(center: point(100, 150), radius: 4),
+        Skymap::Renderer::Line.new(
+          from: point(100, 150),
+          to: point(250, 300),
+          width: 1
+        )
+      ]
+
+      svg = renderer.render(elements)
+      order = REXML::Document.new(svg).root.elements.map(&:name)
+
+      expect(order).to eq(%w[circle text circle line])
+    end
+
+    it "refuses an element it cannot draw" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      renderer = described_class.new(canvas: canvas)
+
+      expect { renderer.render(["N"]) }
+        .to raise_error(ArgumentError, "unknown element: String")
     end
   end
 

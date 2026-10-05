@@ -37,11 +37,16 @@ observer = Astronoby::Observer.new(
 )
 instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22))
 canvas = Skymap::Canvas.new(size: 800, padding: 24)
+stars = Skymap::Catalog::Stars.new.to_a
 
 chart = Skymap::Chart.new(observer: observer, instant: instant, canvas: canvas)
 svg = chart.render(
-  Skymap::Catalog::Stars.new,
-  lines: Skymap::Catalog::ConstellationLines.new
+  Skymap::Layers::ConstellationLines.new(
+    lines: Skymap::Catalog::ConstellationLines.new,
+    stars: stars
+  ),
+  Skymap::Layers::Stars.new(stars: stars),
+  Skymap::Layers::CardinalDirections.new
 )
 
 File.write("sky_map.svg", svg)
@@ -59,38 +64,45 @@ top and East is on the left, as on a map you would hold above your head.
 
 The canvas is the square SVG the map is drawn on. `size` is its width and
 height, and `padding` is the space between the horizon and the edge of the
-SVG. The cardinal directions (N, E, S, W) are drawn in the padding.
+SVG.
 
-### Stars
+### Layers
 
+A map is the sky, with the layers given to `Chart#render` drawn on top of it,
+in order: each layer is drawn over the previous ones. Without layers,
+`Chart#render` draws an empty sky. Leave a layer out to hide what it draws.
+
+#### Stars
+
+`Skymap::Layers::Stars` draws stars, bigger the brighter they are.
 `Skymap::Catalog::Stars` gives the 9,096 stars of the Yale Bright Star
-Catalogue (see [Data sources](#data-sources)), but `Chart#render` accepts any
-list of `Skymap::Star`.
+Catalogue (see [Data sources](#data-sources)), but the layer accepts any list
+of `Skymap::Star`.
 
-Stars are drawn bigger the brighter they are. By default, only stars of
-magnitude 5 or brighter are drawn, which is about what you can see from a
-suburban sky. Use `magnitude_limit:` to draw more or fewer stars:
+By default, only stars of magnitude 5 or brighter are drawn, which is about
+what you can see from a suburban sky. Use `magnitude_limit:` to draw more or
+fewer stars:
 
 ```ruby
-Skymap::Chart.new(
-  observer: observer,
-  instant: instant,
-  canvas: canvas,
-  magnitude_limit: 6
-)
+Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 6)
 ```
 
-### Constellations
+#### Constellation lines
 
+`Skymap::Layers::ConstellationLines` draws the lines of the constellations.
 `Skymap::Catalog::ConstellationLines` gives the lines of the 88 IAU
-constellations (see [Data sources](#data-sources)). Pass them to
-`Chart#render` with `lines:` to draw the constellations; leave them out for a
-map of stars only.
+constellations (see [Data sources](#data-sources)).
 
 Figures are drawn whole, even when some of their stars are fainter than the
-magnitude limit, and lines that cross the horizon stop at the edge of the sky.
-The stars given to `Chart#render` must include the stars of the lines: lines
-to a star that is not given are left out.
+magnitude limit of the stars layer, and lines that cross the horizon stop at
+the edge of the sky. The stars given to the layer must include the stars of
+the lines: lines to a star that is not given are left out.
+
+#### Cardinal directions
+
+`Skymap::Layers::CardinalDirections` labels the cardinal directions (N, E, S,
+W) in the padding, with a size that follows it: a padding of about 3% of the
+size gives readable labels.
 
 ## Data sources
 
