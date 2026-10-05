@@ -5,6 +5,14 @@
 
 Skymap is a Ruby library for generating maps of the sky.
 
+<p align="center">
+  <img
+    src="https://raw.githubusercontent.com/rhannequin/skymap/main/sky_map.svg"
+    width="480"
+    alt="The sky over Paris on September 24, 2026 at 22:00 UTC, with the stars and the constellation lines"
+  >
+</p>
+
 > [!WARNING]
 > This project is in its very early stages, please expect breaking changes.
 
@@ -97,6 +105,20 @@ Figures are drawn whole, even when some of their stars are fainter than the
 magnitude limit of the stars layer, and lines that cross the horizon stop at
 the edge of the sky. The stars given to the layer must include the stars of
 the lines: lines to a star that is not given are left out.
+
+Each line has a weight, as drawn on the IAU charts: `bold` for the best-known
+shapes (the asterisms, such as the Big Dipper or the Teapot of Sagittarius),
+`normal` for the rest of the figures and `thin` for the secondary lines. The
+layer draws the lines it's given, so select the ones you want, for example
+only the asterisms:
+
+```ruby
+asterisms = Skymap::Catalog::ConstellationLines.new.select do |line|
+  line.weight == :bold
+end
+
+Skymap::Layers::ConstellationLines.new(lines: asterisms, stars: stars)
+```
 
 #### Cardinal directions
 
