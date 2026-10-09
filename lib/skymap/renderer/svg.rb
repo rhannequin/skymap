@@ -10,6 +10,8 @@ module Skymap
       HORIZON_WIDTH = 3
       STAR_COLOR = "#ffffff"
       LINE_COLOR = "#46689c"
+      BOUNDARY_COLOR = "#2b3f5e"
+      BOUNDARY_DASH_RATIO = 4
       LABEL_COLOR = HORIZON_COLOR
       LABEL_FONT = "sans-serif"
 
@@ -35,6 +37,7 @@ module Skymap
 
         elements.each do |element|
           case element
+          when Boundary then draw_boundary(svg, element)
           when Line then draw_line(svg, element)
           when Dot then draw_dot(svg, element)
           when Label then draw_label(svg, element)
@@ -56,6 +59,20 @@ module Skymap
           stroke: LINE_COLOR,
           stroke_width: line.width.round(2),
           stroke_linecap: "round"
+        )
+      end
+
+      def draw_boundary(svg, boundary)
+        dash = (boundary.width * BOUNDARY_DASH_RATIO).round(2)
+
+        svg.polyline(
+          points: boundary.points.map { |point|
+            "#{point.x.round(2)},#{point.y.round(2)}"
+          }.join(" "),
+          fill: "none",
+          stroke: BOUNDARY_COLOR,
+          stroke_width: boundary.width.round(2),
+          stroke_dasharray: "#{dash} #{dash}"
         )
       end
 
