@@ -1,0 +1,112 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "csv"
+require "net/http"
+require "astronoby"
+
+SOURCE = URI("https://cdsarc.cds.unistra.fr/ftp/VI/49/constbnd.dat")
+OUTPUT = File.expand_path("../data/constellations/iau/boundaries.csv", __dir__)
+MAX_STEP = 1.0
+ABBREVIATIONS = {
+  "Cra" => "CrA",
+  "PHE" => "Phe",
+  "Ser1" => "Ser",
+  "Ser2" => "Ser"
+}
+
+Vertex = Struct.new(:constellation, :adjacent, :right_ascension, :declination)
+
+def parse(source)
+  source.lines.map do |line|
+    Vertex.new(
+      line[19, 4].strip,
+      line[24, 4].to_s.strip,
+      line[0, 8].to_f * 15,
+      line[9, 9].to_f
+    )
+  end
+end
+
+def shortest_delta(from, to)
+  ((to - from + 180) % 360) - 180
+end
+
+def shape_points(from, to)
+  delta_ra = shortest_delta(from.right_ascension, to.right_ascension)
+  delta_dec = to.declination - from.declination
+  mean_declination = (from.declination + to.declination) / 2 * Math::PI / 180
+  arc = Math.hypot(delta_ra * Math.cos(mean_declination), delta_dec)
+  steps = [(arc / MAX_STEP).ceil, 1].max
+
+  (1..steps).map do |step|
+    fraction = step.fdiv(steps)
+    [
+      (from.right_ascension + delta_ra * fraction) % 360,
+      from.declination + delta_dec * fraction
+    ]
+  end
+end
+
+def precess(right_ascension, declination)
+  Astronoby::Precession.for_equatorial_coordinates(
+    coordinates: Astronoby::Coordinates::Equatorial.new(
+      right_ascension: Astronoby::Angle.from_degrees(right_ascension),
+      declination: Astronoby::Angle.from_degrees(declination),
+      epoch: Astronoby::JulianDate::B1875
+    ),
+    epoch: Astronoby::JulianDate::J2000
+  )
+end
+
+def borders(vertices)
+  vertices.each_cons(2).filter_map do |from, to|
+    next unless from.constellation == to.constellation
+    next if to.adjacent.empty?
+    next unless to.constellation < to.adjacent
+
+    {constellations: [to.constellation, to.adjacent], from: from, to: to}
+  end
+end
+
+def runs(segments)
+  segments.chunk_while do |previous, segment|
+    previous[:constellations] == segment[:constellations] &&
+      previous[:to].equal?(segment[:from])
+  end
+end
+
+vertices = parse(Net::HTTP.get(SOURCE))
+segments = borders(vertices)
+expected = vertices.count { |vertex| !vertex.adjacent.empty? } / 2
+
+unless segments.size == expected
+  abort "#{segments.size} segments kept, #{expected} expected: " \
+    "shared borders do not match"
+end
+
+CSV.open(OUTPUT, "w") do |csv|
+  csv << %w[border constellations right_ascension declination]
+
+  runs(segments).each.with_index(1) do |run, border|
+    points = [[run.first[:from].right_ascension, run.first[:from].declination]]
+    run.each do |segment|
+      points.concat(shape_points(segment[:from], segment[:to]))
+    end
+    constellations = run.first[:constellations]
+      .map { |name| ABBREVIATIONS.fetch(name, name) }
+      .sort
+      .join(" ")
+
+    points.each do |right_ascension, declination|
+      coordinates = precess(right_ascension, declination)
+      csv << [
+        border,
+        constellations,
+        coordinates.right_ascension.hours.round(6),
+        coordinates.declination.degrees.round(5)
+      ]
+    end
+  end
+end

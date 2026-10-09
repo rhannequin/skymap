@@ -13,7 +13,10 @@ module Skymap
     end
 
     def horizontal(star)
-      coordinates = star.equatorial_coordinates
+      horizontal_coordinates(star.equatorial_coordinates)
+    end
+
+    def horizontal_coordinates(coordinates)
       key = [
         coordinates.right_ascension,
         coordinates.declination,

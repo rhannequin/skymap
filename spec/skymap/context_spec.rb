@@ -21,6 +21,20 @@ RSpec.describe Skymap::Context do
     end
   end
 
+  describe "#horizontal_coordinates" do
+    it "gives the position of coordinates of the sky" do
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      coordinates = equatorial(right_ascension: 3, declination: 30)
+
+      horizontal = context.horizontal_coordinates(coordinates)
+
+      expect(horizontal.altitude.degrees).to be_within(0.5).of(30)
+    end
+  end
+
   describe "#position" do
     it "places a star on the canvas where its position projects" do
       context = context_at(

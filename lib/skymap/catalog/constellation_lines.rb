@@ -8,7 +8,7 @@ module Skymap
       include Enumerable
 
       PATH = File.expand_path(
-        "../../../data/constellations/iau.csv",
+        "../../../data/constellations/iau/lines.csv",
         __dir__
       )
 

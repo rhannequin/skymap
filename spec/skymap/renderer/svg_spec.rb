@@ -161,6 +161,24 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["stroke-width"]).to eq("1.23")
     end
 
+    it "draws each boundary as a dashed polyline" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      boundary = Skymap::Renderer::Boundary.new(
+        points: [point(100, 150), point(120.256, 180.004), point(250, 300)],
+        width: 1.5
+      )
+
+      svg = renderer.render([boundary])
+      drawn = polylines_in(svg).first
+
+      expect(drawn["points"]).to eq("100,150 120.26,180.0 250,300")
+      expect(drawn["fill"]).to eq("none")
+      expect(drawn["stroke"]).to eq("#2b3f5e")
+      expect(drawn["stroke-width"]).to eq("1.5")
+      expect(drawn["stroke-dasharray"]).to eq("6.0 6.0")
+    end
+
     it "draws elements in the given order, on top of the sky" do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
       renderer = described_class.new(canvas: canvas)

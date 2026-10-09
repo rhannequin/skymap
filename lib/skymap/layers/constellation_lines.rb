@@ -18,15 +18,17 @@ module Skymap
           next if ends.flatten.include?(nil)
 
           directions = ends.map do |end_stars|
-            direction(end_stars.map { |star| context.horizontal(star) })
+            Horizon.direction(
+              end_stars.map { |star| context.horizontal(star) }
+            )
           end
           next if directions.all? { |direction| direction.last.negative? }
 
           from, to = ends.each_with_index.map do |end_stars, index|
             if directions[index].last.negative?
-              project_direction(
+              Horizon.project(
                 context,
-                horizon_crossing(directions[1 - index], directions[index])
+                Horizon.crossing(directions[1 - index], directions[index])
               )
             else
               Point.midpoint(end_stars.map { |star| context.position(star) })
@@ -38,33 +40,6 @@ module Skymap
             width: LINE_WIDTH_RATIOS.fetch(line.weight) * context.canvas.radius
           )
         end
-      end
-
-      private
-
-      def direction(horizontals)
-        vectors = horizontals.map do |horizontal|
-          [
-            horizontal.altitude.cos * horizontal.azimuth.cos,
-            horizontal.altitude.cos * horizontal.azimuth.sin,
-            horizontal.altitude.sin
-          ]
-        end
-        vectors.transpose.map(&:sum)
-      end
-
-      def horizon_crossing(above, below)
-        above.zip(below).map do |from, to|
-          above.last * to - below.last * from
-        end
-      end
-
-      def project_direction(context, direction)
-        x, y, = direction
-        context.project(
-          altitude: Astronoby::Angle.zero,
-          azimuth: Astronoby::Angle.from_radians(Math.atan2(y, x))
-        )
       end
     end
   end

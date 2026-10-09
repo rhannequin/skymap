@@ -28,6 +28,21 @@ module AstronomyHelpers
     )
   end
 
+  def equatorial(right_ascension:, declination:)
+    Astronoby::Coordinates::Equatorial.new(
+      right_ascension: Astronoby::Angle.from_hours(right_ascension),
+      declination: Astronoby::Angle.from_degrees(declination),
+      epoch: Astronoby::JulianDate::J2000
+    )
+  end
+
+  def constellation_boundary(points:)
+    Skymap::ConstellationBoundary.new(
+      constellations: %w[Cen Cru],
+      points: points
+    )
+  end
+
   def constellation_line(from:, to:, weight: :normal)
     Skymap::ConstellationLine.new(
       constellation: "UMi",
