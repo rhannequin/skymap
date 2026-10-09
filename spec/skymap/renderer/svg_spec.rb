@@ -179,6 +179,101 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["stroke-dasharray"]).to eq("6.0 6.0")
     end
 
+    it "draws the Moon as a dark disk with its lit part on top" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      moon = Skymap::Renderer::Moon.new(
+        center: point(100, 100),
+        radius: 10,
+        illuminated_fraction: 0.75,
+        rotation: 30
+      )
+
+      svg = renderer.render([moon])
+      group = groups_in(svg).first
+      shadow, lit = group.elements.to_a
+
+      expect(group["transform"]).to eq("rotate(30 100 100)")
+      expect(shadow["r"]).to eq("10")
+      expect(shadow["fill"]).to eq("#232a35")
+      expect(shadow["fill-opacity"]).to eq("0.6")
+      expect(lit["fill"]).to eq("#f1ecd6")
+    end
+
+    it "draws a gibbous Moon with a terminator that bulges to the dark side" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      moon = Skymap::Renderer::Moon.new(
+        center: point(100, 100),
+        radius: 10,
+        illuminated_fraction: 0.75,
+        rotation: 0
+      )
+
+      svg = renderer.render([moon])
+      lit = groups_in(svg).first.elements["path"]
+
+      expect(lit["d"]).to eq(
+        "M 100,90 A 10,10 0 0 1 100,110 A 5.0,10 0 0 1 100,90 Z"
+      )
+    end
+
+    it "draws a crescent Moon with a terminator that bulges to the lit side" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      moon = Skymap::Renderer::Moon.new(
+        center: point(100, 100),
+        radius: 10,
+        illuminated_fraction: 0.25,
+        rotation: 0
+      )
+
+      svg = renderer.render([moon])
+      lit = groups_in(svg).first.elements["path"]
+
+      expect(lit["d"]).to eq(
+        "M 100,90 A 10,10 0 0 1 100,110 A 5.0,10 0 0 0 100,90 Z"
+      )
+    end
+
+    it "draws a half Moon with a straight terminator" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      moon = Skymap::Renderer::Moon.new(
+        center: point(100, 100),
+        radius: 10,
+        illuminated_fraction: 0.5,
+        rotation: 0
+      )
+
+      svg = renderer.render([moon])
+      lit = groups_in(svg).first.elements["path"]
+
+      expect(lit["d"]).to eq(
+        "M 100,90 A 10,10 0 0 1 100,110 A 0.0,10 0 0 0 100,90 Z"
+      )
+    end
+
+    it "rounds the Moon geometry to 2 decimals" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      moon = Skymap::Renderer::Moon.new(
+        center: point(109.25833333, 59.63552),
+        radius: 1.23456,
+        illuminated_fraction: 0.5,
+        rotation: 12.34567
+      )
+
+      svg = renderer.render([moon])
+      group = groups_in(svg).first
+      shadow = group.elements["circle"]
+
+      expect(group["transform"]).to eq("rotate(12.35 109.26 59.64)")
+      expect(shadow["cx"]).to eq("109.26")
+      expect(shadow["cy"]).to eq("59.64")
+      expect(shadow["r"]).to eq("1.23")
+    end
+
     it "draws elements in the given order, on top of the sky" do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
       renderer = described_class.new(canvas: canvas)
