@@ -16,6 +16,15 @@ module AstronomyHelpers
     )
   end
 
+  def ephemeris
+    Astronoby::Ephem.load(
+      File.expand_path(
+        "../fixtures/de440s_moon_2025_2030_excerpt.bsp",
+        __dir__
+      )
+    )
+  end
+
   def star(right_ascension:, declination:, magnitude:, hr: nil)
     Skymap::Star.new(
       hr: hr,

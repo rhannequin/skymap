@@ -31,7 +31,7 @@ RSpec.describe Skymap::Context do
 
       horizontal = context.horizontal_coordinates(coordinates)
 
-      expect(horizontal.altitude.degrees).to be_within(0.5).of(30)
+      expect(horizontal.altitude.degrees.round).to eq(30)
     end
   end
 
