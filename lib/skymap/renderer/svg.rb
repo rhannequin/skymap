@@ -12,6 +12,8 @@ module Skymap
       LINE_COLOR = "#46689c"
       BOUNDARY_COLOR = "#2b3f5e"
       BOUNDARY_DASH_RATIO = 4
+      PLANET_COLOR = "#ffe6b3"
+      SUN_COLOR = "#ffd34d"
       MOON_COLOR = "#f1ecd6"
       MOON_SHADOW_COLOR = "#232a35"
       MOON_SHADOW_OPACITY = 0.6
@@ -45,6 +47,8 @@ module Skymap
           when Dot then draw_dot(svg, element)
           when Label then draw_label(svg, element)
           when Moon then draw_moon(svg, element)
+          when Planet then draw_planet(svg, element)
+          when Sun then draw_sun(svg, element)
           else raise ArgumentError, "unknown element: #{element.class}"
           end
         end
@@ -86,6 +90,24 @@ module Skymap
           cy: dot.center.y.round(2),
           r: dot.radius.round(2),
           fill: STAR_COLOR
+        )
+      end
+
+      def draw_planet(svg, planet)
+        svg.circle(
+          cx: planet.center.x.round(2),
+          cy: planet.center.y.round(2),
+          r: planet.radius.round(2),
+          fill: PLANET_COLOR
+        )
+      end
+
+      def draw_sun(svg, sun)
+        svg.circle(
+          cx: sun.center.x.round(2),
+          cy: sun.center.y.round(2),
+          r: sun.radius.round(2),
+          fill: SUN_COLOR
         )
       end
 
