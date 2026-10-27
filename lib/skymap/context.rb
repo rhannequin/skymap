@@ -2,7 +2,7 @@
 
 module Skymap
   class Context
-    attr_reader :canvas
+    attr_reader :observer, :instant, :canvas
 
     def initialize(observer:, instant:, canvas:)
       @observer = observer

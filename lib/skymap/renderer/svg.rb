@@ -12,6 +12,9 @@ module Skymap
       LINE_COLOR = "#46689c"
       BOUNDARY_COLOR = "#2b3f5e"
       BOUNDARY_DASH_RATIO = 4
+      MOON_COLOR = "#f1ecd6"
+      MOON_SHADOW_COLOR = "#232a35"
+      MOON_SHADOW_OPACITY = 0.6
       LABEL_COLOR = HORIZON_COLOR
       LABEL_FONT = "sans-serif"
 
@@ -41,6 +44,7 @@ module Skymap
           when Line then draw_line(svg, element)
           when Dot then draw_dot(svg, element)
           when Label then draw_label(svg, element)
+          when Moon then draw_moon(svg, element)
           else raise ArgumentError, "unknown element: #{element.class}"
           end
         end
@@ -83,6 +87,32 @@ module Skymap
           r: dot.radius.round(2),
           fill: STAR_COLOR
         )
+      end
+
+      def draw_moon(svg, moon)
+        x = moon.center.x.round(2)
+        y = moon.center.y.round(2)
+        radius = moon.radius.round(2)
+        fraction = moon.illuminated_fraction
+        terminator = (radius * (1 - 2 * fraction).abs).round(2)
+        bulge = (fraction > 0.5) ? 1 : 0
+        top = "#{x},#{(y - radius).round(2)}"
+        bottom = "#{x},#{(y + radius).round(2)}"
+        lit = "M #{top} A #{radius},#{radius} 0 0 1 #{bottom} " \
+          "A #{terminator},#{radius} 0 0 #{bulge} #{top} Z"
+
+        svg.build do
+          g(transform: "rotate(#{moon.rotation.round(2)} #{x} #{y})") do
+            circle(
+              cx: x,
+              cy: y,
+              r: radius,
+              fill: MOON_SHADOW_COLOR,
+              fill_opacity: MOON_SHADOW_OPACITY
+            )
+            path(d: lit, fill: MOON_COLOR)
+          end
+        end
       end
 
       def draw_label(svg, label)

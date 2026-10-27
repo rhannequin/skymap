@@ -133,6 +133,28 @@ end
 Skymap::Layers::ConstellationLines.new(lines: asterisms, stars: stars)
 ```
 
+#### Moon
+
+`Skymap::Layers::Moon` draws the Moon where it is in the sky, with its phase.
+The Moon is drawn upright, as the observer sees it from the ground, so a
+crescent over the western horizon is tilted as it is in the real sky. On the
+chart, this means the lit side does not always face the Sun's position.
+
+Astronoby needs an ephemeris to compute where the Moon is: download one once,
+load it and give it to the layer (see the
+[Astronoby documentation][astronoby-ephem] to pick one):
+
+```ruby
+Astronoby::Ephem.download(name: "inpop19a.bsp", target: "inpop19a.bsp")
+ephem = Astronoby::Ephem.load("inpop19a.bsp")
+
+Skymap::Layers::Moon.new(ephem: ephem)
+```
+
+The Moon is drawn larger than it is, as on most sky maps: at its true size it
+would be a dot as small as the faintest stars. Its radius is 3% of the radius
+of the sky. When the center of the Moon is below the horizon, it is left out.
+
 #### Cardinal directions
 
 `Skymap::Layers::CardinalDirections` labels the cardinal directions (N, E, S,
@@ -209,6 +231,20 @@ The file is generated with `bin/build_boundaries`, which downloads the
 catalog from CDS, keeps each shared border once, adds the points along the
 borders and precesses them to J2000 with Astronoby.
 
+### Ephemeris of the tests
+
+The tests of the Moon use `spec/fixtures/de440s_moon_2025_2030_excerpt.bsp`, an
+excerpt of DE440s, the planetary and lunar ephemeris of the [Jet Propulsion
+Laboratory][jpl-ephemerides], distributed by [NAIF][naif]. It only keeps the
+Earth-Moon barycenter, the Sun, the Moon and the Earth, from 2025 to 2030. As
+NAIF asks for modified kernels, its comment area names this project as the
+last to modify it, and points to the original kernel. It is not part of the
+gem.
+
+> Park, R. S., Folkner, W. M., Williams, J. G., Boggs, D. H., 2021, _The JPL
+> Planetary and Lunar Ephemerides DE440 and DE441_, The Astronomical Journal,
+> 161, 105.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
@@ -251,6 +287,9 @@ rooms and mailing lists is expected to follow the
 [MIT License]: https://opensource.org/licenses/MIT
 [bsc5]: https://cdsarc.cds.unistra.fr/viz-bin/cat/V/50
 [vizier-doi]: https://doi.org/10.26093/cds/vizier
+[astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md
 [oae-maps]: https://www.astro4edu.org/
 [vi49]: https://cdsarc.cds.unistra.fr/viz-bin/cat/VI/49
+[jpl-ephemerides]: https://ssd.jpl.nasa.gov/planets/eph_export.html
+[naif]: https://naif.jpl.nasa.gov/naif/rules.html
 [cc-by-4]: https://creativecommons.org/licenses/by/4.0/

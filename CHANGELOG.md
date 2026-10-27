@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   constellations as thin dashed lines, stopping at the horizon
 - `Skymap::Catalog::ConstellationBoundaries` gives the borders of the 88 IAU
   constellations, in J2000 coordinates
+- `Skymap::Layers::Moon` draws the Moon with its phase, where it is in the sky,
+  from an ephemeris given with `ephem:`
 
 ### Changed
 
