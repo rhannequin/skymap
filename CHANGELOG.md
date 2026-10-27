@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-27
+
 ### Added
 
 - `Skymap::Layers::ConstellationBoundaries` draws the boundaries between the
@@ -45,7 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release to reserve the gem name on RubyGems.org
 
-[Unreleased]: https://github.com/rhannequin/skymap/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/rhannequin/skymap/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/rhannequin/skymap/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/rhannequin/skymap/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/rhannequin/skymap/releases/tag/v0.0.1
 [Astronoby]: https://github.com/rhannequin/astronoby

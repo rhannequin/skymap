@@ -1232,6 +1232,10 @@
 <circle cx="296.87" cy="585.24" r="1.12" fill="#ffffff"/>
 <circle cx="286.48" cy="636.13" r="1.06" fill="#ffffff"/>
 <circle cx="290.66" cy="604.34" r="0.95" fill="#ffffff"/>
+<g transform="rotate(-344.22 378.63 602.11)">
+<circle cx="378.63" cy="602.11" r="11.28" fill="#232a35" fill-opacity="0.6"/>
+<path d="M 378.63,590.83 A 11.28,11.28 0 0 1 378.63,613.39 A 10.47,11.28 0 0 1 378.63,590.83 Z" fill="#f1ecd6"/>
+</g>
 <text x="400.0" y="12.0" font-size="14.4" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#3262a8">
 N
 </text>
