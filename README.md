@@ -9,7 +9,7 @@ Skymap is a Ruby library for generating maps of the sky.
   <img
     src="https://raw.githubusercontent.com/rhannequin/skymap/main/sky_map.svg"
     width="480"
-    alt="The sky over Paris on September 24, 2026 at 22:00 UTC, with the stars, the constellation lines and the constellation boundaries"
+    alt="The sky over Paris on September 24, 2026 at 22:00 UTC, with the stars, the constellation lines, the constellation boundaries and the Moon"
   >
 </p>
 
