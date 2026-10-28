@@ -9,6 +9,14 @@ RSpec.describe Skymap::Catalog::ConstellationLines do
     expect(count).to eq(752)
   end
 
+  it "gives an enumerator without a block" do
+    catalog = described_class.new
+
+    first = catalog.each.next
+
+    expect(first).to be_a(Skymap::ConstellationLine)
+  end
+
   it "reads the constellation, ends and weight of each line" do
     catalog = described_class.new
 

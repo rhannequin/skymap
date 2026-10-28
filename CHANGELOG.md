@@ -23,6 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::Catalog::ConstellationNames` gives the English name of each of the
   88 IAU constellations
 
+### Changed
+
+- `Skymap::Canvas` raises an `ArgumentError` when the padding is negative or
+  leaves no room for the sky
+
+### Fixed
+
+- The catalogs give an enumerator when `each` is called without a block,
+  instead of raising a `LocalJumpError`
+
 ## [0.2.0] - 2026-10-27
 
 ### Added

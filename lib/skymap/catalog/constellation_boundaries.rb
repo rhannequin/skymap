@@ -13,6 +13,8 @@ module Skymap
       )
 
       def each
+        return enum_for(:each) unless block_given?
+
         CSV.foreach(PATH, headers: true).chunk_while do |previous, row|
           previous["border"] == row["border"]
         end.each do |rows|
