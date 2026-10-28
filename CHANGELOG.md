@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Skymap::Layers::Ecliptic` draws the ecliptic, the line the Sun follows in
+  the sky, stopping at the horizon
 - `Skymap::Layers::Planets` draws the planets, from Mercury to Neptune, sized
   by their magnitude, down to a `magnitude_limit:` (5 by default), from an
   ephemeris given with `ephem:`, and writes their names with `labels: true`

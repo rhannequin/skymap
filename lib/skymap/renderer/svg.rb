@@ -12,6 +12,7 @@ module Skymap
       LINE_COLOR = "#46689c"
       BOUNDARY_COLOR = "#2b3f5e"
       BOUNDARY_DASH_RATIO = 4
+      ECLIPTIC_COLOR = "#8c7a3a"
       PLANET_COLOR = "#ffe6b3"
       SUN_COLOR = "#ffd34d"
       MOON_COLOR = "#f1ecd6"
@@ -47,6 +48,7 @@ module Skymap
           when Caption then draw_caption(svg, element)
           when Line then draw_line(svg, element)
           when Dot then draw_dot(svg, element)
+          when Ecliptic then draw_ecliptic(svg, element)
           when Label then draw_label(svg, element)
           when Moon then draw_moon(svg, element)
           when Planet then draw_planet(svg, element)
@@ -83,6 +85,18 @@ module Skymap
           stroke: BOUNDARY_COLOR,
           stroke_width: boundary.width.round(2),
           stroke_dasharray: "#{dash} #{dash}"
+        )
+      end
+
+      def draw_ecliptic(svg, ecliptic)
+        svg.polyline(
+          points: ecliptic.points.map { |point|
+            "#{point.x.round(2)},#{point.y.round(2)}"
+          }.join(" "),
+          fill: "none",
+          stroke: ECLIPTIC_COLOR,
+          stroke_width: ecliptic.width.round(2),
+          stroke_linejoin: "round"
         )
       end
 

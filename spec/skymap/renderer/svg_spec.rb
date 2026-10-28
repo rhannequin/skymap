@@ -250,6 +250,24 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["stroke-dasharray"]).to eq("6.0 6.0")
     end
 
+    it "draws the ecliptic as a solid polyline" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      ecliptic = Skymap::Renderer::Ecliptic.new(
+        points: [point(100, 150), point(120.256, 180.004), point(250, 300)],
+        width: 1.5
+      )
+
+      svg = renderer.render([ecliptic])
+      drawn = polylines_in(svg).first
+
+      expect(drawn["points"]).to eq("100,150 120.26,180.0 250,300")
+      expect(drawn["fill"]).to eq("none")
+      expect(drawn["stroke"]).to eq("#8c7a3a")
+      expect(drawn["stroke-width"]).to eq("1.5")
+      expect(drawn["stroke-dasharray"]).to be_nil
+    end
+
     it "draws the Moon as a dark disk with its lit part on top" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)

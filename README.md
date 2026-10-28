@@ -9,7 +9,7 @@ Skymap is a Ruby library for generating maps of the sky.
   <img
     src="https://raw.githubusercontent.com/rhannequin/skymap/main/sky_map.svg"
     width="480"
-    alt="The sky over Paris on September 24, 2026 at 22:00 UTC, with the stars, the constellation lines, boundaries and names, the Moon and Saturn"
+    alt="The sky over Paris on September 24, 2026 at 22:00 UTC, with the stars, the constellation lines, boundaries and names, the ecliptic, the Moon and Saturn"
   >
 </p>
 
@@ -241,6 +241,16 @@ Skymap::Layers::Planets.new(
   labels: true,
   names: {saturn: "Saturne", jupiter: "Jupiter"}
 )
+```
+
+#### Ecliptic
+
+`Skymap::Layers::Ecliptic` draws the ecliptic, the line the Sun follows in the
+sky over a year. The Moon and the planets are always close to it. It needs no
+data, and it stops at the horizon:
+
+```ruby
+Skymap::Layers::Ecliptic.new
 ```
 
 #### Cardinal directions

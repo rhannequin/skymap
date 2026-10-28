@@ -156,8 +156,4 @@ RSpec.describe Skymap::Layers::ConstellationBoundaries do
       expect(large_boundary.width).to eq(small_boundary.width * 2)
     end
   end
-
-  def distance_from_center(point)
-    Math.hypot(point.x - 200, point.y - 200).round(2)
-  end
 end
