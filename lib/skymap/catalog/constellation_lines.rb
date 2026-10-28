@@ -13,6 +13,8 @@ module Skymap
       )
 
       def each
+        return enum_for(:each) unless block_given?
+
         CSV.foreach(PATH, headers: true) do |row|
           yield line_from(row)
         end

@@ -9,6 +9,14 @@ RSpec.describe Skymap::Catalog::Stars do
     expect(count).to eq(9096)
   end
 
+  it "gives an enumerator without a block" do
+    catalog = described_class.new
+
+    first = catalog.each.next
+
+    expect(first.hr).to eq(1)
+  end
+
   it "reads the identifier, J2000 coordinates and magnitude of each star" do
     catalog = described_class.new
 

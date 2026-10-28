@@ -25,9 +25,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `Skymap::Canvas` raises an `ArgumentError` when the padding is negative or
+  leaves no room for the sky
 - Rendering is about 20 times faster: the precession, nutation and sidereal
   time are computed once per chart instead of once per point, which changes
   positions by less than 0.1 arcsecond
+
+### Fixed
+
+- The catalogs give an enumerator when `each` is called without a block,
+  instead of raising a `LocalJumpError`
 
 ## [0.2.0] - 2026-10-27
 
