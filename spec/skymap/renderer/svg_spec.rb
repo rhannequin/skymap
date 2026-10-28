@@ -83,6 +83,40 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(star["r"]).to eq("1.23")
     end
 
+    it "draws a planet as a tinted disk" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      planet = Skymap::Renderer::Planet.new(
+        center: point(100.123, 150.456),
+        radius: 3.456
+      )
+
+      svg = renderer.render([planet])
+      _sky, drawn = circles_in(svg)
+
+      expect(drawn["cx"]).to eq("100.12")
+      expect(drawn["cy"]).to eq("150.46")
+      expect(drawn["r"]).to eq("3.46")
+      expect(drawn["fill"]).to eq("#ffe6b3")
+    end
+
+    it "draws the Sun as a golden disk" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      sun = Skymap::Renderer::Sun.new(
+        center: point(100.123, 150.456),
+        radius: 6.789
+      )
+
+      svg = renderer.render([sun])
+      _sky, drawn = circles_in(svg)
+
+      expect(drawn["cx"]).to eq("100.12")
+      expect(drawn["cy"]).to eq("150.46")
+      expect(drawn["r"]).to eq("6.79")
+      expect(drawn["fill"]).to eq("#ffd34d")
+    end
+
     it "draws each label as centered text" do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
       renderer = described_class.new(canvas: canvas)

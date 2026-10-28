@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Skymap::Layers::Planets` draws the planets, from Mercury to Neptune, sized
+  by their magnitude, down to a `magnitude_limit:` (5 by default), from an
+  ephemeris given with `ephem:`
+- `Skymap::Layers::Sun` draws the Sun where it is in the sky, from an ephemeris
+  given with `ephem:`
+
 ## [0.2.0] - 2026-10-27
 
 ### Added

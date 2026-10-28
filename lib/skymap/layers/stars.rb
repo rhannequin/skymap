@@ -4,10 +4,6 @@ module Skymap
   module Layers
     class Stars
       DEFAULT_MAGNITUDE_LIMIT = 5
-      MAX_RADIUS_MAGNITUDE = -1.5
-      MIN_STAR_RADIUS_RATIO = 0.0025
-      MAX_STAR_RADIUS_RATIO = 0.02
-      STAR_SIZE_EXPONENT = 1.5
 
       def initialize(stars:, magnitude_limit: DEFAULT_MAGNITUDE_LIMIT)
         @stars = stars
@@ -15,12 +11,9 @@ module Skymap
       end
 
       def elements(context)
-        star_size = StarSize.new(
-          brightest_magnitude: MAX_RADIUS_MAGNITUDE,
-          faintest_magnitude: @magnitude_limit,
-          min_radius: MIN_STAR_RADIUS_RATIO * context.canvas.radius,
-          max_radius: MAX_STAR_RADIUS_RATIO * context.canvas.radius,
-          exponent: STAR_SIZE_EXPONENT
+        star_size = StarSize.for(
+          canvas: context.canvas,
+          magnitude_limit: @magnitude_limit
         )
 
         @stars.filter_map do |star|

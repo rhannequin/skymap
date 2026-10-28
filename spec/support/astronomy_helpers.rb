@@ -19,7 +19,7 @@ module AstronomyHelpers
   def ephemeris
     Astronoby::Ephem.load(
       File.expand_path(
-        "../fixtures/de440s_moon_2025_2030_excerpt.bsp",
+        "../fixtures/de440s_2025_2030_excerpt.bsp",
         __dir__
       )
     )

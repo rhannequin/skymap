@@ -9,7 +9,7 @@ Skymap is a Ruby library for generating maps of the sky.
   <img
     src="https://raw.githubusercontent.com/rhannequin/skymap/main/sky_map.svg"
     width="480"
-    alt="The sky over Paris on September 24, 2026 at 22:00 UTC, with the stars, the constellation lines, the constellation boundaries and the Moon"
+    alt="The sky over Paris on September 24, 2026 at 22:00 UTC, with the stars, the constellation lines, the constellation boundaries, the Moon and Saturn"
   >
 </p>
 
@@ -155,6 +155,41 @@ The Moon is drawn larger than it is, as on most sky maps: at its true size it
 would be a dot as small as the faintest stars. Its radius is 3% of the radius
 of the sky. When the center of the Moon is below the horizon, it is left out.
 
+#### Sun
+
+`Skymap::Layers::Sun` draws the Sun where it is in the sky. Like the Moon, it
+needs an ephemeris (see [Moon](#moon)):
+
+```ruby
+Skymap::Layers::Sun.new(ephem: ephem)
+```
+
+The Sun is drawn larger than it is, at the same size as the Moon: 3% of the
+radius of the sky. When the center of the Sun is below the horizon, it is left
+out.
+
+#### Planets
+
+`Skymap::Layers::Planets` draws the planets, from Mercury to Neptune, where
+they are in the sky. They need an ephemeris too (see [Moon](#moon)). A planet
+is drawn as a star would be, bigger the brighter it is, with a warm tint so it
+stands out from the stars:
+
+```ruby
+Skymap::Layers::Planets.new(ephem: ephem)
+```
+
+As for the stars, only planets of magnitude 5 or brighter are drawn by
+default, which leaves out Uranus and Neptune. Use `magnitude_limit:` to draw
+more or fewer planets. The magnitude of a planet changes over time, so a
+planet can come in and out of the map:
+
+```ruby
+Skymap::Layers::Planets.new(ephem: ephem, magnitude_limit: 6)
+```
+
+Planets below the horizon are left out.
+
 #### Cardinal directions
 
 `Skymap::Layers::CardinalDirections` labels the cardinal directions (N, E, S,
@@ -233,13 +268,13 @@ borders and precesses them to J2000 with Astronoby.
 
 ### Ephemeris of the tests
 
-The tests of the Moon use `spec/fixtures/de440s_moon_2025_2030_excerpt.bsp`, an
-excerpt of DE440s, the planetary and lunar ephemeris of the [Jet Propulsion
-Laboratory][jpl-ephemerides], distributed by [NAIF][naif]. It only keeps the
-Earth-Moon barycenter, the Sun, the Moon and the Earth, from 2025 to 2030. As
-NAIF asks for modified kernels, its comment area names this project as the
-last to modify it, and points to the original kernel. It is not part of the
-gem.
+The tests of the Sun, the Moon and the planets use
+`spec/fixtures/de440s_2025_2030_excerpt.bsp`, an excerpt of DE440s, the
+planetary and lunar ephemeris of the [Jet Propulsion Laboratory][jpl-ephemerides],
+distributed by [NAIF][naif]. It only keeps the barycenters of the planets, the
+Sun, the Moon and the Earth, from 2025 to 2030. As NAIF asks for modified
+kernels, its comment area names this project as the last to modify it, and
+points to the original kernel. It is not part of the gem.
 
 > Park, R. S., Folkner, W. M., Williams, J. G., Boggs, D. H., 2021, _The JPL
 > Planetary and Lunar Ephemerides DE440 and DE441_, The Astronomical Journal,
