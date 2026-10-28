@@ -3,8 +3,6 @@
 module Skymap
   module Layers
     class ConstellationNames
-      NAME_SIZE_RATIO = 0.028
-
       def initialize(lines:, stars:, names: Catalog::ConstellationNames.new)
         @lines = lines
         @stars = stars
@@ -12,25 +10,35 @@ module Skymap
       end
 
       def elements(context)
-        stars_by_hr = @stars.to_h { |star| [star.hr, star] }
+        stars_by_hr = Star.by_hr(@stars)
 
         @lines.group_by(&:constellation).filter_map do |abbreviation, lines|
-          hrs = lines.flat_map { |line| line.from + line.to }.uniq
-          stars = stars_by_hr.values_at(*hrs).compact
-          risen = stars.reject do |star|
-            context.horizontal(star).altitude.negative?
-          end
-          next if risen.size * 2 <= stars.size
-
           name = @names[abbreviation]
           next unless name
 
+          parts = parts(lines).map { |hrs| stars_by_hr.values_at(*hrs).compact }
+          risen = parts.map do |stars|
+            stars.reject { |star| context.horizontal(star).altitude.negative? }
+          end
+          next if risen.sum(&:size) * 2 <= parts.sum(&:size)
+
+          biggest = risen.max_by(&:size)
           Renderer::Caption.new(
-            position: Point.midpoint(risen.map { |s| context.position(s) }),
+            position: Point.midpoint(biggest.map { |s| context.position(s) }),
             text: name,
-            size: NAME_SIZE_RATIO * context.canvas.radius,
+            size: Renderer::Caption.size_for(context.canvas),
             kind: :constellation
           )
+        end
+      end
+
+      private
+
+      def parts(lines)
+        lines.each_with_object([]) do |line, parts|
+          hrs = line.from + line.to
+          joined, others = parts.partition { |part| part.intersect?(hrs) }
+          parts.replace(others << (joined.flatten + hrs).uniq)
         end
       end
     end

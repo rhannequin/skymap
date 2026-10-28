@@ -2,6 +2,12 @@
 
 module Skymap
   module Renderer
-    Caption = Data.define(:position, :text, :size, :kind)
+    CAPTION_SIZE_RATIO = 0.028
+
+    Caption = Data.define(:position, :text, :size, :kind) do
+      def self.size_for(canvas)
+        CAPTION_SIZE_RATIO * canvas.radius
+      end
+    end
   end
 end

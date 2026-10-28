@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::Layers::Planets` draws the planets, from Mercury to Neptune, sized
   by their magnitude, down to a `magnitude_limit:` (5 by default), from an
   ephemeris given with `ephem:`, and writes their names with `labels: true`
+  or the names given with `names:`
 - `Skymap::Layers::Sun` draws the Sun where it is in the sky, from an ephemeris
   given with `ephem:`
 - `Skymap::Layers::ConstellationNames` writes the name of each constellation in

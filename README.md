@@ -141,15 +141,18 @@ constellation lines layer, since the lines tell which stars belong to which
 constellation:
 
 ```ruby
-Skymap::Layers::ConstellationNames.new(
-  lines: Skymap::Catalog::ConstellationLines.new,
-  stars: stars
-)
+lines = Skymap::Catalog::ConstellationLines.new.to_a
+
+Skymap::Layers::ConstellationNames.new(lines: lines, stars: stars)
 ```
 
+Reading the lines into an array with `to_a`, once, saves the layers from
+reading the file again each.
+
 A constellation is named when more than half of its stars are above the
-horizon, in the middle of the ones that are. Mensa and Microscopium have no
-lines, so they have no name on the map.
+horizon. When its figure is in several parts, such as Serpens, the name goes in
+the middle of the biggest part that is above the horizon. Mensa and
+Microscopium have no lines, so they have no name on the map.
 
 The names are in English, from `Skymap::Catalog::ConstellationNames`. Use
 `names:` to write them differently: it takes anything that gives a name from
@@ -221,10 +224,23 @@ Skymap::Layers::Planets.new(ephem: ephem, magnitude_limit: 6)
 
 Planets below the horizon are left out.
 
-Use `labels: true` to write the name of each planet under it:
+Use `labels: true` to write the name of each planet next to it, on the side of
+the center of the map so it stays inside the sky:
 
 ```ruby
 Skymap::Layers::Planets.new(ephem: ephem, labels: true)
+```
+
+The names are in English. Use `names:` to write them differently, with a hash
+of the planets (`:mercury`, `:venus`, `:mars`, `:jupiter`, `:saturn`,
+`:uranus` and `:neptune`). A planet without a name is drawn without it:
+
+```ruby
+Skymap::Layers::Planets.new(
+  ephem: ephem,
+  labels: true,
+  names: {saturn: "Saturne", jupiter: "Jupiter"}
+)
 ```
 
 #### Cardinal directions

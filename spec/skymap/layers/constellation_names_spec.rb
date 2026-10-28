@@ -188,5 +188,69 @@ RSpec.describe Skymap::Layers::ConstellationNames do
 
       expect(captions).to be_empty
     end
+
+    it "leaves out a constellation with half of its stars below the horizon" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      risen = star(right_ascension: 0, declination: 89, magnitude: 2, hr: 1)
+      set = star(right_ascension: 6, declination: -80, magnitude: 2, hr: 2)
+      line = constellation_line(from: [1], to: [2])
+      layer = described_class.new(lines: [line], stars: [risen, set])
+
+      captions = layer.elements(context)
+
+      expect(captions).to be_empty
+    end
+
+    it "names a constellation in the middle of its biggest part" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      stars = [
+        star(right_ascension: 0, declination: 89, magnitude: 2, hr: 1),
+        star(right_ascension: 6, declination: 80, magnitude: 2, hr: 2),
+        star(right_ascension: 12, declination: 80, magnitude: 2, hr: 3),
+        star(right_ascension: 3, declination: 60, magnitude: 2, hr: 4),
+        star(right_ascension: 15, declination: 60, magnitude: 2, hr: 5)
+      ]
+      lines = [
+        constellation_line(from: [1], to: [2]),
+        constellation_line(from: [2], to: [3]),
+        constellation_line(from: [4], to: [5])
+      ]
+      layer = described_class.new(lines: lines, stars: stars)
+
+      caption, = layer.elements(context)
+
+      expect(caption.position).to eq(
+        Skymap::Point.midpoint(stars.first(3).map { |s| context.position(s) })
+      )
+    end
+
+    it "joins the lines that share a star in the same part" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      stars = [
+        star(right_ascension: 0, declination: 89, magnitude: 2, hr: 1),
+        star(right_ascension: 6, declination: 80, magnitude: 2, hr: 2),
+        star(right_ascension: 12, declination: 80, magnitude: 2, hr: 3)
+      ]
+      lines = [
+        constellation_line(from: [1], to: [2]),
+        constellation_line(from: [3], to: [2])
+      ]
+      layer = described_class.new(lines: lines, stars: stars)
+
+      caption, = layer.elements(context)
+
+      expect(caption.position).to eq(
+        Skymap::Point.midpoint(stars.map { |s| context.position(s) })
+      )
+    end
   end
 end

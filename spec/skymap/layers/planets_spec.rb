@@ -92,7 +92,7 @@ RSpec.describe Skymap::Layers::Planets do
       expect(elements.map(&:class)).to eq([Skymap::Renderer::Planet])
     end
 
-    it "names each planet under it when asked to" do
+    it "names a planet in the lower half of the map above it" do
       context = context_at(
         latitude: 48.8575,
         canvas: Skymap::Canvas.new(size: 400, padding: 0)
@@ -106,8 +106,55 @@ RSpec.describe Skymap::Layers::Planets do
       expect(caption.size).to be_within(0.001).of(5.6)
       expect(caption.position.x).to eq(saturn.center.x)
       expect(caption.position.y).to be_within(0.001).of(
-        saturn.center.y + saturn.radius + caption.size
+        saturn.center.y - saturn.radius - caption.size
       )
+    end
+
+    it "names a planet in the upper half of the map under it" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 0)
+      )
+      layer = described_class.new(
+        ephem: ephemeris,
+        magnitude_limit: 6,
+        labels: true
+      )
+
+      _saturn, _saturn_name, uranus, caption = layer.elements(context)
+
+      expect(caption.text).to eq("Uranus")
+      expect(caption.position.y).to be_within(0.001).of(
+        uranus.center.y + uranus.radius + caption.size
+      )
+    end
+
+    it "names the planets with the given names" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 0)
+      )
+      layer = described_class.new(
+        ephem: ephemeris,
+        labels: true,
+        names: {saturn: "Saturne"}
+      )
+
+      _saturn, caption = layer.elements(context)
+
+      expect(caption.text).to eq("Saturne")
+    end
+
+    it "leaves out the name of a planet without one" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 0)
+      )
+      layer = described_class.new(ephem: ephemeris, labels: true, names: {})
+
+      elements = layer.elements(context)
+
+      expect(elements.map(&:class)).to eq([Skymap::Renderer::Planet])
     end
   end
 end

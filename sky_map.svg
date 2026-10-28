@@ -1313,16 +1313,16 @@ Sculptor
 <text x="648.25" y="557.49" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
 Scutum
 </text>
-<text x="701.89" y="400.87" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+<text x="724.34" y="298.56" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
 Serpens
 </text>
 <text x="530.62" y="475.51" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
 Sagitta
 </text>
-<text x="650.18" y="638.86" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+<text x="669.47" y="649.15" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
 Sagittarius
 </text>
-<text x="102.52" y="352.51" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+<text x="103.41" y="335.81" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
 Taurus
 </text>
 <text x="248.16" y="399.18" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
@@ -1338,7 +1338,7 @@ Ursa Minor
 Vulpecula
 </text>
 <circle cx="258.44" cy="540.24" r="4.66" fill="#ffe6b3"/>
-<text x="258.44" y="555.43" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#ffe6b3">
+<text x="258.44" y="525.06" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#ffe6b3">
 Saturn
 </text>
 <g transform="rotate(-344.22 378.63 602.11)">
