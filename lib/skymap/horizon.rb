@@ -67,5 +67,7 @@ module Skymap
     def below?(horizontal)
       horizontal.altitude.negative?
     end
+
+    private_class_method :position, :crossing_point, :below?
   end
 end

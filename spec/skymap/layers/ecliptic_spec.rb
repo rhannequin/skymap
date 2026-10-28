@@ -11,12 +11,26 @@ RSpec.describe Skymap::Layers::Ecliptic do
       sun, = Skymap::Layers::Sun.new(ephem: ephemeris).elements(context)
       layer = described_class.new
 
-      ecliptic, = layer.elements(context)
-      distance = ecliptic.points.each_cons(2).map { |from, to|
-        distance_to_segment(sun.center, from, to)
+      ecliptics = layer.elements(context)
+      distance = ecliptics.flat_map { |ecliptic|
+        ecliptic.points.each_cons(2).map do |from, to|
+          distance_to_segment(sun.center, from, to)
+        end
       }.min
 
       expect(distance).to be < 0.5
+    end
+
+    it "draws the ecliptic as one line" do
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      layer = described_class.new
+
+      ecliptics = layer.elements(context)
+
+      expect(ecliptics.size).to eq(1)
     end
 
     it "stops the ecliptic at the horizon" do
@@ -52,15 +66,13 @@ RSpec.describe Skymap::Layers::Ecliptic do
     end
   end
 
-  def distance_from_center(point)
-    Math.hypot(point.x - 200, point.y - 200).round(2)
-  end
-
   def distance_to_segment(point, from, to)
     dx = to.x - from.x
     dy = to.y - from.y
-    along = ((point.x - from.x) * dx + (point.y - from.y) * dy) /
-      (dx * dx + dy * dy)
+    length = dx * dx + dy * dy
+    return Math.hypot(from.x - point.x, from.y - point.y) if length.zero?
+
+    along = ((point.x - from.x) * dx + (point.y - from.y) * dy) / length
     along = along.clamp(0, 1)
 
     Math.hypot(from.x + along * dx - point.x, from.y + along * dy - point.y)
