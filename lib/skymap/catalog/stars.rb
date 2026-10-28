@@ -10,6 +10,8 @@ module Skymap
       PATH = File.expand_path("../../../data/stars.csv", __dir__)
 
       def each
+        return enum_for(:each) unless block_given?
+
         CSV.foreach(PATH, headers: true) do |row|
           yield star_from(row)
         end

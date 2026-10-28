@@ -9,6 +9,14 @@ RSpec.describe Skymap::Catalog::ConstellationBoundaries do
     expect(count).to eq(266)
   end
 
+  it "gives an enumerator without a block" do
+    catalog = described_class.new
+
+    first = catalog.each.next
+
+    expect(first).to be_a(Skymap::ConstellationBoundary)
+  end
+
   it "reads the two constellations a border separates" do
     catalog = described_class.new
 
