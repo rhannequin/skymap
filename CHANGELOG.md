@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::Catalog::ConstellationNames` gives the English name of each of the
   88 IAU constellations
 
+### Changed
+
+- Rendering is about 20 times faster: the precession, nutation and sidereal
+  time are computed once per chart instead of once per point, which changes
+  positions by less than 0.1 arcsecond
+
 ## [0.2.0] - 2026-10-27
 
 ### Added
