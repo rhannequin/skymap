@@ -79,5 +79,35 @@ RSpec.describe Skymap::Layers::Planets do
 
       expect(large_saturn.radius).to eq(small_saturn.radius * 2)
     end
+
+    it "does not name the planets by default" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      layer = described_class.new(ephem: ephemeris)
+
+      elements = layer.elements(context)
+
+      expect(elements.map(&:class)).to eq([Skymap::Renderer::Planet])
+    end
+
+    it "names each planet under it when asked to" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 0)
+      )
+      layer = described_class.new(ephem: ephemeris, labels: true)
+
+      saturn, caption = layer.elements(context)
+
+      expect(caption.text).to eq("Saturn")
+      expect(caption.kind).to eq(:planet)
+      expect(caption.size).to be_within(0.001).of(5.6)
+      expect(caption.position.x).to eq(saturn.center.x)
+      expect(caption.position.y).to be_within(0.001).of(
+        saturn.center.y + saturn.radius + caption.size
+      )
+    end
   end
 end
