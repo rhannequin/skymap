@@ -17,6 +17,7 @@ module Skymap
       MOON_COLOR = "#f1ecd6"
       MOON_SHADOW_COLOR = "#232a35"
       MOON_SHADOW_OPACITY = 0.6
+      CAPTION_COLORS = {constellation: "#6f8fc2", planet: PLANET_COLOR}
       LABEL_COLOR = HORIZON_COLOR
       LABEL_FONT = "sans-serif"
 
@@ -43,6 +44,7 @@ module Skymap
         elements.each do |element|
           case element
           when Boundary then draw_boundary(svg, element)
+          when Caption then draw_caption(svg, element)
           when Line then draw_line(svg, element)
           when Dot then draw_dot(svg, element)
           when Label then draw_label(svg, element)
@@ -138,6 +140,14 @@ module Skymap
       end
 
       def draw_label(svg, label)
+        draw_text(svg, label, LABEL_COLOR)
+      end
+
+      def draw_caption(svg, caption)
+        draw_text(svg, caption, CAPTION_COLORS.fetch(caption.kind))
+      end
+
+      def draw_text(svg, label, fill)
         svg.text(
           label.text,
           x: label.position.x.round(2),
@@ -146,7 +156,7 @@ module Skymap
           font_family: LABEL_FONT,
           text_anchor: "middle",
           dominant_baseline: "central",
-          fill: LABEL_COLOR
+          fill: fill
         )
       end
     end

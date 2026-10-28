@@ -117,6 +117,43 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["fill"]).to eq("#ffd34d")
     end
 
+    it "draws the name of a constellation as centered text" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      caption = Skymap::Renderer::Caption.new(
+        position: point(100.123, 150.456),
+        text: "Ursa Minor",
+        size: 11.678,
+        kind: :constellation
+      )
+
+      svg = renderer.render([caption])
+      drawn = texts_in(svg).first
+
+      expect(drawn.text.strip).to eq("Ursa Minor")
+      expect(drawn["x"]).to eq("100.12")
+      expect(drawn["y"]).to eq("150.46")
+      expect(drawn["font-size"]).to eq("11.68")
+      expect(drawn["text-anchor"]).to eq("middle")
+      expect(drawn["fill"]).to eq("#6f8fc2")
+    end
+
+    it "draws the name of a planet with the tint of the planets" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      caption = Skymap::Renderer::Caption.new(
+        position: point(100, 150),
+        text: "Saturn",
+        size: 10,
+        kind: :planet
+      )
+
+      svg = renderer.render([caption])
+      drawn = texts_in(svg).first
+
+      expect(drawn["fill"]).to eq("#ffe6b3")
+    end
+
     it "draws each label as centered text" do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
       renderer = described_class.new(canvas: canvas)
