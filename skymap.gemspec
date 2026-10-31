@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   ]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "astronoby", "~> 0.10"
+  spec.add_dependency "astronoby", "~> 0.11"
   spec.add_dependency "csv", "~> 3.3"
   spec.add_dependency "victor", "~> 0.5"
 
