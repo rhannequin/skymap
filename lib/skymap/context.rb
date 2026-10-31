@@ -8,7 +8,10 @@ module Skymap
       @observer = observer
       @instant = instant
       @canvas = canvas
-      @sky = Sky.new(observer: observer, instant: instant)
+      @transformation = Astronoby::HorizontalTransformation.new(
+        observer: observer,
+        instant: instant
+      )
       @horizontal = {}
       @projections = {}
     end
@@ -24,7 +27,7 @@ module Skymap
         coordinates.epoch
       ]
 
-      @horizontal[key] ||= @sky.horizontal(coordinates)
+      @horizontal[key] ||= @transformation.apply(coordinates)
     end
 
     def position(star)
