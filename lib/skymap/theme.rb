@@ -91,7 +91,7 @@ module Skymap
 
       opacity = slots[:moon_shadow_opacity]
       if slots.key?(:moon_shadow_opacity) &&
-          !(opacity.is_a?(Numeric) && opacity.between?(0, 1))
+          !(opacity.is_a?(Numeric) && opacity.real? && opacity.between?(0, 1))
         raise ArgumentError, "moon_shadow_opacity must be between 0 and 1"
       end
 

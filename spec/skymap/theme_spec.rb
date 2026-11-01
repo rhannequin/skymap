@@ -63,6 +63,19 @@ RSpec.describe Skymap::Theme do
         .to raise_error(ArgumentError, /moon_shadow_opacity/)
     end
 
+    it "rejects a shadow opacity that is not a real number" do
+      expect {
+        described_class.dark.with(moon_shadow_opacity: Complex(0.5, 0.25))
+      }
+        .to raise_error(ArgumentError, /moon_shadow_opacity/)
+    end
+
+    it "accepts a shadow opacity that is a rational number" do
+      theme = described_class.dark.with(moon_shadow_opacity: Rational(1, 2))
+
+      expect(theme.moon_shadow_opacity).to eq(0.5)
+    end
+
     it "requires every slot" do
       expect { described_class.new(sky: "#000000") }
         .to raise_error(ArgumentError, /missing keywords/)

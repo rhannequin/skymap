@@ -374,6 +374,23 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(lit["fill"]).to eq("#f1ecd6")
     end
 
+    it "writes a rational shadow opacity as a decimal" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.dark.with(moon_shadow_opacity: Rational(1, 2))
+      renderer = described_class.new(canvas: canvas, theme: theme)
+      moon = Skymap::Renderer::Moon.new(
+        center: point(100, 100),
+        radius: 10,
+        illuminated_fraction: 0.75,
+        rotation: 0
+      )
+
+      svg = renderer.render([moon])
+      shadow, _lit = groups_in(svg).first.elements.to_a
+
+      expect(shadow["fill-opacity"]).to eq("0.5")
+    end
+
     it "draws a gibbous Moon with a terminator that bulges to the dark side" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)

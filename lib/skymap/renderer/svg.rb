@@ -134,7 +134,7 @@ module Skymap
               cy: y,
               r: radius,
               fill: theme.moon_shadow,
-              fill_opacity: theme.moon_shadow_opacity
+              fill_opacity: theme.moon_shadow_opacity.to_f
             )
             path(d: lit, fill: theme.moon)
           end
