@@ -101,6 +101,18 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(lit["fill"]).to eq(theme.moon)
     end
 
+    it "leaves the sky and the horizon unpainted when the theme says none" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.dark.with(sky: "none", horizon: "none")
+      renderer = described_class.new(canvas: canvas, theme: theme)
+
+      svg = renderer.render([])
+      sky = circles_in(svg).first
+
+      expect(sky["fill"]).to eq("none")
+      expect(sky["stroke"]).to eq("none")
+    end
+
     it "rounds the sky geometry to 2 decimals" do
       canvas = Skymap::Canvas.new(size: 401, padding: 1.3333)
       renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)

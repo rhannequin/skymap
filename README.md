@@ -106,6 +106,24 @@ chart = Skymap::Chart.new(
 - `Skymap::Theme.night`: shades of red on a black sky, which keep your eyes
   adapted to the dark when you use the map outside.
 
+<p align="center">
+  <img
+    src="https://raw.githubusercontent.com/rhannequin/skymap/main/sky_map.svg"
+    width="30%"
+    alt="The dark theme: white stars on a black sky"
+  >
+  <img
+    src="https://raw.githubusercontent.com/rhannequin/skymap/main/docs/themes/light.svg"
+    width="30%"
+    alt="The light theme: dark stars on a white sky"
+  >
+  <img
+    src="https://raw.githubusercontent.com/rhannequin/skymap/main/docs/themes/night.svg"
+    width="30%"
+    alt="The night theme: shades of red on a black sky"
+  >
+</p>
+
 Build your own from a built-in one, changing the colors you want. Each color
 is a string SVG accepts, such as `"#ffeedd"` or `"gold"`:
 
@@ -121,6 +139,10 @@ The colors are `sky`, `horizon`, `star`, `constellation_line`, `boundary`,
 `moon_shadow_opacity`, between 0 and 1), `constellation_name`, `star_name`,
 `planet_name` and `label` (the cardinal directions). `font` is the font family
 of every text.
+
+Use `"none"` as a color to leave something out. With `sky: "none"`, the sky is
+transparent, to put the map on a background of your own, and with
+`horizon: "none"`, the edge of the sky is not outlined.
 
 ### Layers
 
