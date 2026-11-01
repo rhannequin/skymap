@@ -368,6 +368,14 @@ Skymap::Layers::Ecliptic.new
 W) in the padding, with a size that follows it: a padding of about 3% of the
 size gives readable labels.
 
+## Examples
+
+The [examples](examples) folder has scripts and the maps they draw, for
+different combinations of layers, themes and observers: the naked-eye sky, a
+printable map of the constellations, the planets, a night vision map for
+outdoors, the southern sky and more. Start from the one closest to what you
+want to draw.
+
 ## Data sources
 
 ### Stars

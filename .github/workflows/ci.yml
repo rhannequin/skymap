@@ -32,6 +32,10 @@ jobs:
         run: |
           bin/build_readme_map
           git diff --exit-code -- sky_map.svg docs
+      - name: Check the examples are up to date
+        run: |
+          bin/build_examples
+          git diff --exit-code -- examples
 
   test:
     runs-on: ubuntu-latest

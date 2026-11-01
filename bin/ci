@@ -27,5 +27,9 @@ echo "==> README maps"
 bin/build_readme_map
 git diff --exit-code -- sky_map.svg docs
 
+echo "==> Examples"
+bin/build_examples
+git diff --exit-code -- examples
+
 echo "==> Test"
 bundle exec rspec
