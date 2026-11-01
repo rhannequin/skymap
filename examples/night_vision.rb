@@ -10,7 +10,10 @@ instant = Astronoby::Instant.from_time(Time.utc(2026, 10, 18, 3))
 canvas = Skymap::Canvas.new(size: 800, padding: 24)
 stars = Skymap::Catalog::Stars.new.to_a
 ephem = Astronoby::Ephem.load(
-  File.expand_path("../spec/fixtures/de440s_2025_2030_excerpt.bsp", __dir__)
+  ENV.fetch(
+    "EPHEMERIS",
+    File.expand_path("../spec/fixtures/de440s_2025_2030_excerpt.bsp", __dir__)
+  )
 )
 
 chart = Skymap::Chart.new(

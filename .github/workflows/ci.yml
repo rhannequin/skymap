@@ -31,10 +31,12 @@ jobs:
       - name: Check the README maps are up to date
         run: |
           bin/build_readme_map
+          git add --intent-to-add sky_map.svg docs
           git diff --exit-code -- sky_map.svg docs
       - name: Check the examples are up to date
         run: |
           bin/build_examples
+          git add --intent-to-add examples
           git diff --exit-code -- examples
 
   test:

@@ -14,8 +14,14 @@ bundle exec ruby examples/naked_eye.rb
 SVG differs from the one committed, so the images always match the code.
 
 The examples with the Sun, the Moon or the planets read the ephemeris of the
-tests, which only covers 2025 to 2030. To draw other dates, load one you
-downloaded instead (see the [Astronoby documentation][astronoby-ephem]).
+tests, which only covers 2025 to 2030. To use another one, such as one you
+downloaded (see the [Astronoby documentation][astronoby-ephem]), give its path
+in the `EPHEMERIS` environment variable, and change the instant of the script
+to a date it covers:
+
+```bash
+EPHEMERIS=inpop19a.bsp bundle exec ruby examples/solar_system.rb
+```
 
 ## The naked-eye sky
 
@@ -43,9 +49,10 @@ stand out. [Code](asterisms.rb)
 
 ## The Sun, the Moon and the planets
 
-No constellations, only the stars down to magnitude 3, the ecliptic and
-everything that moves along it. Planets are drawn down to magnitude 8, which
-adds Uranus and Neptune when they are up. [Code](solar_system.rb)
+No constellations, only the stars and the planets down to magnitude 4, the
+ecliptic and everything else that moves along it. The planets use the same
+magnitude limit as the stars, so a planet is drawn like a star of the same
+brightness. [Code](solar_system.rb)
 
 <img src="solar_system.svg" width="480" alt="The Sun, the Moon and the planets along the ecliptic">
 
@@ -58,10 +65,10 @@ dark when you use the map outside. [Code](night_vision.rb)
 
 ## The southern sky
 
-An observer in Sydney sees the sky the other way up, with the south on the
-bottom half of the map and the Milky Way overhead. Only the stars of magnitude
-1 or brighter are named, to keep the crowded center readable.
-[Code](southern_sky.rb)
+An observer in Sydney sees the southern constellations high in the sky, such
+as Scorpius and the Southern Cross, while northern stars like Arcturus stay low
+in the north. Only the stars of magnitude 1 or brighter are named, to keep the
+crowded center readable. [Code](southern_sky.rb)
 
 <img src="southern_sky.svg" width="480" alt="The sky over Sydney with constellation lines and star names">
 
