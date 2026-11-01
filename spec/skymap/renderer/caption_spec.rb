@@ -62,7 +62,8 @@ RSpec.describe Skymap::Renderer::Caption do
         kind: :star
       )
       half_width = 17 * caption.size * 0.55 / 2
-      edge = 200 + Math.sqrt(200**2 - (caption.position.y - 200)**2)
+      far_y = (caption.position.y - 200).abs + caption.size / 2
+      edge = 200 + Math.sqrt(200**2 - far_y**2)
 
       expect(caption.position.x + half_width).to be_within(0.001).of(edge)
     end
@@ -78,9 +79,32 @@ RSpec.describe Skymap::Renderer::Caption do
         kind: :star
       )
       half_width = 4 * caption.size * 0.55 / 2
-      edge = 200 - Math.sqrt(200**2 - (caption.position.y - 200)**2)
+      far_y = (caption.position.y - 200).abs + caption.size / 2
+      edge = 200 - Math.sqrt(200**2 - far_y**2)
 
       expect(caption.position.x - half_width).to be_within(0.001).of(edge)
+    end
+
+    it "keeps the corners of the caption of a diagonal body inside the sky" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 0)
+
+      caption = described_class.beside(
+        center: Skymap::Point.new(x: 200 + 140, y: 200 - 140),
+        radius: 3,
+        canvas: canvas,
+        text: "Polaris Australis",
+        kind: :star
+      )
+      half_width = 17 * caption.size * 0.55 / 2
+      half_height = caption.size / 2
+      corners = [-1, 1].product([-1, 1]).map do |dx, dy|
+        Math.hypot(
+          caption.position.x + dx * half_width - 200,
+          caption.position.y + dy * half_height - 200
+        )
+      end
+
+      expect(corners.max).to be <= 200.001
     end
 
     it "keeps the caption of a body inside the sky where it is" do

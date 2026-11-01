@@ -27,7 +27,7 @@ module Skymap
       end
 
       def self.within_sky(x, y, text, size, canvas)
-        dy = y - canvas.center.y
+        dy = (y - canvas.center.y).abs + size / 2
         room = Math.sqrt([canvas.radius**2 - dy**2, 0].max)
         half_width = text.length * size * CAPTION_CHARACTER_WIDTH_RATIO / 2
         reach = [room - half_width, 0].max
