@@ -59,16 +59,11 @@ module Skymap
         name = @names[planet]
         return unless name
 
-        size = Renderer::Caption.size_for(context.canvas)
-        towards_center = (center.y > context.canvas.center.y) ? -1 : 1
-
-        Renderer::Caption.new(
-          position: Point.new(
-            x: center.x,
-            y: center.y + towards_center * (radius + size)
-          ),
+        Renderer::Caption.beside(
+          center: center,
+          radius: radius,
+          canvas: context.canvas,
           text: name,
-          size: size,
           kind: :planet
         )
       end

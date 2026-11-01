@@ -138,6 +138,22 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["fill"]).to eq("#6f8fc2")
     end
 
+    it "draws the name of a star with the tint of the star names" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas)
+      caption = Skymap::Renderer::Caption.new(
+        position: point(100, 150),
+        text: "Sirius",
+        size: 10,
+        kind: :star
+      )
+
+      svg = renderer.render([caption])
+      drawn = texts_in(svg).first
+
+      expect(drawn["fill"]).to eq("#a8b8d0")
+    end
+
     it "draws the name of a planet with the tint of the planets" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas)
