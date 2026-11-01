@@ -8,6 +8,10 @@ RSpec.describe Skymap::Theme do
       expect(theme.sky).to eq("#000000")
       expect(theme.star).to eq("#ffffff")
     end
+
+    it "has no background" do
+      expect(described_class.dark.background).to eq("none")
+    end
   end
 
   describe ".light" do
@@ -16,6 +20,10 @@ RSpec.describe Skymap::Theme do
 
       expect(theme.sky).to eq("#ffffff")
       expect(theme.star).to eq("#111111")
+    end
+
+    it "has a white background, like paper" do
+      expect(described_class.light.background).to eq("#ffffff")
     end
   end
 

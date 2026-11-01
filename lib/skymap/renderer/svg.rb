@@ -20,6 +20,8 @@ module Skymap
           height: @canvas.size
         )
 
+        draw_background(svg)
+
         svg.circle(
           cx: @canvas.center.x.round(2),
           cy: @canvas.center.y.round(2),
@@ -48,6 +50,18 @@ module Skymap
       end
 
       private
+
+      def draw_background(svg)
+        return if @theme.background == "none"
+
+        svg.rect(
+          x: 0,
+          y: 0,
+          width: @canvas.size,
+          height: @canvas.size,
+          fill: @theme.background
+        )
+      end
 
       def draw_line(svg, line)
         svg.line(

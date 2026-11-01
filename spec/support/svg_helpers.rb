@@ -3,6 +3,10 @@
 require "rexml/document"
 
 module SVGHelpers
+  def rects_in(svg)
+    REXML::XPath.match(REXML::Document.new(svg), "/svg/rect")
+  end
+
   def circles_in(svg)
     REXML::XPath.match(REXML::Document.new(svg), "/svg/circle")
   end
