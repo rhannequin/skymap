@@ -98,6 +98,46 @@ fewer stars:
 Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 6)
 ```
 
+#### Star names
+
+`Skymap::Layers::StarNames` writes the names of the brightest stars, next to
+them, on the side of the center of the map. A name next to the horizon is moved
+towards the center until it fits in the sky, as far as the width of the text
+can be estimated. It takes the same stars as the stars layer, and
+`Skymap::Catalog::StarNames` gives the names of 333 stars of the catalog, as
+approved by the IAU (see [Data sources](#data-sources)):
+
+```ruby
+Skymap::Layers::StarNames.new(stars: stars)
+```
+
+Only the stars of magnitude 2 or brighter are named by default, which is about
+fifty stars. Use `magnitude_limit:` to name more or fewer stars:
+
+```ruby
+Skymap::Layers::StarNames.new(stars: stars, magnitude_limit: 3)
+```
+
+Names sit just outside the dots of the stars. Dots get smaller as the stars
+layer draws fainter stars, so if you give it a `magnitude_limit:` other than 5,
+give the same one to `stars_magnitude_limit:`:
+
+```ruby
+Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 6)
+Skymap::Layers::StarNames.new(stars: stars, stars_magnitude_limit: 6)
+```
+
+Use `names:` to write the names differently: it takes anything that gives a
+name from the Harvard Revised number of a star (`hr`), such as a hash. A star
+without a name is left out:
+
+```ruby
+Skymap::Layers::StarNames.new(
+  stars: stars,
+  names: {2491 => "Sirius", 424 => "Étoile polaire"}
+)
+```
+
 #### Constellation boundaries
 
 `Skymap::Layers::ConstellationBoundaries` draws the boundaries between the
@@ -279,6 +319,19 @@ This research has made use of the VizieR catalogue access tool, CDS,
 Strasbourg, France ([DOI: 10.26093/cds/vizier][vizier-doi]). The original
 description of the VizieR service was published in 2000, A&AS 143, 23.
 
+### Star names
+
+`data/star_names.csv` gives the name of 333 stars of `data/stars.csv` from
+their Harvard Revised number (`hr`), as listed in the [IAU Catalog of Star
+Names][iau-csn] by the IAU Working Group on Star Names. The catalog also names
+stars that are not in the Bright Star Catalogue, such as the host stars of
+exoplanets, which are left out.
+
+The file is generated with `bin/build_star_names`, which downloads the list
+and keeps the stars with an HR number. The IAU asks to cite its official
+version of the list at <https://www.iau.org/public/themes/naming_stars/>, and
+releases its products under a Creative Commons Attribution license.
+
 ### Constellations
 
 `data/constellations/iau/lines.csv` holds the lines of the 88 IAU
@@ -397,3 +450,4 @@ rooms and mailing lists is expected to follow the
 [jpl-ephemerides]: https://ssd.jpl.nasa.gov/planets/eph_export.html
 [naif]: https://naif.jpl.nasa.gov/naif/rules.html
 [cc-by-4]: https://creativecommons.org/licenses/by/4.0/
+[iau-csn]: https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt

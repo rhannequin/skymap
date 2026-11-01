@@ -18,7 +18,11 @@ module Skymap
       MOON_COLOR = "#f1ecd6"
       MOON_SHADOW_COLOR = "#232a35"
       MOON_SHADOW_OPACITY = 0.6
-      CAPTION_COLORS = {constellation: "#6f8fc2", planet: PLANET_COLOR}
+      CAPTION_COLORS = {
+        constellation: "#6f8fc2",
+        star: "#a8b8d0",
+        planet: PLANET_COLOR
+      }
       LABEL_COLOR = HORIZON_COLOR
       LABEL_FONT = "sans-serif"
 

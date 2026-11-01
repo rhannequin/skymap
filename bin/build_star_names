@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "csv"
+require "net/http"
+
+SOURCE = URI("https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt")
+OUTPUT = File.expand_path("../data/star_names.csv", __dir__)
+
+def field(line, first_byte, last_byte)
+  line[(first_byte - 1)..(last_byte - 1)].to_s.strip
+end
+
+records = Net::HTTP.get(SOURCE).force_encoding("UTF-8").lines
+
+names = records.filter_map do |line|
+  next if line.start_with?("#", "$")
+
+  hr = field(line, 37, 48)[/\AHR (\d+)\z/, 1]
+  next unless hr
+
+  [hr.to_i, field(line, 19, 36)]
+end
+
+CSV.open(OUTPUT, "w") do |csv|
+  csv << %w[hr name]
+  names.sort.each { |row| csv << row }
+end

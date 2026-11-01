@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Skymap::Layers::StarNames` writes the names of the brightest stars, down to
+  a `magnitude_limit:` (2 by default), from `Skymap::Catalog::StarNames` or the
+  names given with `names:`, and placed for the stars drawn down to
+  `stars_magnitude_limit:` (5 by default)
+- `Skymap::Catalog::StarNames` gives the IAU name of 333 stars of the Bright
+  Star Catalogue, such as Sirius or Betelgeuse
+
+### Changed
+
+- The names of the planets next to the horizon move towards the center of the
+  map until they fit in the sky
+
 ## [0.3.0] - 2026-11-01
 
 ### Added
