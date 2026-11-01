@@ -87,6 +87,41 @@ The canvas is the square SVG the map is drawn on. `size` is its width and
 height, and `padding` is the space between the horizon and the edge of the
 SVG.
 
+### Themes
+
+A theme gives the colors of the map. `Chart` draws the dark theme by default,
+light stars on a black sky. Pass `theme:` to draw another one:
+
+```ruby
+chart = Skymap::Chart.new(
+  observer: observer,
+  instant: instant,
+  canvas: canvas,
+  theme: Skymap::Theme.light
+)
+```
+
+- `Skymap::Theme.dark`: the default.
+- `Skymap::Theme.light`: dark stars on a white sky, for printing.
+- `Skymap::Theme.night`: shades of red on a black sky, which keep your eyes
+  adapted to the dark when you use the map outside.
+
+Build your own from a built-in one, changing the colors you want. Each color
+is a string SVG accepts, such as `"#ffeedd"` or `"gold"`:
+
+```ruby
+theme = Skymap::Theme.dark.with(
+  sky: "#0b1026",
+  star: "#fff4d6"
+)
+```
+
+The colors are `sky`, `horizon`, `star`, `constellation_line`, `boundary`,
+`ecliptic`, `planet`, `sun`, `moon`, `moon_shadow` (with its
+`moon_shadow_opacity`, between 0 and 1), `constellation_name`, `star_name`,
+`planet_name` and `label` (the cardinal directions). `font` is the font family
+of every text.
+
 ### Layers
 
 A map is the sky, with the layers given to `Chart#render` drawn on top of it,

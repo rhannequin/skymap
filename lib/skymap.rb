@@ -37,6 +37,7 @@ require_relative "skymap/renderer/sun"
 require_relative "skymap/renderer/svg"
 require_relative "skymap/star"
 require_relative "skymap/star_size"
+require_relative "skymap/theme"
 require_relative "skymap/version"
 
 module Skymap

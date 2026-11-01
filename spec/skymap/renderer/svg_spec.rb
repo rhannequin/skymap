@@ -4,7 +4,7 @@ RSpec.describe Skymap::Renderer::SVG do
   describe "#render" do
     it "sizes the SVG to the canvas" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
 
       svg = renderer.render([])
       root = REXML::Document.new(svg).root
@@ -17,7 +17,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws the sky as a dark disk outlined by the horizon" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
 
       svg = renderer.render([])
       circles = circles_in(svg)
@@ -32,9 +32,78 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(sky["stroke-width"]).to eq("3")
     end
 
+    it "draws with the colors of the given theme" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.light.with(
+        constellation_name: "#010203",
+        star_name: "#040506",
+        planet_name: "#070809",
+        font: "serif"
+      )
+      renderer = described_class.new(canvas: canvas, theme: theme)
+      elements = [
+        Skymap::Renderer::Boundary.new(points: [point(1, 1), point(2, 2)],
+          width: 1),
+        Skymap::Renderer::Line.new(from: point(1, 1), to: point(2, 2),
+          width: 1),
+        Skymap::Renderer::Ecliptic.new(points: [point(1, 1), point(2, 2)],
+          width: 1),
+        Skymap::Renderer::Dot.new(center: point(10, 10), radius: 1),
+        Skymap::Renderer::Planet.new(center: point(20, 20), radius: 1),
+        Skymap::Renderer::Sun.new(center: point(30, 30), radius: 1),
+        Skymap::Renderer::Label.new(position: point(40, 40), text: "N",
+          size: 1),
+        *%i[constellation star planet].map do |kind|
+          Skymap::Renderer::Caption.new(
+            position: point(50, 50), text: kind.to_s, size: 1, kind: kind
+          )
+        end
+      ]
+
+      svg = renderer.render(elements)
+      sky, star, planet, sun = circles_in(svg)
+      line = lines_in(svg).first
+      boundary, ecliptic = polylines_in(svg)
+      label, *captions = texts_in(svg)
+
+      expect(sky["fill"]).to eq(theme.sky)
+      expect(sky["stroke"]).to eq(theme.horizon)
+      expect(star["fill"]).to eq(theme.star)
+      expect(planet["fill"]).to eq(theme.planet)
+      expect(sun["fill"]).to eq(theme.sun)
+      expect(line["stroke"]).to eq(theme.constellation_line)
+      expect(boundary["stroke"]).to eq(theme.boundary)
+      expect(ecliptic["stroke"]).to eq(theme.ecliptic)
+      expect(label["fill"]).to eq(theme.label)
+      expect(captions.map { |c| c["fill"] }).to eq(
+        [theme.constellation_name, theme.star_name, theme.planet_name]
+      )
+      expect(([label] + captions).map { |t| t["font-family"] }.uniq)
+        .to eq(["serif"])
+    end
+
+    it "draws the Moon with the colors of the given theme" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.light
+      renderer = described_class.new(canvas: canvas, theme: theme)
+      moon = Skymap::Renderer::Moon.new(
+        center: point(100, 100),
+        radius: 10,
+        illuminated_fraction: 0.75,
+        rotation: 0
+      )
+
+      svg = renderer.render([moon])
+      shadow, lit = groups_in(svg).first.elements.to_a
+
+      expect(shadow["fill"]).to eq(theme.moon_shadow)
+      expect(shadow["fill-opacity"]).to eq(theme.moon_shadow_opacity.to_s)
+      expect(lit["fill"]).to eq(theme.moon)
+    end
+
     it "rounds the sky geometry to 2 decimals" do
       canvas = Skymap::Canvas.new(size: 401, padding: 1.3333)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
 
       svg = renderer.render([])
       sky = circles_in(svg).first
@@ -46,7 +115,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws a star on top of the sky for each dot" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       dots = [
         Skymap::Renderer::Dot.new(center: point(100, 150), radius: 4),
         Skymap::Renderer::Dot.new(center: point(250, 300), radius: 0.5)
@@ -69,7 +138,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "rounds star coordinates and radii to 2 decimals" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       dot = Skymap::Renderer::Dot.new(
         center: point(109.25833333, 59.63552),
         radius: 1.23456
@@ -85,7 +154,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws a planet as a tinted disk" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       planet = Skymap::Renderer::Planet.new(
         center: point(100.123, 150.456),
         radius: 3.456
@@ -102,7 +171,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws the Sun as a golden disk" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       sun = Skymap::Renderer::Sun.new(
         center: point(100.123, 150.456),
         radius: 6.789
@@ -119,7 +188,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws the name of a constellation as centered text" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       caption = Skymap::Renderer::Caption.new(
         position: point(100.123, 150.456),
         text: "Ursa Minor",
@@ -140,7 +209,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws the name of a star with the tint of the star names" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       caption = Skymap::Renderer::Caption.new(
         position: point(100, 150),
         text: "Sirius",
@@ -156,7 +225,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws the name of a planet with the tint of the planets" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       caption = Skymap::Renderer::Caption.new(
         position: point(100, 150),
         text: "Saturn",
@@ -172,7 +241,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws each label as centered text" do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       label = Skymap::Renderer::Label.new(
         position: point(200, 10),
         text: "N",
@@ -193,7 +262,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "rounds label coordinates and sizes to 2 decimals" do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       label = Skymap::Renderer::Label.new(
         position: point(109.25833333, 59.63552),
         text: "N",
@@ -210,7 +279,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws each line" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       dot = Skymap::Renderer::Dot.new(center: point(100, 150), radius: 4)
       line = Skymap::Renderer::Line.new(
         from: point(100, 150),
@@ -231,7 +300,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "rounds line coordinates and widths to 2 decimals" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       line = Skymap::Renderer::Line.new(
         from: point(109.25833333, 59.63552),
         to: point(250.004, 300.996),
@@ -250,7 +319,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws each boundary as a dashed polyline" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       boundary = Skymap::Renderer::Boundary.new(
         points: [point(100, 150), point(120.256, 180.004), point(250, 300)],
         width: 1.5
@@ -268,7 +337,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws the ecliptic as a solid polyline" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       ecliptic = Skymap::Renderer::Ecliptic.new(
         points: [point(100, 150), point(120.256, 180.004), point(250, 300)],
         width: 1.5
@@ -286,7 +355,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws the Moon as a dark disk with its lit part on top" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       moon = Skymap::Renderer::Moon.new(
         center: point(100, 100),
         radius: 10,
@@ -305,9 +374,37 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(lit["fill"]).to eq("#f1ecd6")
     end
 
+    it "writes a rational shadow opacity as a decimal" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.dark.with(moon_shadow_opacity: Rational(1, 2))
+      renderer = described_class.new(canvas: canvas, theme: theme)
+      moon = Skymap::Renderer::Moon.new(
+        center: point(100, 100),
+        radius: 10,
+        illuminated_fraction: 0.75,
+        rotation: 0
+      )
+
+      svg = renderer.render([moon])
+      shadow, _lit = groups_in(svg).first.elements.to_a
+
+      expect(shadow["fill-opacity"]).to eq("0.5")
+    end
+
+    it "rejects a caption of an unknown kind" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
+      caption = Skymap::Renderer::Caption.new(
+        position: point(50, 50), text: "Moon", size: 1, kind: :moon
+      )
+
+      expect { renderer.render([caption]) }
+        .to raise_error(ArgumentError, /unknown caption kind: moon/)
+    end
+
     it "draws a gibbous Moon with a terminator that bulges to the dark side" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       moon = Skymap::Renderer::Moon.new(
         center: point(100, 100),
         radius: 10,
@@ -325,7 +422,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws a crescent Moon with a terminator that bulges to the lit side" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       moon = Skymap::Renderer::Moon.new(
         center: point(100, 100),
         radius: 10,
@@ -343,7 +440,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws a half Moon with a straight terminator" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       moon = Skymap::Renderer::Moon.new(
         center: point(100, 100),
         radius: 10,
@@ -361,7 +458,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "rounds the Moon geometry to 2 decimals" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       moon = Skymap::Renderer::Moon.new(
         center: point(109.25833333, 59.63552),
         radius: 1.23456,
@@ -381,7 +478,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "draws elements in the given order, on top of the sky" do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
       elements = [
         Skymap::Renderer::Label.new(
           position: point(200, 10),
@@ -404,7 +501,7 @@ RSpec.describe Skymap::Renderer::SVG do
 
     it "refuses an element it cannot draw" do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
-      renderer = described_class.new(canvas: canvas)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
 
       expect { renderer.render(["N"]) }
         .to raise_error(ArgumentError, "unknown element: String")

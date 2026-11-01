@@ -2,10 +2,11 @@
 
 module Skymap
   class Chart
-    def initialize(observer:, instant:, canvas:)
+    def initialize(observer:, instant:, canvas:, theme: Theme.dark)
       @observer = observer
       @instant = instant
       @canvas = canvas
+      @theme = theme
     end
 
     def render(*layers)
@@ -16,7 +17,7 @@ module Skymap
       )
       elements = layers.flat_map { |layer| layer.elements(context) }
 
-      Renderer::SVG.new(canvas: @canvas).render(elements)
+      Renderer::SVG.new(canvas: @canvas, theme: @theme).render(elements)
     end
   end
 end
