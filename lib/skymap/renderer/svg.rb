@@ -8,7 +8,7 @@ module Skymap
       HORIZON_WIDTH = 3
       BOUNDARY_DASH_RATIO = 4
 
-      def initialize(canvas:, theme: Theme.dark)
+      def initialize(canvas:, theme:)
         @canvas = canvas
         @theme = theme
       end

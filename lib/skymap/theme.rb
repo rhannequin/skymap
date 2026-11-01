@@ -83,19 +83,28 @@ module Skymap
     end
 
     def initialize(**slots)
-      slots.each do |slot, value|
-        next if slot == :moon_shadow_opacity || value.is_a?(String)
-
-        raise ArgumentError, "#{slot} must be a string"
+      slots.except(:moon_shadow_opacity).each do |slot, value|
+        check_text(slot, value)
       end
-
-      opacity = slots[:moon_shadow_opacity]
-      if slots.key?(:moon_shadow_opacity) &&
-          !(opacity.is_a?(Numeric) && opacity.real? && opacity.between?(0, 1))
-        raise ArgumentError, "moon_shadow_opacity must be between 0 and 1"
+      if slots.key?(:moon_shadow_opacity)
+        check_opacity(slots[:moon_shadow_opacity])
       end
 
       super
+    end
+
+    private
+
+    def check_text(slot, value)
+      raise ArgumentError, "#{slot} must be a string" unless value.is_a?(String)
+      raise ArgumentError, "#{slot} must not be blank" if value.strip.empty?
+    end
+
+    def check_opacity(opacity)
+      return if opacity.is_a?(Numeric) && opacity.real? &&
+        opacity.between?(0, 1)
+
+      raise ArgumentError, "moon_shadow_opacity must be between 0 and 1"
     end
   end
 end

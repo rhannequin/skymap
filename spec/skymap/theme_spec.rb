@@ -48,6 +48,16 @@ RSpec.describe Skymap::Theme do
         .to raise_error(ArgumentError, /star must be a string/)
     end
 
+    it "rejects an empty color" do
+      expect { described_class.dark.with(star: "") }
+        .to raise_error(ArgumentError, /star must not be blank/)
+    end
+
+    it "rejects a color made of spaces" do
+      expect { described_class.dark.with(sky: "  ") }
+        .to raise_error(ArgumentError, /sky must not be blank/)
+    end
+
     it "rejects a shadow opacity above 1" do
       expect { described_class.dark.with(moon_shadow_opacity: 1.5) }
         .to raise_error(ArgumentError, /moon_shadow_opacity/)
@@ -64,9 +74,9 @@ RSpec.describe Skymap::Theme do
     end
 
     it "rejects a shadow opacity that is not a real number" do
-      expect {
-        described_class.dark.with(moon_shadow_opacity: Complex(0.5, 0.25))
-      }
+      opacity = Complex(0.5, 0.25)
+
+      expect { described_class.dark.with(moon_shadow_opacity: opacity) }
         .to raise_error(ArgumentError, /moon_shadow_opacity/)
     end
 
