@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+
+Dir[File.expand_path("../examples/*.rb", __dir__)].sort.each do |example|
+  load example
+end
