@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Skymap::Theme` gives the colors and the font of the map, with the
+  `Skymap::Theme.dark` (default), `Skymap::Theme.light` and
+  `Skymap::Theme.night` themes, and is given to `Skymap::Chart` with `theme:`
 - `Skymap::Layers::StarNames` writes the names of the brightest stars, down to
   a `magnitude_limit:` (2 by default), from `Skymap::Catalog::StarNames` or the
   names given with `names:`, and placed for the stars drawn down to
