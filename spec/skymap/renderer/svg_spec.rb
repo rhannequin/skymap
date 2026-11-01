@@ -120,7 +120,8 @@ RSpec.describe Skymap::Renderer::SVG do
       renderer = described_class.new(canvas: canvas, theme: theme)
 
       svg = renderer.render(one_of_each_element)
-      painted = REXML::Document.new(svg).root.elements.flat_map do |element|
+      drawn = REXML::XPath.match(REXML::Document.new(svg), "//*")
+      painted = drawn.flat_map do |element|
         %w[fill stroke].filter_map { |attribute| element[attribute] }
       end
 
@@ -551,6 +552,12 @@ RSpec.describe Skymap::Renderer::SVG do
       Skymap::Renderer::Dot.new(center: point(10, 10), radius: 1),
       Skymap::Renderer::Planet.new(center: point(20, 20), radius: 1),
       Skymap::Renderer::Sun.new(center: point(30, 30), radius: 1),
+      Skymap::Renderer::Moon.new(
+        center: point(35, 35),
+        radius: 1,
+        illuminated_fraction: 0.5,
+        rotation: 0
+      ),
       Skymap::Renderer::Label.new(position: point(40, 40), text: "N", size: 1),
       *%i[constellation star planet].map do |kind|
         Skymap::Renderer::Caption.new(
