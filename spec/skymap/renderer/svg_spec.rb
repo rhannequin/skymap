@@ -32,6 +32,75 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(sky["stroke-width"]).to eq("3")
     end
 
+    it "draws with the colors of the given theme" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.light.with(
+        constellation_name: "#010203",
+        star_name: "#040506",
+        planet_name: "#070809",
+        font: "serif"
+      )
+      renderer = described_class.new(canvas: canvas, theme: theme)
+      elements = [
+        Skymap::Renderer::Boundary.new(points: [point(1, 1), point(2, 2)],
+          width: 1),
+        Skymap::Renderer::Line.new(from: point(1, 1), to: point(2, 2),
+          width: 1),
+        Skymap::Renderer::Ecliptic.new(points: [point(1, 1), point(2, 2)],
+          width: 1),
+        Skymap::Renderer::Dot.new(center: point(10, 10), radius: 1),
+        Skymap::Renderer::Planet.new(center: point(20, 20), radius: 1),
+        Skymap::Renderer::Sun.new(center: point(30, 30), radius: 1),
+        Skymap::Renderer::Label.new(position: point(40, 40), text: "N",
+          size: 1),
+        *%i[constellation star planet].map do |kind|
+          Skymap::Renderer::Caption.new(
+            position: point(50, 50), text: kind.to_s, size: 1, kind: kind
+          )
+        end
+      ]
+
+      svg = renderer.render(elements)
+      sky, star, planet, sun = circles_in(svg)
+      line = lines_in(svg).first
+      boundary, ecliptic = polylines_in(svg)
+      label, *captions = texts_in(svg)
+
+      expect(sky["fill"]).to eq(theme.sky)
+      expect(sky["stroke"]).to eq(theme.horizon)
+      expect(star["fill"]).to eq(theme.star)
+      expect(planet["fill"]).to eq(theme.planet)
+      expect(sun["fill"]).to eq(theme.sun)
+      expect(line["stroke"]).to eq(theme.constellation_line)
+      expect(boundary["stroke"]).to eq(theme.boundary)
+      expect(ecliptic["stroke"]).to eq(theme.ecliptic)
+      expect(label["fill"]).to eq(theme.label)
+      expect(captions.map { |c| c["fill"] }).to eq(
+        [theme.constellation_name, theme.star_name, theme.planet_name]
+      )
+      expect(([label] + captions).map { |t| t["font-family"] }.uniq)
+        .to eq(["serif"])
+    end
+
+    it "draws the Moon with the colors of the given theme" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.light
+      renderer = described_class.new(canvas: canvas, theme: theme)
+      moon = Skymap::Renderer::Moon.new(
+        center: point(100, 100),
+        radius: 10,
+        illuminated_fraction: 0.75,
+        rotation: 0
+      )
+
+      svg = renderer.render([moon])
+      shadow, lit = groups_in(svg).first.elements.to_a
+
+      expect(shadow["fill"]).to eq(theme.moon_shadow)
+      expect(shadow["fill-opacity"]).to eq(theme.moon_shadow_opacity.to_s)
+      expect(lit["fill"]).to eq(theme.moon)
+    end
+
     it "rounds the sky geometry to 2 decimals" do
       canvas = Skymap::Canvas.new(size: 401, padding: 1.3333)
       renderer = described_class.new(canvas: canvas)

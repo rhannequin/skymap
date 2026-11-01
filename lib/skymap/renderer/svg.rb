@@ -5,29 +5,12 @@ require "victor"
 module Skymap
   module Renderer
     class SVG
-      SKY_COLOR = "#000000"
-      HORIZON_COLOR = "#3262a8"
       HORIZON_WIDTH = 3
-      STAR_COLOR = "#ffffff"
-      LINE_COLOR = "#46689c"
-      BOUNDARY_COLOR = "#2b3f5e"
       BOUNDARY_DASH_RATIO = 4
-      ECLIPTIC_COLOR = "#8c7a3a"
-      PLANET_COLOR = "#ffe6b3"
-      SUN_COLOR = "#ffd34d"
-      MOON_COLOR = "#f1ecd6"
-      MOON_SHADOW_COLOR = "#232a35"
-      MOON_SHADOW_OPACITY = 0.6
-      CAPTION_COLORS = {
-        constellation: "#6f8fc2",
-        star: "#a8b8d0",
-        planet: PLANET_COLOR
-      }
-      LABEL_COLOR = HORIZON_COLOR
-      LABEL_FONT = "sans-serif"
 
-      def initialize(canvas:)
+      def initialize(canvas:, theme: Theme.dark)
         @canvas = canvas
+        @theme = theme
       end
 
       def render(elements)
@@ -41,8 +24,8 @@ module Skymap
           cx: @canvas.center.x.round(2),
           cy: @canvas.center.y.round(2),
           r: @canvas.radius.round(2),
-          fill: SKY_COLOR,
-          stroke: HORIZON_COLOR,
+          fill: @theme.sky,
+          stroke: @theme.horizon,
           stroke_width: HORIZON_WIDTH
         )
 
@@ -72,7 +55,7 @@ module Skymap
           y1: line.from.y.round(2),
           x2: line.to.x.round(2),
           y2: line.to.y.round(2),
-          stroke: LINE_COLOR,
+          stroke: @theme.constellation_line,
           stroke_width: line.width.round(2),
           stroke_linecap: "round"
         )
@@ -86,7 +69,7 @@ module Skymap
             "#{point.x.round(2)},#{point.y.round(2)}"
           }.join(" "),
           fill: "none",
-          stroke: BOUNDARY_COLOR,
+          stroke: @theme.boundary,
           stroke_width: boundary.width.round(2),
           stroke_dasharray: "#{dash} #{dash}"
         )
@@ -98,7 +81,7 @@ module Skymap
             "#{point.x.round(2)},#{point.y.round(2)}"
           }.join(" "),
           fill: "none",
-          stroke: ECLIPTIC_COLOR,
+          stroke: @theme.ecliptic,
           stroke_width: ecliptic.width.round(2),
           stroke_linejoin: "round"
         )
@@ -109,7 +92,7 @@ module Skymap
           cx: dot.center.x.round(2),
           cy: dot.center.y.round(2),
           r: dot.radius.round(2),
-          fill: STAR_COLOR
+          fill: @theme.star
         )
       end
 
@@ -118,7 +101,7 @@ module Skymap
           cx: planet.center.x.round(2),
           cy: planet.center.y.round(2),
           r: planet.radius.round(2),
-          fill: PLANET_COLOR
+          fill: @theme.planet
         )
       end
 
@@ -127,7 +110,7 @@ module Skymap
           cx: sun.center.x.round(2),
           cy: sun.center.y.round(2),
           r: sun.radius.round(2),
-          fill: SUN_COLOR
+          fill: @theme.sun
         )
       end
 
@@ -143,26 +126,36 @@ module Skymap
         lit = "M #{top} A #{radius},#{radius} 0 0 1 #{bottom} " \
           "A #{terminator},#{radius} 0 0 #{bulge} #{top} Z"
 
+        theme = @theme
         svg.build do
           g(transform: "rotate(#{moon.rotation.round(2)} #{x} #{y})") do
             circle(
               cx: x,
               cy: y,
               r: radius,
-              fill: MOON_SHADOW_COLOR,
-              fill_opacity: MOON_SHADOW_OPACITY
+              fill: theme.moon_shadow,
+              fill_opacity: theme.moon_shadow_opacity
             )
-            path(d: lit, fill: MOON_COLOR)
+            path(d: lit, fill: theme.moon)
           end
         end
       end
 
       def draw_label(svg, label)
-        draw_text(svg, label, LABEL_COLOR)
+        draw_text(svg, label, @theme.label)
       end
 
       def draw_caption(svg, caption)
-        draw_text(svg, caption, CAPTION_COLORS.fetch(caption.kind))
+        draw_text(svg, caption, caption_color(caption.kind))
+      end
+
+      def caption_color(kind)
+        case kind
+        when :constellation then @theme.constellation_name
+        when :star then @theme.star_name
+        when :planet then @theme.planet_name
+        else raise ArgumentError, "unknown caption kind: #{kind}"
+        end
       end
 
       def draw_text(svg, label, fill)
@@ -171,7 +164,7 @@ module Skymap
           x: label.position.x.round(2),
           y: label.position.y.round(2),
           font_size: label.size.round(2),
-          font_family: LABEL_FONT,
+          font_family: @theme.font,
           text_anchor: "middle",
           dominant_baseline: "central",
           fill: fill
