@@ -2,6 +2,7 @@
 
 module Skymap
   Theme = Data.define(
+    :background,
     :sky,
     :horizon,
     :star,
@@ -21,6 +22,7 @@ module Skymap
   ) do
     def self.dark
       new(
+        background: "none",
         sky: "#000000",
         horizon: "#3262a8",
         star: "#ffffff",
@@ -42,6 +44,7 @@ module Skymap
 
     def self.light
       new(
+        background: "#ffffff",
         sky: "#ffffff",
         horizon: "#1f3f73",
         star: "#111111",
@@ -63,6 +66,7 @@ module Skymap
 
     def self.night
       new(
+        background: "#000000",
         sky: "#000000",
         horizon: "#7a1010",
         star: "#ff6b6b",

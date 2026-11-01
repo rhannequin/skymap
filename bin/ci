@@ -23,5 +23,9 @@ trap report EXIT
 echo "==> Lint"
 bundle exec rubocop
 
+echo "==> README maps"
+bin/build_readme_map
+git diff --exit-code -- sky_map.svg docs
+
 echo "==> Test"
 bundle exec rspec

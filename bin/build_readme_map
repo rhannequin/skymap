@@ -5,10 +5,10 @@ require "bundler/setup"
 require "fileutils"
 require "skymap"
 
-OUTPUTS = {
-  Skymap::Theme.dark => File.expand_path("../sky_map.svg", __dir__),
-  Skymap::Theme.light => File.expand_path("../docs/themes/light.svg", __dir__),
-  Skymap::Theme.night => File.expand_path("../docs/themes/night.svg", __dir__)
+THEMES = {
+  File.expand_path("../sky_map.svg", __dir__) => Skymap::Theme.dark,
+  File.expand_path("../docs/themes/light.svg", __dir__) => Skymap::Theme.light,
+  File.expand_path("../docs/themes/night.svg", __dir__) => Skymap::Theme.night
 }
 EPHEMERIS = File.expand_path(
   "../spec/fixtures/de440s_2025_2030_excerpt.bsp", __dir__
@@ -24,26 +24,27 @@ stars = Skymap::Catalog::Stars.new.to_a
 lines = Skymap::Catalog::ConstellationLines.new.to_a
 ephem = Astronoby::Ephem.load(EPHEMERIS)
 
-OUTPUTS.each do |theme, output|
+layers = [
+  Skymap::Layers::ConstellationBoundaries.new(
+    boundaries: Skymap::Catalog::ConstellationBoundaries.new
+  ),
+  Skymap::Layers::Ecliptic.new,
+  Skymap::Layers::ConstellationLines.new(lines: lines, stars: stars),
+  Skymap::Layers::Stars.new(stars: stars),
+  Skymap::Layers::ConstellationNames.new(lines: lines, stars: stars),
+  Skymap::Layers::Planets.new(ephem: ephem, labels: true),
+  Skymap::Layers::Moon.new(ephem: ephem),
+  Skymap::Layers::CardinalDirections.new
+]
+
+THEMES.each do |output, theme|
   chart = Skymap::Chart.new(
     observer: observer,
     instant: instant,
     canvas: canvas,
     theme: theme
   )
-  svg = chart.render(
-    Skymap::Layers::ConstellationBoundaries.new(
-      boundaries: Skymap::Catalog::ConstellationBoundaries.new
-    ),
-    Skymap::Layers::Ecliptic.new,
-    Skymap::Layers::ConstellationLines.new(lines: lines, stars: stars),
-    Skymap::Layers::Stars.new(stars: stars),
-    Skymap::Layers::ConstellationNames.new(lines: lines, stars: stars),
-    Skymap::Layers::Planets.new(ephem: ephem, labels: true),
-    Skymap::Layers::Moon.new(ephem: ephem),
-    Skymap::Layers::CardinalDirections.new
-  )
 
   FileUtils.mkdir_p(File.dirname(output))
-  File.write(output, svg)
+  File.write(output, chart.render(*layers))
 end

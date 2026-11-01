@@ -41,24 +41,7 @@ RSpec.describe Skymap::Renderer::SVG do
         font: "serif"
       )
       renderer = described_class.new(canvas: canvas, theme: theme)
-      elements = [
-        Skymap::Renderer::Boundary.new(points: [point(1, 1), point(2, 2)],
-          width: 1),
-        Skymap::Renderer::Line.new(from: point(1, 1), to: point(2, 2),
-          width: 1),
-        Skymap::Renderer::Ecliptic.new(points: [point(1, 1), point(2, 2)],
-          width: 1),
-        Skymap::Renderer::Dot.new(center: point(10, 10), radius: 1),
-        Skymap::Renderer::Planet.new(center: point(20, 20), radius: 1),
-        Skymap::Renderer::Sun.new(center: point(30, 30), radius: 1),
-        Skymap::Renderer::Label.new(position: point(40, 40), text: "N",
-          size: 1),
-        *%i[constellation star planet].map do |kind|
-          Skymap::Renderer::Caption.new(
-            position: point(50, 50), text: kind.to_s, size: 1, kind: kind
-          )
-        end
-      ]
+      elements = one_of_each_element
 
       svg = renderer.render(elements)
       sky, star, planet, sun = circles_in(svg)
@@ -101,16 +84,48 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(lit["fill"]).to eq(theme.moon)
     end
 
-    it "leaves the sky and the horizon unpainted when the theme says none" do
+    it "draws no background when the theme says none" do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
-      theme = Skymap::Theme.dark.with(sky: "none", horizon: "none")
+      renderer = described_class.new(
+        canvas: canvas,
+        theme: Skymap::Theme.dark
+      )
+
+      svg = renderer.render([])
+
+      expect(rects_in(svg)).to be_empty
+    end
+
+    it "draws the background of the theme behind the sky" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.light.with(background: "#fafafa")
       renderer = described_class.new(canvas: canvas, theme: theme)
 
       svg = renderer.render([])
-      sky = circles_in(svg).first
+      background = REXML::Document.new(svg).root.elements.first
 
-      expect(sky["fill"]).to eq("none")
-      expect(sky["stroke"]).to eq("none")
+      expect(rects_in(svg).size).to eq(1)
+      expect(background.name).to eq("rect")
+      expect(background["x"]).to eq("0")
+      expect(background["y"]).to eq("0")
+      expect(background["width"]).to eq("400")
+      expect(background["height"]).to eq("400")
+      expect(background["fill"]).to eq("#fafafa")
+    end
+
+    it "leaves everything unpainted when every color of the theme is none" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      colors = Skymap::Theme.dark.to_h.except(:moon_shadow_opacity, :font)
+      theme = Skymap::Theme.dark.with(**colors.transform_values { "none" })
+      renderer = described_class.new(canvas: canvas, theme: theme)
+
+      svg = renderer.render(one_of_each_element)
+      painted = REXML::Document.new(svg).root.elements.flat_map do |element|
+        %w[fill stroke].filter_map { |attribute| element[attribute] }
+      end
+
+      expect(painted).not_to be_empty
+      expect(painted.uniq).to eq(["none"])
     end
 
     it "rounds the sky geometry to 2 decimals" do
@@ -522,5 +537,26 @@ RSpec.describe Skymap::Renderer::SVG do
 
   def point(x, y)
     Skymap::Point.new(x: x, y: y)
+  end
+
+  def one_of_each_element
+    [
+      Skymap::Renderer::Boundary.new(
+        points: [point(1, 1), point(2, 2)], width: 1
+      ),
+      Skymap::Renderer::Line.new(from: point(1, 1), to: point(2, 2), width: 1),
+      Skymap::Renderer::Ecliptic.new(
+        points: [point(1, 1), point(2, 2)], width: 1
+      ),
+      Skymap::Renderer::Dot.new(center: point(10, 10), radius: 1),
+      Skymap::Renderer::Planet.new(center: point(20, 20), radius: 1),
+      Skymap::Renderer::Sun.new(center: point(30, 30), radius: 1),
+      Skymap::Renderer::Label.new(position: point(40, 40), text: "N", size: 1),
+      *%i[constellation star planet].map do |kind|
+        Skymap::Renderer::Caption.new(
+          position: point(50, 50), text: kind.to_s, size: 1, kind: kind
+        )
+      end
+    ]
   end
 end

@@ -134,15 +134,17 @@ theme = Skymap::Theme.dark.with(
 )
 ```
 
-The colors are `sky`, `horizon`, `star`, `constellation_line`, `boundary`,
+The colors are `background` (the square behind the sky, which the cardinal
+directions are written on), `sky`, `horizon`, `star`, `constellation_line`, `boundary`,
 `ecliptic`, `planet`, `sun`, `moon`, `moon_shadow` (with its
 `moon_shadow_opacity`, between 0 and 1), `constellation_name`, `star_name`,
 `planet_name` and `label` (the cardinal directions). `font` is the font family
 of every text.
 
-Use `"none"` as a color to leave something out. With `sky: "none"`, the sky is
-transparent, to put the map on a background of your own, and with
-`horizon: "none"`, the edge of the sky is not outlined.
+Use `"none"` as a color to leave something out. The dark theme has
+`background: "none"`, so the SVG is transparent around the sky, and with
+`sky: "none"` the sky is transparent too, to put the map on a background of
+your own. With `horizon: "none"`, the edge of the sky is not outlined.
 
 ### Layers
 
