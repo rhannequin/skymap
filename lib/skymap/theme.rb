@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Skymap
+  optional_colors = {grid: :boundary}.freeze
+
   Theme = Data.define(
     :background,
     :sky,
@@ -9,7 +11,6 @@ module Skymap
     :constellation_line,
     :boundary,
     :ecliptic,
-    :grid,
     :planet,
     :sun,
     :moon,
@@ -19,8 +20,16 @@ module Skymap
     :star_name,
     :planet_name,
     :label,
-    :font
+    :font,
+    *optional_colors.keys
   ) do
+    const_set(:OPTIONAL_COLORS, optional_colors)
+
+    optional_colors.each do |slot, fallback|
+      own = instance_method(slot)
+      define_method(slot) { own.bind_call(self) || public_send(fallback) }
+    end
+
     def self.dark
       new(
         background: "none",
@@ -91,14 +100,18 @@ module Skymap
     end
 
     def initialize(**slots)
+      optional = self.class::OPTIONAL_COLORS
+
       slots.except(:moon_shadow_opacity).each do |slot, value|
+        next if value.nil? && optional.key?(slot)
+
         check_text(slot, value)
       end
       if slots.key?(:moon_shadow_opacity)
         check_opacity(slots[:moon_shadow_opacity])
       end
 
-      super
+      super(**optional.transform_values { nil }, **slots)
     end
 
     private

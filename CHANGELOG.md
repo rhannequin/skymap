@@ -17,11 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::Layers::Grid` draws the celestial coordinate grid, the lines of
   right ascension and the circles of declination, every `step:` degrees (30 by
   default), stopping at the horizon
-
-### Changed
-
-- `Skymap::Theme` has a `grid` color, which a theme built with
-  `Skymap::Theme.new` must now give
+- `Skymap::Theme` has optional colors, which fall back to the color of another
+  slot when they are not given, so that a theme built with
+  `Skymap::Theme.new` keeps working when a layer gets a color: `grid`, for
+  `Skymap::Layers::Grid`, falls back to `boundary`
 
 ## [0.4.0] - 2026-11-05
 

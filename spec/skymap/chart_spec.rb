@@ -95,6 +95,37 @@ RSpec.describe Skymap::Chart do
     end
   end
 
+  describe "#render with a theme written for 0.4.0" do
+    it "draws the grid in the color of the boundaries" do
+      theme = theme_from_0_4_0
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 20),
+        theme: theme
+      )
+
+      svg = chart.render(Skymap::Layers::Grid.new)
+      strokes = polylines_in(svg).map { |line| line["stroke"] }.uniq
+
+      expect(strokes).to eq([theme.boundary])
+    end
+
+    it "draws the grid in its own color when the theme has one" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 20),
+        theme: theme_from_0_4_0.with(grid: "#123456")
+      )
+
+      svg = chart.render(Skymap::Layers::Grid.new)
+      strokes = polylines_in(svg).map { |line| line["stroke"] }.uniq
+
+      expect(strokes).to eq(["#123456"])
+    end
+  end
+
   def recording_layer
     Class.new do
       def contexts = @contexts ||= []
