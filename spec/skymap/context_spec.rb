@@ -35,7 +35,7 @@ RSpec.describe Skymap::Context do
     end
   end
 
-  describe "#horizontal_position" do
+  describe "#to_horizontal" do
     it "converts equatorial coordinates to horizontal ones" do
       context = context_at(
         latitude: 90,
@@ -43,7 +43,7 @@ RSpec.describe Skymap::Context do
       )
       coordinates = equatorial(right_ascension: 3, declination: 30)
 
-      horizontal = context.horizontal_position(coordinates)
+      horizontal = context.to_horizontal(coordinates)
 
       expect(horizontal.altitude.degrees.round).to eq(30)
     end
@@ -55,7 +55,7 @@ RSpec.describe Skymap::Context do
       )
       view = view_towards(altitude: 40, azimuth: 180, field_of_view: 30)
 
-      horizontal = context.horizontal_position(view.center)
+      horizontal = context.to_horizontal(view.center)
 
       expect(horizontal).to be(view.center)
     end

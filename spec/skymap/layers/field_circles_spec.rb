@@ -255,6 +255,35 @@ RSpec.describe Skymap::Layers::FieldCircles do
       expect(captions.map(&:kind).uniq).to eq([:field])
     end
 
+    it "writes a short field as it was given" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 100)
+      )
+      layer = described_class.new(
+        fields: [30, 12.5, 2.25, 0.05],
+        labels: true
+      )
+
+      captions = layer.elements(context).grep(Skymap::Renderer::Caption)
+
+      expect(captions.map(&:text)).to eq(["30°", "12.5°", "2.25°", "0.05°"])
+    end
+
+    it "rounds a long field to two digits" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
+      )
+      layer = described_class.new(fields: [1.0833333, 0.083333], labels: true)
+
+      captions = layer.elements(context).grep(Skymap::Renderer::Caption)
+
+      expect(captions.map(&:text)).to eq(["1.1°", "0.083°"])
+    end
+
     it "writes the label next to its circle" do
       context = context_at(
         latitude: 48.8575,
@@ -392,6 +421,22 @@ RSpec.describe Skymap::Layers::FieldCircles do
       expect(circle.points.first).not_to eq(circle.points.last)
     end
 
+    it "draws a circle up to the horizon where it crosses it" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      center = horizontal(altitude: 5, azimuth: 90)
+      layer = described_class.new(fields: [20], center: center)
+
+      circle, = layer.elements(context)
+
+      expect(distance_from_center(circle.points.first)).to be_within(0.01)
+        .of(198.5)
+      expect(distance_from_center(circle.points.last)).to be_within(0.01)
+        .of(198.5)
+    end
+
     it "leaves out a circle below the horizon" do
       context = context_at(
         latitude: 48.8575,
@@ -455,6 +500,11 @@ RSpec.describe Skymap::Layers::FieldCircles do
     it "rejects a field that is not a real number" do
       expect { described_class.new(fields: [Float::NAN]) }
         .to raise_error(ArgumentError, /fields must be/)
+    end
+
+    it "rejects names that are not a hash" do
+      expect { described_class.new(fields: [1], names: ["Finder"]) }
+        .to raise_error(ArgumentError, /names must be/)
     end
 
     it "rejects a center that is not a coordinates object" do

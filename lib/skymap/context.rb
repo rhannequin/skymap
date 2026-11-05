@@ -33,7 +33,7 @@ module Skymap
       @horizontal[key] ||= @transformation.apply(coordinates)
     end
 
-    def horizontal_position(position)
+    def to_horizontal(position)
       return position unless position.is_a?(Astronoby::Coordinates::Equatorial)
 
       horizontal_coordinates(position)
@@ -112,7 +112,7 @@ module Skymap
     end
 
     def view_center
-      @view_center ||= horizontal_position(@view.center)
+      @view_center ||= to_horizontal(@view.center)
     end
 
     def view_direction

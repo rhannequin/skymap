@@ -11,6 +11,7 @@ module Skymap
       def initialize(fields:, center: nil, labels: false, names: {})
         check_fields(fields)
         check_center(center)
+        check_names(names)
 
         @fields = fields
         @center = center
@@ -35,9 +36,7 @@ module Skymap
       def circle(context, center, frame, field, width)
         radius = Astronoby::Angle.from_degrees(field / 2.0)
         samples = sample_count(context, center, radius)
-        path = ring(frame, radius, samples).map do |altitude, azimuth|
-          position(context, altitude, azimuth)
-        end
+        path = path_of(context, ring(context, frame, radius, samples))
         runs = Horizon.joined(Horizon.runs_of(context, path))
         return [] if runs.empty?
 
@@ -60,7 +59,7 @@ module Skymap
         samples + -samples % 4
       end
 
-      def ring(frame, radius, samples)
+      def ring(context, frame, radius, samples)
         forward, side, up = frame
         points = (0...samples).map do |index|
           angle = 2 * Math::PI * index / samples
@@ -69,28 +68,41 @@ module Skymap
               radius.sin * (Math.cos(angle) * side[axis] +
                 Math.sin(angle) * up[axis])
           end
-          [
-            Astronoby::Angle.from_radians(Math.asin(direction[2].clamp(-1, 1))),
-            Astronoby::Angle.from_radians(
+          Astronoby::Coordinates::Horizontal.new(
+            altitude: Astronoby::Angle.from_radians(
+              Math.asin(direction[2].clamp(-1, 1))
+            ),
+            azimuth: Astronoby::Angle.from_radians(
               Math.atan2(direction[1], direction[0])
-            )
-          ]
+            ),
+            observer: context.observer
+          )
         end
 
         points + points.first(1)
       end
 
-      def position(context, altitude, azimuth)
-        return if context.full_sky? && altitude.negative?
+      def path_of(context, horizontals)
+        [position(context, horizontals.first)] +
+          horizontals.each_cons(2).flat_map do |from, to|
+            crossing(context, from, to) + [position(context, to)]
+          end
+      end
 
-        horizontal = Astronoby::Coordinates::Horizontal.new(
-          altitude: altitude,
-          azimuth: azimuth,
-          observer: context.observer
-        )
+      def crossing(context, from, to)
+        return [] unless context.full_sky?
+
+        Horizon.crossing_point(context, from, to)
+      end
+
+      def position(context, horizontal)
+        return if context.full_sky? && horizontal.altitude.negative?
         return unless context.reachable?(horizontal)
 
-        context.project(altitude: altitude, azimuth: azimuth)
+        context.project(
+          altitude: horizontal.altitude,
+          azimuth: horizontal.azimuth
+        )
       end
 
       def caption(context, field, points)
@@ -121,6 +133,8 @@ module Skymap
       end
 
       def degrees_text(field)
+        return field.to_f.to_s.delete_suffix(".0") if field.round(2) == field
+
         digits = 1 - Math.log10(field).floor
 
         field.to_f.round(digits).to_s.delete_suffix(".0")
@@ -130,18 +144,17 @@ module Skymap
         center = @center || context.view&.center
         return unless center
 
-        context.horizontal_position(center)
+        context.to_horizontal(center)
       end
 
       def frame_around(center)
-        forward = [
-          center.altitude.cos * center.azimuth.cos,
-          center.altitude.cos * center.azimuth.sin,
-          center.altitude.sin
-        ]
-        up = Vector.up_from(forward, 1)
-
-        [forward, Vector.cross(up, forward), up]
+        Geometry.frame(
+          [
+            center.altitude.cos * center.azimuth.cos,
+            center.altitude.cos * center.azimuth.sin,
+            center.altitude.sin
+          ]
+        )
       end
 
       def check_fields(fields)
@@ -162,6 +175,12 @@ module Skymap
 
         raise ArgumentError,
           "center must be equatorial or horizontal coordinates"
+      end
+
+      def check_names(names)
+        return if names.is_a?(Hash)
+
+        raise ArgumentError, "names must be a hash from a field to its text"
       end
     end
   end

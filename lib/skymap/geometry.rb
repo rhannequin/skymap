@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
 module Skymap
-  module Vector
-    NORTH = [1.0, 0.0, 0.0].freeze
-    ZENITH = [0.0, 0.0, 1.0].freeze
-
+  module Geometry
     module_function
 
     def dot(a, b)
@@ -31,14 +28,12 @@ module Skymap
       reference.zip(forward).map { |r, f| r - along * f }
     end
 
-    def up_from(forward, zenith_cosine)
-      references = [ZENITH, NORTH]
-      references.reverse! if forward[2] >= zenith_cosine
+    def frame(forward)
+      axis = (0..2).min_by { |index| forward[index].abs }
+      reference = Array.new(3) { |index| (index == axis) ? 1.0 : 0.0 }
+      up = normalize(away_from(reference, forward))
 
-      references.each do |reference|
-        up = away_from(reference, forward)
-        return normalize(up) if Math.sqrt(dot(up, up)) > 1e-9
-      end
+      [forward, cross(up, forward), up]
     end
   end
 end
