@@ -17,13 +17,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::View` takes `orientation:` (`:zenith_up` by default, or `:equatorial`
   to put the north celestial pole at the top), `rotation:` as an
   `Astronoby::Angle` and `mirrored:` to give the map the orientation of a
-  telescope; the lit side of the Moon follows it
+  telescope
 - `Skymap::Layers::Grid` draws the celestial coordinate grid, the lines of
   right ascension and the circles of declination, every `step:` degrees (30 by
   default), stopping at the horizon
 
 ### Changed
 
+- The lit side of `Skymap::Layers::Moon` faces the Sun on the map, wherever
+  the Moon is and in every orientation of the view, instead of being drawn as
+  the observer sees it from the ground
 - `Skymap::Theme` has a `grid` color, which a theme built with
   `Skymap::Theme.new` must now give
 

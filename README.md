@@ -357,9 +357,8 @@ Skymap::Layers::ConstellationNames.new(
 #### Moon
 
 `Skymap::Layers::Moon` draws the Moon where it is in the sky, with its phase.
-The Moon is drawn upright, as the observer sees it from the ground, so a
-crescent over the western horizon is tilted as it is in the real sky. On the
-chart, this means the lit side does not always face the Sun's position.
+The lit side of the Moon faces the Sun on the map: the Moon is turned with the
+projection, wherever it is on the map and whatever the orientation of the view.
 
 Astronoby needs an ephemeris to compute where the Moon is: download one once,
 load it and give it to the layer (see the
