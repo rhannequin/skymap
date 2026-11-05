@@ -20,7 +20,11 @@ module Skymap
     label
     font
   ].freeze
-  optional_colors = {grid: :boundary}.freeze
+  optional_colors = {
+    grid: :boundary,
+    scale: :star_name,
+    field_circle: :planet
+  }.freeze
 
   Theme = Data.define(*required_colors, *optional_colors.keys) do
     const_set(:OPTIONAL_COLORS, optional_colors)

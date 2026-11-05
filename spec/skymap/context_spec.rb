@@ -35,6 +35,86 @@ RSpec.describe Skymap::Context do
     end
   end
 
+  describe "#horizontal_coordinates at the date of the chart" do
+    it "puts the pole of date at the altitude of the latitude" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      pole = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(5),
+        declination: Astronoby::Angle.from_degrees(90),
+        epoch: context.instant.tt
+      )
+
+      horizontal = context.horizontal_coordinates(pole)
+
+      expect(horizontal.altitude.degrees).to be_within(1e-6).of(48.8575)
+      expect(horizontal.azimuth.degrees % 360)
+        .to be_within(1e-4).of(0).or be_within(1e-4).of(360)
+    end
+
+    it "does not give the same position as the same numbers at J2000" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      of_date = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(5),
+        declination: Astronoby::Angle.from_degrees(20),
+        epoch: context.instant.tt
+      )
+      j2000 = equatorial(right_ascension: 5, declination: 20)
+
+      first = context.horizontal_coordinates(of_date)
+      second = context.horizontal_coordinates(j2000)
+
+      expect(first.altitude.degrees)
+        .not_to be_within(0.01).of(second.altitude.degrees)
+    end
+
+    it "rejects coordinates at another epoch" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      coordinates = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(5),
+        declination: Astronoby::Angle.from_degrees(20),
+        epoch: Astronoby::JulianDate::J2000 + 1000
+      )
+
+      expect { context.horizontal_coordinates(coordinates) }
+        .to raise_error(ArgumentError, /J2000 or at the date of the chart/)
+    end
+  end
+
+  describe "#to_horizontal" do
+    it "converts equatorial coordinates to horizontal ones" do
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      coordinates = equatorial(right_ascension: 3, declination: 30)
+
+      horizontal = context.to_horizontal(coordinates)
+
+      expect(horizontal.altitude.degrees.round).to eq(30)
+    end
+
+    it "gives horizontal coordinates back as they are" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      view = view_towards(altitude: 40, azimuth: 180, field_of_view: 30)
+
+      horizontal = context.to_horizontal(view.center)
+
+      expect(horizontal).to be(view.center)
+    end
+  end
+
   describe "#position" do
     it "places a star on the canvas where its position projects" do
       context = context_at(
@@ -83,6 +163,56 @@ RSpec.describe Skymap::Context do
       )
 
       expect(point).to eq(Skymap::Point.new(x: 200, y: 10))
+    end
+  end
+
+  describe "#scale_at_point" do
+    it "gives the pixels per radian at a point of the map" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      context = context_at(
+        latitude: 48.8575,
+        canvas: canvas,
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 60)
+      )
+
+      center = context.scale_at_point(canvas.center)
+      edge = context.scale_at_point(Skymap::Point.new(x: 200, y: 1.5))
+
+      expect((center * Math::PI / 180).round(2)).to eq(6.46)
+      expect(edge).to be > center
+    end
+
+    it "matches the scale of a place of the sky" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 120)
+      )
+      altitude = Astronoby::Angle.from_degrees(70)
+      azimuth = Astronoby::Angle.from_degrees(150)
+
+      point = context.project(altitude: altitude, azimuth: azimuth)
+      expected = context.span(
+        Astronoby::Angle.from_radians(1),
+        altitude: altitude,
+        azimuth: azimuth
+      )
+
+      expect(context.scale_at_point(point)).to be_within(1e-6).of(expected)
+    end
+
+    it "is the scale of the whole sky without a view" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      altitude = Astronoby::Angle.from_degrees(20)
+      azimuth = Astronoby::Angle.from_degrees(100)
+
+      point = context.project(altitude: altitude, azimuth: azimuth)
+
+      expect(context.scale_at_point(point))
+        .to be_within(1e-6).of(198.5 / (1 + altitude.sin))
     end
   end
 
@@ -167,7 +297,39 @@ RSpec.describe Skymap::Context do
       context = context_at(
         latitude: 48.8575,
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
-        view: Skymap::View.new(center: center, field_of_view: 30)
+        view: Skymap::View.new(
+          center: center,
+          field_of_view: Astronoby::Angle.from_degrees(30)
+        )
+      )
+      horizontal = context.horizontal_coordinates(center)
+
+      point = context.project(
+        altitude: horizontal.altitude,
+        azimuth: horizontal.azimuth
+      )
+
+      expect([point.x.round(2), point.y.round(2)]).to eq([200, 200])
+    end
+  end
+
+  describe "#project with a view centered at the date of the chart" do
+    it "centers the view on equatorial coordinates of date" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22))
+      center = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(3),
+        declination: Astronoby::Angle.from_degrees(30),
+        epoch: instant.tt
+      )
+      context = Skymap::Context.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: instant,
+        canvas: canvas,
+        view: Skymap::View.new(
+          center: center,
+          field_of_view: Astronoby::Angle.from_degrees(30)
+        )
       )
       horizontal = context.horizontal_coordinates(center)
 
@@ -351,6 +513,48 @@ RSpec.describe Skymap::Context do
       )
 
       expect(radius).to eq(6)
+    end
+  end
+
+  describe "#project with an equatorial orientation" do
+    it "puts the celestial pole above the center of the view" do
+      view = Skymap::View.new(
+        center: Astronoby::Coordinates::Horizontal.new(
+          altitude: Astronoby::Angle.from_degrees(60),
+          azimuth: Astronoby::Angle.zero,
+          observer: observer_at(latitude: 48.8575)
+        ),
+        field_of_view: Astronoby::Angle.from_degrees(40),
+        orientation: :equatorial
+      )
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+
+      pole = context.project(
+        altitude: Astronoby::Angle.from_degrees(48.8575),
+        azimuth: Astronoby::Angle.zero
+      )
+
+      expect(pole.x.round(2)).to eq(200)
+      expect(pole.y).to be < 200
+    end
+
+    it "puts the celestial pole below the center with the zenith at the top" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 60, azimuth: 0, field_of_view: 40)
+      )
+
+      pole = context.project(
+        altitude: Astronoby::Angle.from_degrees(48.8575),
+        azimuth: Astronoby::Angle.zero
+      )
+
+      expect(pole.y).to be > 200
     end
   end
 end

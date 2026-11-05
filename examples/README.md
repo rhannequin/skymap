@@ -88,6 +88,15 @@ names of the constellations and the stars down to magnitude 6.
 
 <img src="orion.svg" width="480" alt="A zoom on the constellation Orion and its neighbors">
 
+## The Pleiades in a Newtonian telescope
+
+An equatorial orientation, turned by half a turn: the way a Newtonian
+telescope on an equatorial mount shows the Pleiades, with the north at the
+bottom and the east on the right. Remove `rotation:`, or use `mirrored: true`,
+for a telescope with a diagonal. [Code](pleiades.rb)
+
+<img src="pleiades.svg" width="480" alt="The Pleiades turned upside down, as in a Newtonian telescope">
+
 ## A blueprint
 
 A theme of your own, built from the dark one: white lines on blue, with a
@@ -103,5 +112,23 @@ is high above the horizon and the circles of declination are centered on it.
 [Code](grid.rb)
 
 <img src="grid.svg" width="480" alt="The sky over Tromsø with the coordinate grid, the constellation lines and the ecliptic">
+
+## A finder and an eyepiece
+
+What a finder scope and an eyepiece cover around Albireo, on a map 8 degrees
+wide. The finder is a field of 5 degrees. The eyepiece is a 25 mm eyepiece with
+a 52 degree apparent field in a 1200 mm telescope: `Skymap::Setup` computes its
+true field (a bit more than 1 degree) and the label that is written on the
+circle. [Code](field_circles.rb)
+
+<img src="field_circles.svg" width="480" alt="A circle for a finder scope and one for an eyepiece around Albireo">
+
+## A finder chart to print
+
+The Pleiades in a field of 4 degrees, with a light theme and a scale bar. The
+canvas has a print size, the width of an A4 sheet minus a margin of 10 mm on
+each side, so the chart is 190 mm wide on paper at any print scale of 100%. [Code](finder_chart.rb)
+
+<img src="finder_chart.svg" width="480" alt="The Pleiades in a field of 4 degrees, with the stars, the coordinate grid and a scale bar of 30 arc-minutes">
 
 [astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md

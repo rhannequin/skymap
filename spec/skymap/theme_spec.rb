@@ -222,6 +222,40 @@ RSpec.describe Skymap::Theme do
     end
   end
 
+  {scale: :star_name, field_circle: :planet}.each do |slot, fallback|
+    describe "the #{slot} color" do
+      it "is the #{fallback} color when it is not set" do
+        theme = theme_from_0_4_0
+
+        expect(theme.public_send(slot)).to eq(theme.public_send(fallback))
+      end
+
+      it "is its own color when it is set" do
+        theme = theme_from_0_4_0.with(slot => "#123456")
+
+        expect(theme.public_send(slot)).to eq("#123456")
+      end
+
+      it "follows the #{fallback} color when it is not set" do
+        theme = described_class.dark.with(fallback => "#abcdef")
+
+        expect(theme.public_send(slot)).to eq("#abcdef")
+      end
+
+      it "is left to its fallback by the built-in themes" do
+        themes = [described_class.dark, described_class.light,
+          described_class.night]
+
+        expect(themes.map { |theme| theme.to_h[slot] }).to eq([nil, nil, nil])
+      end
+
+      it "rejects a blank color" do
+        expect { described_class.dark.with(slot => " ") }
+          .to raise_error(ArgumentError, /#{slot} must not be blank/)
+      end
+    end
+  end
+
   describe "#to_h" do
     it "gives an optional color as it was set, nil when it was not" do
       unset = theme_from_0_4_0.to_h

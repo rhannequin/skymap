@@ -87,7 +87,7 @@ RSpec.describe Skymap::Horizon do
     it "leaves out the points behind the view" do
       view = Skymap::View.new(
         center: equatorial(right_ascension: 0, declination: 5),
-        field_of_view: 30
+        field_of_view: Astronoby::Angle.from_degrees(30)
       )
       context = context_at(
         latitude: 90,
@@ -107,7 +107,7 @@ RSpec.describe Skymap::Horizon do
     it "keeps the points in front of the view" do
       view = Skymap::View.new(
         center: equatorial(right_ascension: 0, declination: 40),
-        field_of_view: 30
+        field_of_view: Astronoby::Angle.from_degrees(30)
       )
       context = context_at(
         latitude: 90,
@@ -129,7 +129,7 @@ RSpec.describe Skymap::Horizon do
     it "leaves out the runs that never reach the view" do
       view = Skymap::View.new(
         center: equatorial(right_ascension: 0, declination: 89),
-        field_of_view: 10
+        field_of_view: Astronoby::Angle.from_degrees(10)
       )
       context = context_at(
         latitude: 90,

@@ -210,4 +210,34 @@ RSpec.describe Skymap::Chart do
       expect(polylines_in(svg)).to be_empty
     end
   end
+
+  describe "#render with a print size and a scale" do
+    it "writes the physical size and draws the scale inside the clipped sky" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(
+          size: 800,
+          padding: 24,
+          print_size: Skymap::PrintSize.paper(:a4)
+        ),
+        view: view_towards(altitude: 60, azimuth: 180, field_of_view: 4)
+      )
+
+      svg = chart.render(Skymap::Layers::Scale.new)
+      root = REXML::Document.new(svg).root
+      group = root.elements["g"]
+      bar = group.elements["polyline"]
+      caption = group.elements["text"]
+
+      expect(root["width"]).to eq("190mm")
+      expect(root["height"]).to eq("190mm")
+      expect(root["viewBox"]).to eq("0 0 800 800")
+      expect(group["clip-path"]).to start_with("url(#sky-")
+      expect(bar["stroke"]).to eq(Skymap::Theme.dark.star_name)
+      expect(caption.text.strip).to eq("30′")
+      expect(polylines_in(svg)).to be_empty
+      expect(texts_in(svg)).to be_empty
+    end
+  end
 end

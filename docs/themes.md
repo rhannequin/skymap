@@ -24,6 +24,12 @@ another one, and follows it if you change that one:
 | Optional color | Falls back to |
 | -------------- | ------------- |
 | `grid`         | `boundary`    |
+| `scale`        | `star_name`   |
+| `field_circle` | `planet`      |
+
+`grid` is the color of `Skymap::Layers::Grid`, `scale` the color of the bar and
+the label of `Skymap::Layers::Scale`, and `field_circle` the color of the
+circles and the labels of `Skymap::Layers::FieldCircles`.
 
 ## Building a theme from scratch
 

@@ -24,7 +24,7 @@ module AstronomyHelpers
         azimuth: Astronoby::Angle.from_degrees(azimuth),
         observer: observer_at(latitude: latitude)
       ),
-      field_of_view: field_of_view
+      field_of_view: Astronoby::Angle.from_degrees(field_of_view)
     )
   end
 

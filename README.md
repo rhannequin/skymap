@@ -87,12 +87,41 @@ The canvas is the square SVG the map is drawn on. `size` is its width and
 height, and `padding` is the space between the horizon and the edge of the
 SVG.
 
+#### Print size
+
+The SVG is written in pixels by default. To print it at a known size, give the
+canvas a `print_size:`: the length of the side of the square, in millimeters
+(`:mm`), centimeters (`:cm`) or inches (`:in`):
+
+```ruby
+canvas = Skymap::Canvas.new(
+  size: 800,
+  padding: 24,
+  print_size: Skymap::PrintSize.new(length: 190, unit: :mm)
+)
+```
+
+The SVG gets `width="190mm"` and `height="190mm"`, and its `viewBox` stays in the
+units of the canvas, so the map is the same and a browser or a print dialog
+prints it at 190 mm.
+
+`Skymap::PrintSize.paper` gives the largest square that fits in the width of a
+sheet of paper, minus a margin of 10 mm on each side by default (`margin:`, in
+millimeters). The papers are `:a5`, `:a4`, `:a3`, `:letter` and `:tabloid`:
+
+```ruby
+Skymap::PrintSize.paper(:a4)                # 190 mm
+Skymap::PrintSize.paper(:letter, margin: 5) # 205.9 mm
+```
+
+Add a [scale](#scale) to the map to read angles on the printed chart.
+
 ### View
 
 By default, the map is the whole sky. Pass a `view:` to zoom on an area of it:
-the center of the area, as the equatorial coordinates of a point of the sky (or
-horizontal coordinates), and the field of view, the angle in degrees between
-the opposite sides of the map:
+the center of the area, as the equatorial coordinates of a point of the sky, at
+J2000 or at the date of the chart (or horizontal coordinates), and the field of
+view, the angle between the opposite sides of the map:
 
 ```ruby
 view = Skymap::View.new(
@@ -101,7 +130,7 @@ view = Skymap::View.new(
     declination: Astronoby::Angle.zero,
     epoch: Astronoby::JulianDate::J2000
   ),
-  field_of_view: 50
+  field_of_view: Astronoby::Angle.from_degrees(50)
 )
 
 chart = Skymap::Chart.new(
@@ -112,9 +141,11 @@ chart = Skymap::Chart.new(
 )
 ```
 
-The field of view is more than 0 and up to 180 degrees. The sky is still
-seen from the observer. The zenith is at the top of the map, except when the
-zenith is in the view: the north is at the top then, as in the whole sky. With
+Equatorial coordinates at any other epoch raise an `ArgumentError`. The field
+of view is an `Astronoby::Angle` of more than 0 and up to 180 degrees. The sky
+is still seen from the observer. By default, the zenith is at the top of the
+map, except when the zenith is in the view: the north is at the top then, as in
+the whole sky. The next section changes that. With
 horizontal coordinates, only the altitude and the azimuth are used, as seen by
 the observer of the chart. The layers draw what is in the view only. The
 horizon is drawn as a line when it is in the view, and the edge of the map is a
@@ -122,6 +153,47 @@ thin outline. It is no longer the horizon, so the cardinal directions are not
 drawn. The Sun and the Moon are drawn at their size in the sky once it is
 larger than their usual size on the map. The stars are limited by the catalog:
 a field of view of 10 degrees or more shows enough of them.
+
+#### Orientation
+
+A map in a telescope is turned in a way that depends on the telescope and on
+its mount. Three options of `View` give the same orientation on the map:
+
+- `orientation: :zenith_up` (the default) keeps the zenith at the top, like an
+  alt-az mount does at the meridian.
+- `orientation: :equatorial` puts the north celestial pole at the top and the
+  east on the left, like the sky seen through an equatorial mount.
+- `rotation:` turns the map clockwise, by an `Astronoby::Angle`.
+- `mirrored: true` swaps the left and the right, before the rotation.
+
+On an equatorial mount, a refractor or a catadioptric telescope with a
+diagonal shows a mirrored image, and a Newtonian shows the sky turned by half a
+turn:
+
+```ruby
+field_of_view = Astronoby::Angle.from_degrees(4)
+
+Skymap::View.new(
+  center: center,
+  field_of_view: field_of_view,
+  orientation: :equatorial
+)
+Skymap::View.new(
+  center: center,
+  field_of_view: field_of_view,
+  orientation: :equatorial,
+  mirrored: true
+)
+Skymap::View.new(
+  center: center,
+  field_of_view: field_of_view,
+  orientation: :equatorial,
+  rotation: Astronoby::Angle.from_degrees(180)
+)
+```
+
+The north is the one of the celestial pole of the date, in both hemispheres.
+The lit side of the Moon follows the orientation too.
 
 ### Themes
 
@@ -311,9 +383,8 @@ Skymap::Layers::ConstellationNames.new(
 #### Moon
 
 `Skymap::Layers::Moon` draws the Moon where it is in the sky, with its phase.
-The Moon is drawn upright, as the observer sees it from the ground, so a
-crescent over the western horizon is tilted as it is in the real sky. On the
-chart, this means the lit side does not always face the Sun's position.
+The lit side of the Moon faces the Sun on the map: the Moon is turned with the
+projection, wherever it is on the map and whatever the orientation of the view.
 
 Astronoby needs an ephemeris to compute where the Moon is: download one once,
 load it and give it to the layer (see the
@@ -407,21 +478,170 @@ Skymap::Layers::Grid.new
 ```
 
 The lines are 30 degrees apart (2 hours of right ascension) by default. Use
-`step:` to draw them closer or further apart, in degrees. It must be a whole
-number between 1 and 90 that divides 360:
+`step:`, an `Astronoby::Angle`, to draw them closer or further apart. It is
+between 1 and 90 degrees and divides 360 degrees. For a line of right ascension
+every hour:
 
 ```ruby
-Skymap::Layers::Grid.new(step: 15)
+Skymap::Layers::Grid.new(step: Astronoby::Angle.from_hours(1))
 ```
+
+By default the grid is in the equator and equinox of J2000, like the
+coordinates of atlases and catalogs. Use `epoch: :of_date` to draw it in the
+true equator and equinox of the date of the chart instead. The declination
+circles are then centered on the true celestial pole of that date, which is
+what a polar-aligned equatorial mount shows:
+
+```ruby
+Skymap::Layers::Grid.new(epoch: :of_date)
+```
+
+The two grids differ by a fraction of a degree today, which only shows when the
+map is zoomed on a small area of the sky. For a view that follows a
+polar-aligned equatorial mount, use `:of_date`, which pairs with
+`orientation: :equatorial` (north celestial pole at the top). Keep `:j2000` to
+read coordinates off the grid and look them up in an atlas or a catalog.
 
 Give the grid first to `Chart#render` to draw the stars and the other layers
 over it.
+
+#### Field circles
+
+`Skymap::Layers::FieldCircles` draws circles that show what a finder scope or an
+eyepiece covers in the sky. Give it the fields to draw, as `Skymap::Field` or
+`Skymap::Setup` objects (see [Telescope, eyepiece and fields](#telescope-eyepiece-and-fields)):
+
+```ruby
+Skymap::Layers::FieldCircles.new(fields: [finder, setup], labels: true)
+```
+
+The circles are centered on the center of the [view](#view), so the layer needs
+a view, and nothing is drawn without one. Use `center:` to draw them around
+another point, as the equatorial or horizontal coordinates of a point of the
+sky, such as a target when the view is wider than the circles:
+
+```ruby
+Skymap::Layers::FieldCircles.new(fields: [setup], center: target)
+```
+
+A circle has the size of its field on the sphere, then it is projected, so it
+keeps its size and its shape anywhere in the map. Each circle and its label are drawn in
+the `field_circle` color of the [theme](#themes). In a view, a circle is
+drawn whole, even below the horizon, and a circle that does not reach the view
+is left out. In the whole sky, which has no center unless you give a `center:`,
+a circle stops at the horizon.
+
+With `labels: true`, the label of each field is written next to its circle.
+A label that would fall outside the view is left out. Give the layer last to
+`Chart#render` to draw the circles over the stars.
 
 #### Cardinal directions
 
 `Skymap::Layers::CardinalDirections` labels the cardinal directions (N, E, S,
 W) in the padding, with a size that follows it: a padding of about 3% of the
 size gives readable labels. It draws nothing when the map has a [view](#view).
+
+#### Scale
+
+`Skymap::Layers::Scale` draws a scale bar with its length as a label, such as
+`1°`, `30′` or `10″`, in the lower left of a map with a [view](#view). It draws
+nothing on the whole sky, where the scale changes from one place to another:
+
+```ruby
+Skymap::Layers::Scale.new
+```
+
+The bar is the longest of 1, 2, 5, 10, 20 and 30 arc-seconds, arc-minutes or
+degrees that is at most a fifth of the width of the map. It stays horizontal
+and the same in every [orientation](#orientation) of the view. The scale of the map
+changes from the center to the edge, and the bar follows it: its length is the
+angle it says at the place where it is drawn. A straight bar on the map is a
+small circle on the sky, not the shortest path between its ends, so the angle
+between the ends is a little smaller than the label on wide fields. The
+difference is below 0.01% up to a field of view of 90 degrees, which covers
+finder charts, and at most 0.1% at 120 degrees and 0.3% at 180 degrees. Nothing
+is drawn when even 1 arc-second is too long, for a field of view below about
+0.0014 degrees (5 arc-seconds). The bar and its label use the `scale`
+color of the theme. With a [print size](#print-size), the bar is as long on
+paper as the angle it says.
+
+### Telescope, eyepiece and fields
+
+An eyepiece in a telescope shows a small part of the sky, often less than a
+degree wide. These classes describe the equipment, compute that part of the
+sky, and give it to a [view](#view) or to the [field circles](#field-circles).
+
+`Skymap::Telescope` has a focal length and an aperture, in millimeters, as
+`focal_length_mm` and `aperture_mm`. `Skymap::Eyepiece` has a focal length in
+millimeters, as `focal_length_mm`, and the apparent field of view that its
+maker gives, as an `Astronoby::Angle`. All the numbers must be above 0, and
+the apparent field of view up to 180 degrees:
+
+```ruby
+telescope = Skymap::Telescope.new(focal_length_mm: 1200, aperture_mm: 200)
+eyepiece = Skymap::Eyepiece.new(
+  focal_length_mm: 25,
+  apparent_field_of_view: Astronoby::Angle.from_degrees(52)
+)
+```
+
+`Skymap::Setup` pairs a telescope with an eyepiece, and computes what you see
+with them:
+
+```ruby
+setup = Skymap::Setup.new(telescope: telescope, eyepiece: eyepiece)
+
+setup.magnification # => 48.0
+setup.true_field    # => an Astronoby::Angle of 1.083 degrees
+setup.label         # => "25 mm, 48×, 1.1°"
+```
+
+- `magnification` is the focal length of the telescope divided by the one of
+  the eyepiece, as a `Float`.
+- `true_field` is the part of the sky you see, as an `Astronoby::Angle`: the
+  apparent field of view divided by the magnification, the usual first-order
+  formula. With a Barlow lens or a focal reducer, give the effective focal
+  length of the telescope. It is what `field_of_view:` of a view takes, to draw
+  a map as wide as the eyepiece.
+- `label` is a short text for the circle: the focal length of the eyepiece,
+  the magnification and the true field, in degrees (with at most one decimal)
+  from 1 degree, in arcminutes (`15′`) below, and in arcseconds (`30″`) below
+  one arcminute.
+
+`Skymap::Field` is a field that does not come from a setup, such as a finder
+scope, a Telrad ring or the frame of a camera: its `true_field` as an
+`Astronoby::Angle`, and the `label` you choose:
+
+```ruby
+finder = Skymap::Field.new(
+  true_field: Astronoby::Angle.from_degrees(5),
+  label: "Finder 5°"
+)
+```
+
+`FieldCircles` takes anything with a `true_field` and a `label`, so a list of
+fields and setups draws them together around a target, on a map twice as wide
+as the eyepiece:
+
+```ruby
+view = Skymap::View.new(
+  center: target,
+  field_of_view: Astronoby::Angle.from_degrees(
+    setup.true_field.degrees * 2
+  )
+)
+
+chart = Skymap::Chart.new(
+  observer: observer,
+  instant: instant,
+  canvas: canvas,
+  view: view
+)
+svg = chart.render(
+  Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 7),
+  Skymap::Layers::FieldCircles.new(fields: [finder, setup], labels: true)
+)
+```
 
 ## Examples
 

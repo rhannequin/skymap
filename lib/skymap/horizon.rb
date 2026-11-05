@@ -98,6 +98,6 @@ module Skymap
       horizontal.altitude.negative?
     end
 
-    private_class_method :runs_of, :position, :crossing_point, :below?
+    private_class_method :position, :below?
   end
 end

@@ -15,6 +15,24 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(root["height"]).to eq("400")
     end
 
+    it "writes the physical size on the SVG and keeps the canvas viewBox" do
+      canvas = Skymap::Canvas.new(
+        size: 400,
+        padding: 1.5,
+        print_size: Skymap::PrintSize.new(length: 190, unit: :mm)
+      )
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
+
+      svg = renderer.render([])
+      root = REXML::Document.new(svg).root
+      sky = circles_in(svg).first
+
+      expect(root["viewBox"]).to eq("0 0 400 400")
+      expect(root["width"]).to eq("190mm")
+      expect(root["height"]).to eq("190mm")
+      expect(sky["r"]).to eq("198.5")
+    end
+
     it "draws the sky as a dark disk outlined by the horizon" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
@@ -46,7 +64,7 @@ RSpec.describe Skymap::Renderer::SVG do
       svg = renderer.render(elements)
       sky, star, planet, sun = circles_in(svg)
       line = lines_in(svg).first
-      boundary, ecliptic, grid = polylines_in(svg)
+      boundary, ecliptic, grid, field_circle, scale_bar = polylines_in(svg)
       label, *captions = texts_in(svg)
 
       expect(sky["fill"]).to eq(theme.sky)
@@ -58,12 +76,66 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(boundary["stroke"]).to eq(theme.boundary)
       expect(ecliptic["stroke"]).to eq(theme.ecliptic)
       expect(grid["stroke"]).to eq(theme.grid)
+      expect(field_circle["stroke"]).to eq(theme.field_circle)
+      expect(scale_bar["stroke"]).to eq(theme.scale)
       expect(label["fill"]).to eq(theme.label)
       expect(captions.map { |c| c["fill"] }).to eq(
-        [theme.constellation_name, theme.star_name, theme.planet_name]
+        [
+          theme.constellation_name,
+          theme.star_name,
+          theme.planet_name,
+          theme.field_circle,
+          theme.scale
+        ]
       )
       expect(([label] + captions).map { |t| t["font-family"] }.uniq)
         .to eq(["serif"])
+    end
+
+    it "draws the scale bar and the field circles in their own colors" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.dark.with(scale: "#0a0b0c", field_circle: "#0d0e0f")
+      renderer = described_class.new(canvas: canvas, theme: theme)
+
+      svg = renderer.render(one_of_each_element)
+      *, field_circle, scale_bar = polylines_in(svg)
+      *, field_label, scale_label = texts_in(svg)
+
+      expect(field_circle["stroke"]).to eq("#0d0e0f")
+      expect(field_label["fill"]).to eq("#0d0e0f")
+      expect(scale_bar["stroke"]).to eq("#0a0b0c")
+      expect(scale_label["fill"]).to eq("#0a0b0c")
+    end
+
+    it "draws the scale bar and the field circles in the fallback colors" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = theme_from_0_4_0.with(star_name: "#040506", planet: "#070809")
+      renderer = described_class.new(canvas: canvas, theme: theme)
+
+      svg = renderer.render(one_of_each_element)
+      *, field_circle, scale_bar = polylines_in(svg)
+      *, field_label, scale_label = texts_in(svg)
+
+      expect(field_circle["stroke"]).to eq("#070809")
+      expect(field_label["fill"]).to eq("#070809")
+      expect(scale_bar["stroke"]).to eq("#040506")
+      expect(scale_label["fill"]).to eq("#040506")
+    end
+
+    it "draws a scale bar as a line with a tick at each end" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
+      bar = Skymap::Renderer::ScaleBar.new(
+        from: point(100, 300), to: point(150, 300), tick: 5, width: 2
+      )
+
+      svg = renderer.render([bar])
+      polyline = polylines_in(svg).first
+
+      expect(polyline["points"]).to eq("100,295 100,300 150,300 150,295")
+      expect(polyline["fill"]).to eq("none")
+      expect(polyline["stroke"]).to eq("#a8b8d0")
+      expect(polyline["stroke-width"]).to eq("2")
     end
 
     it "draws the Moon with the colors of the given theme" do
@@ -400,6 +472,40 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["stroke-dasharray"]).to be_nil
     end
 
+    it "draws a field circle as a solid polyline in the color of the planets" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
+      circle = Skymap::Renderer::FieldCircle.new(
+        points: [point(100, 150), point(120.256, 180.004), point(100, 150)],
+        width: 1.5
+      )
+
+      svg = renderer.render([circle])
+      drawn = polylines_in(svg).first
+
+      expect(drawn["points"]).to eq("100,150 120.26,180.0 100,150")
+      expect(drawn["fill"]).to eq("none")
+      expect(drawn["stroke"]).to eq("#ffe6b3")
+      expect(drawn["stroke-width"]).to eq("1.5")
+      expect(drawn["stroke-dasharray"]).to be_nil
+    end
+
+    it "draws the label of a field circle with the tint of the planets" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
+      caption = Skymap::Renderer::Caption.new(
+        position: point(100, 150),
+        text: "1°",
+        size: 10,
+        kind: :field
+      )
+
+      svg = renderer.render([caption])
+      drawn = texts_in(svg).first
+
+      expect(drawn["fill"]).to eq("#ffe6b3")
+    end
+
     it "draws the Moon as a dark disk with its lit part on top" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
@@ -571,6 +677,12 @@ RSpec.describe Skymap::Renderer::SVG do
       Skymap::Renderer::Grid.new(
         points: [point(1, 1), point(2, 2)], width: 1
       ),
+      Skymap::Renderer::FieldCircle.new(
+        points: [point(1, 1), point(2, 2)], width: 1
+      ),
+      Skymap::Renderer::ScaleBar.new(
+        from: point(1, 1), to: point(3, 1), tick: 1, width: 1
+      ),
       Skymap::Renderer::Dot.new(center: point(10, 10), radius: 1),
       Skymap::Renderer::Planet.new(center: point(20, 20), radius: 1),
       Skymap::Renderer::Sun.new(center: point(30, 30), radius: 1),
@@ -581,7 +693,7 @@ RSpec.describe Skymap::Renderer::SVG do
         rotation: 0
       ),
       Skymap::Renderer::Label.new(position: point(40, 40), text: "N", size: 1),
-      *%i[constellation star planet].map do |kind|
+      *%i[constellation star planet field scale].map do |kind|
         Skymap::Renderer::Caption.new(
           position: point(50, 50), text: kind.to_s, size: 1, kind: kind
         )
