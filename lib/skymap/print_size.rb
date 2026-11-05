@@ -38,15 +38,13 @@ module Skymap
     end
   end
 
-  class PrintSize
-    UNITS = %i[mm cm in].freeze
-    PAPERS = {
-      a5: 148,
-      a4: 210,
-      a3: 297,
-      letter: 215.9,
-      tabloid: 279.4
-    }.freeze
-    DEFAULT_MARGIN = 10
-  end
+  PrintSize::UNITS = %i[mm cm in].freeze
+  PrintSize::PAPERS = {
+    a5: 148,
+    a4: 210,
+    a3: 297,
+    letter: 215.9,
+    tabloid: 279.4
+  }.freeze
+  PrintSize::DEFAULT_MARGIN = 10
 end
