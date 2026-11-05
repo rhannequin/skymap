@@ -70,6 +70,36 @@ RSpec.describe Skymap::Layers::Scale do
       expect(errors.max).to be < 0.005
     end
 
+    it "draws the same bar in every orientation of the view" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      layer = described_class.new
+      center = equatorial(right_ascension: 5.6, declination: 0)
+      field_of_view = Astronoby::Angle.from_degrees(120)
+
+      views = [
+        {},
+        {orientation: :equatorial},
+        {rotation: Astronoby::Angle.from_degrees(30), mirrored: true}
+      ].map do |options|
+        Skymap::View.new(
+          center: center, field_of_view: field_of_view, **options
+        )
+      end
+      bars = views.map do |view|
+        context = context_at(latitude: 48.8575, canvas: canvas, view: view)
+        layer.elements(context)
+      end
+      angles = bars.map do |bar, _|
+        sky_angle_between(
+          bar.from, bar.to, canvas: canvas, field_of_view: 120
+        )
+      end
+
+      expect(bars.map { |_, caption| caption.text }.uniq).to eq(["20°"])
+      expect(bars.map { |bar, _| bar.to.x - bar.from.x }.uniq.size).to eq(1)
+      expect(angles).to all(be_within(0.05).of(20))
+    end
+
     it "keeps the bar under a fifth of the map width" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       layer = described_class.new
@@ -118,7 +148,7 @@ RSpec.describe Skymap::Layers::Scale do
       layer = described_class.new
       view = Skymap::View.new(
         center: equatorial(right_ascension: 5.6, declination: 0),
-        field_of_view: 20
+        field_of_view: Astronoby::Angle.from_degrees(20)
       )
       context = context_at(latitude: 48.8575, canvas: canvas, view: view)
 

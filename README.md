@@ -526,7 +526,8 @@ Skymap::Layers::Scale.new
 ```
 
 The bar is the longest of 1, 2, 5, 10, 20 and 30 arc-seconds, arc-minutes or
-degrees that is at most a fifth of the width of the map. The scale of the map
+degrees that is at most a fifth of the width of the map. It stays horizontal
+and the same in every [orientation](#orientation) of the view. The scale of the map
 changes from the center to the edge, and the bar follows it: its length is the
 angle it says at the place where it is drawn. A straight bar on the map is a
 small circle on the sky, not the shortest path between its ends, so the angle
