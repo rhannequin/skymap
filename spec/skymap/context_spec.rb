@@ -35,6 +35,26 @@ RSpec.describe Skymap::Context do
     end
   end
 
+  describe "#horizontal_of_date" do
+    it "puts the pole of date at the altitude of the latitude" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      pole = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(5),
+        declination: Astronoby::Angle.from_degrees(90),
+        epoch: nil
+      )
+
+      horizontal = context.horizontal_of_date(pole)
+
+      expect(horizontal.altitude.degrees).to be_within(1e-6).of(48.8575)
+      expect(horizontal.azimuth.degrees % 360)
+        .to be_within(1e-4).of(0).or be_within(1e-4).of(360)
+    end
+  end
+
   describe "#position" do
     it "places a star on the canvas where its position projects" do
       context = context_at(

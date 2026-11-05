@@ -6,14 +6,20 @@ module Skymap
       DEFAULT_STEP = 30
       LINE_WIDTH_RATIO = 0.0025
       SAMPLING_STEP_IN_DEGREES = 1
+      EPOCHS = %i[j2000 of_date].freeze
 
-      def initialize(step: DEFAULT_STEP)
+      def initialize(step: DEFAULT_STEP, epoch: :j2000)
         unless step.is_a?(Integer) && step.between?(1, 90) && (360 % step).zero?
           raise ArgumentError,
             "step must be a whole number of degrees between 1 and 90 " \
             "that divides 360"
         end
 
+        unless EPOCHS.include?(epoch)
+          raise ArgumentError, "epoch must be :j2000 or :of_date"
+        end
+
+        @epoch = epoch
         @lines = parallels(step) + meridians(step)
       end
 
@@ -21,13 +27,17 @@ module Skymap
         width = LINE_WIDTH_RATIO * context.canvas.radius
 
         @lines.flat_map { |line|
-          Horizon.joined(Horizon.visible_runs(context, line))
+          Horizon.joined(Horizon.visible_runs(context, line, of_date: of_date?))
         }.map do |points|
           Renderer::Grid.new(points: points, width: width)
         end
       end
 
       private
+
+      def of_date?
+        @epoch == :of_date
+      end
 
       def parallels(step)
         declinations = (step...90).step(step).flat_map { |degrees|
@@ -54,7 +64,7 @@ module Skymap
         Astronoby::Coordinates::Equatorial.new(
           right_ascension: Astronoby::Angle.from_degrees(right_ascension),
           declination: Astronoby::Angle.from_degrees(declination),
-          epoch: Astronoby::JulianDate::J2000
+          epoch: of_date? ? nil : Astronoby::JulianDate::J2000
         )
       end
     end

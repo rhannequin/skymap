@@ -80,7 +80,71 @@ RSpec.describe Skymap::Layers::Grid do
     end
   end
 
+  describe "#elements with an epoch" do
+    it "draws the same lines by default as with the J2000 epoch" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+
+      default = described_class.new.elements(context)
+      j2000 = described_class.new(epoch: :j2000).elements(context)
+
+      expect(default.map(&:points)).to eq(j2000.map(&:points))
+    end
+
+    it "centers the circles of declination on the pole of date" do
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+
+      of_date = circle_distances(
+        described_class.new(epoch: :of_date).elements(context)
+      )
+      j2000 = circle_distances(described_class.new.elements(context))
+
+      expect(of_date.max - of_date.min).to be < 0.01
+      expect(j2000.max - j2000.min).to be > 0.5
+    end
+
+    it "draws the same number of lines as with J2000" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+
+      of_date = described_class.new(epoch: :of_date).elements(context)
+      j2000 = described_class.new.elements(context)
+
+      expect(of_date.size).to eq(j2000.size)
+    end
+
+    it "draws the lines of date in a zoomed view" do
+      view = view_towards(altitude: 48.8575, azimuth: 0, field_of_view: 20)
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+
+      grids = described_class.new(step: 5, epoch: :of_date).elements(context)
+
+      expect(grids).not_to be_empty
+    end
+  end
+
   describe ".new" do
+    it "rejects an unknown epoch" do
+      expect { described_class.new(epoch: :b1950) }
+        .to raise_error(ArgumentError, /epoch must be :j2000 or :of_date/)
+    end
+
+    it "rejects an epoch that is not a symbol" do
+      expect { described_class.new(epoch: "of_date") }
+        .to raise_error(ArgumentError, /epoch must be/)
+    end
+
     it "rejects a step that is not a whole number of degrees" do
       expect { described_class.new(step: 7.5) }
         .to raise_error(ArgumentError, /step must be a whole number/)
@@ -100,6 +164,12 @@ RSpec.describe Skymap::Layers::Grid do
       expect { described_class.new(step: 120) }
         .to raise_error(ArgumentError, /between 1 and 90/)
     end
+  end
+
+  def circle_distances(grids)
+    circle = grids.find { |grid| grid.points.first == grid.points.last }
+
+    circle.points.map { |point| distance_from_center(point) }
   end
 
   def at_the_pole(grids)

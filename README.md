@@ -418,6 +418,21 @@ number between 1 and 90 that divides 360:
 Skymap::Layers::Grid.new(step: 15)
 ```
 
+By default the grid is in the equator and equinox of J2000, like the
+coordinates of atlases and catalogs. Use `epoch: :of_date` to draw it in the
+true equator and equinox of the date of the chart instead. The declination
+circles are then centered on the true celestial pole of that date, which is
+what a polar-aligned equatorial mount shows:
+
+```ruby
+Skymap::Layers::Grid.new(epoch: :of_date)
+```
+
+The two grids differ by a fraction of a degree today, which only shows when the
+map is zoomed on a small area of the sky. For a view that follows an equatorial
+mount, use `:of_date` with `orientation: :equatorial`. Keep `:j2000` to read
+coordinates off the grid and look them up in an atlas or a catalog.
+
 Give the grid first to `Chart#render` to draw the stars and the other layers
 over it.
 

@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::Layers::Grid` draws the celestial coordinate grid, the lines of
   right ascension and the circles of declination, every `step:` degrees (30 by
   default), stopping at the horizon
+- `epoch: :of_date` on `Skymap::Layers::Grid` draws the grid in the true
+  equator and equinox of the date of the chart, centered on the true celestial
+  pole, instead of J2000 (the default)
 
 ### Changed
 

@@ -33,6 +33,16 @@ module Skymap
       @horizontal[key] ||= @transformation.apply(coordinates)
     end
 
+    def horizontal_of_date(coordinates)
+      Astronoby::Coordinates::Equatorial.new(
+        right_ascension: coordinates.right_ascension,
+        declination: coordinates.declination,
+        hour_angle: Astronoby::Angle.from_hours(sidereal_time) -
+          coordinates.right_ascension,
+        epoch: @instant.tt
+      ).to_horizontal(time: @instant.to_time, observer: @observer)
+    end
+
     def position(star)
       horizontal = horizontal(star)
       project(altitude: horizontal.altitude, azimuth: horizontal.azimuth)
@@ -89,6 +99,13 @@ module Skymap
     end
 
     private
+
+    def sidereal_time
+      @sidereal_time ||= Astronoby::LocalApparentSiderealTime.from_utc(
+        @instant.to_time,
+        longitude: @observer.longitude
+      ).time
+    end
 
     def projection(radius)
       @projections[radius] ||= if full_sky?
