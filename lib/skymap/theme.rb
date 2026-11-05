@@ -1,34 +1,46 @@
 # frozen_string_literal: true
 
 module Skymap
+  required_colors = %i[
+    background
+    sky
+    horizon
+    star
+    constellation_line
+    boundary
+    ecliptic
+    planet
+    sun
+    moon
+    moon_shadow
+    moon_shadow_opacity
+    constellation_name
+    star_name
+    planet_name
+    label
+    font
+  ].freeze
   optional_colors = {grid: :boundary}.freeze
 
-  Theme = Data.define(
-    :background,
-    :sky,
-    :horizon,
-    :star,
-    :constellation_line,
-    :boundary,
-    :ecliptic,
-    :planet,
-    :sun,
-    :moon,
-    :moon_shadow,
-    :moon_shadow_opacity,
-    :constellation_name,
-    :star_name,
-    :planet_name,
-    :label,
-    :font,
-    *optional_colors.keys
-  ) do
+  Theme = Data.define(*required_colors, *optional_colors.keys) do
     const_set(:OPTIONAL_COLORS, optional_colors)
 
-    optional_colors.each do |slot, fallback|
-      own = instance_method(slot)
-      define_method(slot) { own.bind_call(self) || public_send(fallback) }
+    def self.check_fallbacks(optional, required)
+      optional.each do |slot, fallback|
+        next if required.include?(fallback)
+
+        raise ArgumentError,
+          "#{slot} must fall back to a required slot, not #{fallback.inspect}"
+      end
     end
+
+    check_fallbacks(optional_colors, required_colors)
+
+    prepend(Module.new {
+      optional_colors.each do |slot, fallback|
+        define_method(slot) { super() || public_send(fallback) }
+      end
+    })
 
     def self.dark
       new(

@@ -211,6 +211,12 @@ theme = Skymap::Theme.new(
 theme.grid # => "#d3cbb7", the color of the boundaries
 ```
 
+`theme.grid` gives the color that is drawn, but `to_h`, `inspect`, `==` and
+pattern matching work on what was set, so an unset optional color is `nil`
+there. That way `Skymap::Theme.new(**theme.to_h)` builds a theme that still
+follows its fallback. It also means that two themes that draw the same are equal
+only if they set the same colors.
+
 Use `"none"` as a color to leave something out. The dark theme has
 `background: "none"`, so the SVG is transparent around the sky, and with
 `sky: "none"` the sky is transparent too, to put the map on a background of

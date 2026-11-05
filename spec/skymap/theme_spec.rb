@@ -180,6 +180,30 @@ RSpec.describe Skymap::Theme do
     end
   end
 
+  describe ".check_fallbacks" do
+    it "accepts a fallback that is a required slot" do
+      required = described_class.members - [:grid]
+
+      expect { described_class.check_fallbacks({grid: :boundary}, required) }
+        .not_to raise_error
+    end
+
+    it "rejects a fallback that is not a slot" do
+      required = described_class.members - [:grid]
+
+      expect { described_class.check_fallbacks({grid: :bondary}, required) }
+        .to raise_error(ArgumentError, /grid must fall back to a required slot/)
+    end
+
+    it "rejects a fallback that is an optional slot" do
+      required = described_class.members - [:grid, :scale]
+      table = {grid: :scale, scale: :grid}
+
+      expect { described_class.check_fallbacks(table, required) }
+        .to raise_error(ArgumentError, /grid must fall back to a required slot/)
+    end
+  end
+
   describe "#to_h" do
     it "gives an optional color as it was set, nil when it was not" do
       unset = theme_from_0_4_0.to_h
@@ -193,6 +217,23 @@ RSpec.describe Skymap::Theme do
       theme = theme_from_0_4_0
 
       expect(described_class.new(**theme.to_h)).to eq(theme)
+    end
+  end
+
+  describe "the slots that were set" do
+    it "are what to_h, inspect, == and pattern matching work on" do
+      theme = theme_from_0_4_0
+      explicit = theme.with(grid: theme.boundary)
+
+      matched = case theme
+      in {grid: nil, boundary:} then boundary
+      end
+
+      expect(theme.grid).to eq(theme.boundary)
+      expect(theme.to_h).to include(grid: nil)
+      expect(theme.inspect).to include("grid=nil")
+      expect(matched).to eq(theme.boundary)
+      expect(explicit).not_to eq(theme)
     end
   end
 
