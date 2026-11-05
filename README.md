@@ -170,57 +170,13 @@ theme = Skymap::Theme.dark.with(
 )
 ```
 
-The required colors are `background` (the square behind the sky, which the
-cardinal directions are written on), `sky`, `horizon`, `star`,
-`constellation_line`, `boundary`, `ecliptic`, `planet`, `sun`, `moon`,
-`moon_shadow` (with its `moon_shadow_opacity`, between 0 and 1),
-`constellation_name`, `star_name`, `planet_name` and `label` (the cardinal
-directions). `font` is the font family of every text.
-
-Some colors are optional. When you leave one out, it takes the color of
-another one, and follows it if you change that one:
-
-| Optional color | Falls back to |
-| -------------- | ------------- |
-| `grid`         | `boundary`    |
-
-`Skymap::Theme.new` takes all the required colors, and the optional ones if you
-want them:
-
-```ruby
-theme = Skymap::Theme.new(
-  background: "#fdf6e3",
-  sky: "#fdf6e3",
-  horizon: "#586e75",
-  star: "#073642",
-  constellation_line: "#93a1a1",
-  boundary: "#d3cbb7",
-  ecliptic: "#b58900",
-  planet: "#cb4b16",
-  sun: "#b58900",
-  moon: "#eee8d5",
-  moon_shadow: "#586e75",
-  moon_shadow_opacity: 0.4,
-  constellation_name: "#268bd2",
-  star_name: "#657b83",
-  planet_name: "#cb4b16",
-  label: "#586e75",
-  font: "serif"
-)
-
-theme.grid # => "#d3cbb7", the color of the boundaries
-```
-
-`theme.grid` gives the color that is drawn, but `to_h`, `inspect`, `==` and
-pattern matching work on what was set, so an unset optional color is `nil`
-there. That way `Skymap::Theme.new(**theme.to_h)` builds a theme that still
-follows its fallback. It also means that two themes that draw the same are equal
-only if they set the same colors.
-
 Use `"none"` as a color to leave something out. The dark theme has
 `background: "none"`, so the SVG is transparent around the sky, and with
 `sky: "none"` the sky is transparent too, to put the map on a background of
 your own. With `horizon: "none"`, the edge of the sky is not outlined.
+
+The [theme reference][themes-reference] lists every color and shows how to
+build a theme from scratch.
 
 ### Layers
 
@@ -621,6 +577,7 @@ rooms and mailing lists is expected to follow the
 [MIT License]: https://opensource.org/licenses/MIT
 [bsc5]: https://cdsarc.cds.unistra.fr/viz-bin/cat/V/50
 [vizier-doi]: https://doi.org/10.26093/cds/vizier
+[themes-reference]: https://github.com/rhannequin/skymap/blob/main/docs/themes.md
 [astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md
 [oae-maps]: https://www.astro4edu.org/
 [vi49]: https://cdsarc.cds.unistra.fr/viz-bin/cat/VI/49
