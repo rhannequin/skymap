@@ -38,9 +38,7 @@ module Skymap
           crossing_point(context, from, to) + [position(context, to)]
         end
 
-      path.chunk { |point| !point.nil? }.filter_map do |visible, points|
-        points if visible && points.size > 1
-      end
+      runs_of(context, path)
     end
 
     def line(context)
@@ -59,17 +57,20 @@ module Skymap
           azimuth: horizontal.azimuth
         )
       end
-      runs = path.chunk { |point| !point.nil? }.filter_map do |visible, points|
-        points if visible && points.size > 1
-      end
 
-      joined(runs)
+      joined(runs_of(context, path))
     end
 
     def joined(runs)
       return runs unless runs.size > 1 && runs.first.first == runs.last.last
 
       [runs.last + runs.first.drop(1)] + runs[1...-1]
+    end
+
+    def runs_of(context, path)
+      path.chunk { |point| !point.nil? }.filter_map do |visible, points|
+        points if visible && points.size > 1 && context.crosses_view?(points)
+      end
     end
 
     def position(context, horizontal)
@@ -97,6 +98,6 @@ module Skymap
       horizontal.altitude.negative?
     end
 
-    private_class_method :position, :crossing_point, :below?
+    private_class_method :runs_of, :position, :crossing_point, :below?
   end
 end

@@ -18,14 +18,12 @@ module Skymap
           altitude: horizontal.altitude,
           azimuth: horizontal.azimuth
         )
-        radius = [
+        radius = context.disk_radius(
           SUN_RADIUS_RATIO * context.canvas.radius,
-          context.span(
-            sun.angular_diameter,
-            altitude: horizontal.altitude,
-            azimuth: horizontal.azimuth
-          ) / 2
-        ].max
+          angular_diameter: sun.angular_diameter,
+          altitude: horizontal.altitude,
+          azimuth: horizontal.azimuth
+        )
         return [] unless context.in_view?(center, radius)
 
         [Renderer::Sun.new(center: center, radius: radius)]

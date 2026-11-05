@@ -125,6 +125,28 @@ RSpec.describe Skymap::Horizon do
     end
   end
 
+  describe ".visible_runs when zoomed" do
+    it "leaves out the runs that never reach the view" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 0, declination: 89),
+        field_of_view: 10
+      )
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      points = [
+        equatorial(right_ascension: 3, declination: 60),
+        equatorial(right_ascension: 3.1, declination: 60)
+      ]
+
+      runs = described_class.visible_runs(context, points)
+
+      expect(runs).to be_empty
+    end
+  end
+
   describe ".line" do
     it "is a circle around the center when the whole sky is the view" do
       context = context_at(
@@ -175,6 +197,18 @@ RSpec.describe Skymap::Horizon do
       lines = described_class.line(context)
 
       expect(lines.sum(&:size)).to be < 360
+    end
+  end
+
+  describe ".line when the horizon is out of the view" do
+    it "draws no line" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 60, azimuth: 180, field_of_view: 20)
+      )
+
+      expect(described_class.line(context)).to be_empty
     end
   end
 end

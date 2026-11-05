@@ -4,11 +4,13 @@ module Skymap
   module Projection
     class ObliqueStereographic
       MIN_DENOMINATOR = 1e-9
+      NORTH = [1.0, 0.0, 0.0].freeze
+      ZENITH = [0.0, 0.0, 1.0].freeze
 
       def initialize(center:, radius:, altitude:, azimuth:, field_of_view:)
         @center = center
         @forward = vector(altitude, azimuth)
-        @up = up_from(@forward)
+        @up = up_from(@forward, field_of_view)
         @right = cross(@up, @forward)
         half_angle = Astronoby::Angle.from_degrees(field_of_view / 4.0)
         @scale = radius / (2 * half_angle.tan)
@@ -40,13 +42,22 @@ module Skymap
         ]
       end
 
-      def up_from(forward)
-        up = [-forward[0] * forward[2], -forward[1] * forward[2],
-          1 - forward[2]**2]
-        length = Math.sqrt(dot(up, up))
-        return [1.0, 0.0, 0.0] if length < 1e-12
+      def up_from(forward, field_of_view)
+        half_angle = Astronoby::Angle.from_degrees(field_of_view / 2.0)
+        references = [ZENITH, NORTH]
+        references.reverse! if forward[2] >= half_angle.cos
 
-        up.map { |component| component / length }
+        references.each do |reference|
+          up = away_from(reference, forward)
+          length = Math.sqrt(dot(up, up))
+          return up.map { |component| component / length } if length > 1e-9
+        end
+      end
+
+      def away_from(reference, forward)
+        along = dot(reference, forward)
+
+        reference.zip(forward).map { |r, f| r - along * f }
       end
 
       def dot(a, b)

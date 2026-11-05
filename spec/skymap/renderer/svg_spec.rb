@@ -568,7 +568,7 @@ RSpec.describe Skymap::Renderer::SVG do
   end
 
   describe "#render when clipped" do
-    it "clips the elements and leaves the labels out of the clip" do
+    it "draws everything in a group clipped to the sky" do
       canvas = Skymap::Canvas.new(size: 400, padding: 20)
       renderer = described_class.new(
         canvas: canvas,
@@ -583,11 +583,31 @@ RSpec.describe Skymap::Renderer::SVG do
       svg = renderer.render([dot, label])
       root = REXML::Document.new(svg).root
       group = root.elements["g"]
+      clip = root.elements["defs/clipPath"]
 
-      expect(group["clip-path"]).to eq("url(#sky)")
+      expect(group["clip-path"]).to eq("url(##{clip["id"]})")
       expect(group.elements.to_a("circle").size).to eq(1)
-      expect(texts_in(svg).size).to eq(1)
-      expect(group.elements.to_a("text")).to be_empty
+      expect(group.elements.to_a("text").size).to eq(1)
+    end
+
+    it "gives the clip of each canvas its own id" do
+      small = described_class.new(
+        canvas: Skymap::Canvas.new(size: 400, padding: 20),
+        theme: Skymap::Theme.dark,
+        clipped: true
+      )
+      large = described_class.new(
+        canvas: Skymap::Canvas.new(size: 800, padding: 20),
+        theme: Skymap::Theme.dark,
+        clipped: true
+      )
+
+      ids = [small, large].map do |renderer|
+        REXML::Document.new(renderer.render([])).root
+          .elements["defs/clipPath"]["id"]
+      end
+
+      expect(ids.uniq.size).to eq(2)
     end
   end
 

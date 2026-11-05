@@ -146,4 +146,59 @@ RSpec.describe Skymap::Layers::ConstellationLines do
       expect(lines).to be_empty
     end
   end
+
+  describe "#elements with a view" do
+    it "draws the lines that reach the view only" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 0, declination: 89),
+        field_of_view: 10
+      )
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      stars = [
+        star(hr: 1, right_ascension: 0, declination: 88, magnitude: 2),
+        star(hr: 2, right_ascension: 6, declination: 88, magnitude: 2),
+        star(hr: 3, right_ascension: 0, declination: 60, magnitude: 2),
+        star(hr: 4, right_ascension: 6, declination: 60, magnitude: 2)
+      ]
+      layer = described_class.new(
+        lines: [
+          constellation_line(from: [1], to: [2]),
+          constellation_line(from: [3], to: [4])
+        ],
+        stars: stars
+      )
+
+      lines = layer.elements(context)
+
+      expect(lines.size).to eq(1)
+    end
+
+    it "leaves out a line to a star behind the view" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 0, declination: 5),
+        field_of_view: 10
+      )
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      stars = [
+        star(hr: 1, right_ascension: 0, declination: 5, magnitude: 2),
+        star(hr: 2, right_ascension: 12, declination: 5, magnitude: 2)
+      ]
+      layer = described_class.new(
+        lines: [constellation_line(from: [1], to: [2])],
+        stars: stars
+      )
+
+      lines = layer.elements(context)
+
+      expect(lines).to be_empty
+    end
+  end
 end
