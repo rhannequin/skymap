@@ -36,14 +36,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   equipment and compute the magnification, the true field as an
   `Astronoby::Angle` and a label such as `25 mm, 48×, 1.1°`, and
   `Skymap::Field` is a named field, such as a finder scope or a Telrad ring
+- `Skymap::Theme` has optional colors, which fall back to the color of another
+  one when they are not given, so that a theme built with `Skymap::Theme.new`
+  for an earlier version keeps working: `grid` falls back to `boundary`,
+  `scale` to `star_name` and `field_circle` to `planet`
 
 ### Changed
 
 - The lit side of `Skymap::Layers::Moon` faces the Sun on the map, wherever
   the Moon is and in every orientation of the view, instead of being drawn as
   the observer sees it from the ground
-- `Skymap::Theme` has a `grid` color, which a theme built with
-  `Skymap::Theme.new` must now give
 - Equatorial coordinates given to `Skymap::Context#horizontal_coordinates`, and
   as the center of a `Skymap::View`, can be at J2000 or at the date of the
   chart, and any other epoch now raises an `ArgumentError` (it was an

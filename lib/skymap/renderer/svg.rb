@@ -123,7 +123,7 @@ module Skymap
         svg.polyline(
           points: format_points(points),
           fill: "none",
-          stroke: @theme.star_name,
+          stroke: @theme.scale,
           stroke_width: bar.width.round(2)
         )
       end
@@ -145,7 +145,7 @@ module Skymap
       end
 
       def draw_field_circle(svg, circle)
-        draw_polyline(svg, circle, @theme.planet)
+        draw_polyline(svg, circle, @theme.field_circle)
       end
 
       def draw_grid(svg, grid)
@@ -239,8 +239,8 @@ module Skymap
         when :constellation then @theme.constellation_name
         when :star then @theme.star_name
         when :planet then @theme.planet_name
-        when :field then @theme.planet_name
-        when :scale then @theme.star_name
+        when :field then @theme.field_circle
+        when :scale then @theme.scale
         else raise ArgumentError, "unknown caption kind: #{kind}"
         end
       end

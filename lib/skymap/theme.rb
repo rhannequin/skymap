@@ -1,26 +1,51 @@
 # frozen_string_literal: true
 
 module Skymap
-  Theme = Data.define(
-    :background,
-    :sky,
-    :horizon,
-    :star,
-    :constellation_line,
-    :boundary,
-    :ecliptic,
-    :grid,
-    :planet,
-    :sun,
-    :moon,
-    :moon_shadow,
-    :moon_shadow_opacity,
-    :constellation_name,
-    :star_name,
-    :planet_name,
-    :label,
-    :font
-  ) do
+  required_colors = %i[
+    background
+    sky
+    horizon
+    star
+    constellation_line
+    boundary
+    ecliptic
+    planet
+    sun
+    moon
+    moon_shadow
+    moon_shadow_opacity
+    constellation_name
+    star_name
+    planet_name
+    label
+    font
+  ].freeze
+  optional_colors = {
+    grid: :boundary,
+    scale: :star_name,
+    field_circle: :planet
+  }.freeze
+
+  Theme = Data.define(*required_colors, *optional_colors.keys) do
+    const_set(:OPTIONAL_COLORS, optional_colors)
+
+    def self.check_fallbacks(optional, required)
+      optional.each do |slot, fallback|
+        next if required.include?(fallback)
+
+        raise ArgumentError,
+          "#{slot} must fall back to a required slot, not #{fallback.inspect}"
+      end
+    end
+
+    check_fallbacks(optional_colors, required_colors)
+
+    prepend(Module.new {
+      optional_colors.each do |slot, fallback|
+        define_method(slot) { super() || public_send(fallback) }
+      end
+    })
+
     def self.dark
       new(
         background: "none",
@@ -91,14 +116,18 @@ module Skymap
     end
 
     def initialize(**slots)
+      optional = self.class::OPTIONAL_COLORS
+
       slots.except(:moon_shadow_opacity).each do |slot, value|
+        next if value.nil? && optional.key?(slot)
+
         check_text(slot, value)
       end
       if slots.key?(:moon_shadow_opacity)
         check_opacity(slots[:moon_shadow_opacity])
       end
 
-      super
+      super(**optional.transform_values { nil }, **slots)
     end
 
     private

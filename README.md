@@ -242,17 +242,13 @@ theme = Skymap::Theme.dark.with(
 )
 ```
 
-The colors are `background` (the square behind the sky, which the cardinal
-directions are written on), `sky`, `horizon`, `star`, `constellation_line`, `boundary`,
-`ecliptic`, `grid`, `planet`, `sun`, `moon`, `moon_shadow` (with its
-`moon_shadow_opacity`, between 0 and 1), `constellation_name`, `star_name`,
-`planet_name` and `label` (the cardinal directions). `font` is the font family
-of every text.
-
 Use `"none"` as a color to leave something out. The dark theme has
 `background: "none"`, so the SVG is transparent around the sky, and with
 `sky: "none"` the sky is transparent too, to put the map on a background of
 your own. With `horizon: "none"`, the edge of the sky is not outlined.
+
+The [theme reference][themes-reference] lists every color and shows how to
+build a theme from scratch.
 
 ### Layers
 
@@ -529,8 +525,8 @@ Skymap::Layers::FieldCircles.new(fields: [setup], center: target)
 ```
 
 A circle has the size of its field on the sphere, then it is projected, so it
-keeps its size and its shape anywhere in the map. Each circle is drawn in the
-color of the planets (`planet` in the [theme](#themes)). In a view, a circle is
+keeps its size and its shape anywhere in the map. Each circle and its label are drawn in
+the `field_circle` color of the [theme](#themes). In a view, a circle is
 drawn whole, even below the horizon, and a circle that does not reach the view
 is left out. In the whole sky, which has no center unless you give a `center:`,
 a circle stops at the horizon.
@@ -565,7 +561,7 @@ between the ends is a little smaller than the label on wide fields. The
 difference is below 0.01% up to a field of view of 90 degrees, which covers
 finder charts, and at most 0.1% at 120 degrees and 0.3% at 180 degrees. Nothing
 is drawn when even 1 arc-second is too long, for a field of view below about
-0.0014 degrees (5 arc-seconds). The bar and its label use the `star_name`
+0.0014 degrees (5 arc-seconds). The bar and its label use the `scale`
 color of the theme. With a [print size](#print-size), the bar is as long on
 paper as the angle it says.
 
@@ -801,6 +797,7 @@ rooms and mailing lists is expected to follow the
 [MIT License]: https://opensource.org/licenses/MIT
 [bsc5]: https://cdsarc.cds.unistra.fr/viz-bin/cat/V/50
 [vizier-doi]: https://doi.org/10.26093/cds/vizier
+[themes-reference]: https://github.com/rhannequin/skymap/blob/main/docs/themes.md
 [astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md
 [oae-maps]: https://www.astro4edu.org/
 [vi49]: https://cdsarc.cds.unistra.fr/viz-bin/cat/VI/49

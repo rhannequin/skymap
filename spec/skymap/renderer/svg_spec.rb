@@ -76,20 +76,50 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(boundary["stroke"]).to eq(theme.boundary)
       expect(ecliptic["stroke"]).to eq(theme.ecliptic)
       expect(grid["stroke"]).to eq(theme.grid)
-      expect(field_circle["stroke"]).to eq(theme.planet)
-      expect(scale_bar["stroke"]).to eq(theme.star_name)
+      expect(field_circle["stroke"]).to eq(theme.field_circle)
+      expect(scale_bar["stroke"]).to eq(theme.scale)
       expect(label["fill"]).to eq(theme.label)
       expect(captions.map { |c| c["fill"] }).to eq(
         [
           theme.constellation_name,
           theme.star_name,
           theme.planet_name,
-          theme.planet_name,
-          theme.star_name
+          theme.field_circle,
+          theme.scale
         ]
       )
       expect(([label] + captions).map { |t| t["font-family"] }.uniq)
         .to eq(["serif"])
+    end
+
+    it "draws the scale bar and the field circles in their own colors" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.dark.with(scale: "#0a0b0c", field_circle: "#0d0e0f")
+      renderer = described_class.new(canvas: canvas, theme: theme)
+
+      svg = renderer.render(one_of_each_element)
+      *, field_circle, scale_bar = polylines_in(svg)
+      *, field_label, scale_label = texts_in(svg)
+
+      expect(field_circle["stroke"]).to eq("#0d0e0f")
+      expect(field_label["fill"]).to eq("#0d0e0f")
+      expect(scale_bar["stroke"]).to eq("#0a0b0c")
+      expect(scale_label["fill"]).to eq("#0a0b0c")
+    end
+
+    it "draws the scale bar and the field circles in the fallback colors" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = theme_from_0_4_0.with(star_name: "#040506", planet: "#070809")
+      renderer = described_class.new(canvas: canvas, theme: theme)
+
+      svg = renderer.render(one_of_each_element)
+      *, field_circle, scale_bar = polylines_in(svg)
+      *, field_label, scale_label = texts_in(svg)
+
+      expect(field_circle["stroke"]).to eq("#070809")
+      expect(field_label["fill"]).to eq("#070809")
+      expect(scale_bar["stroke"]).to eq("#040506")
+      expect(scale_label["fill"]).to eq("#040506")
     end
 
     it "draws a scale bar as a line with a tick at each end" do
