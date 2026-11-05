@@ -119,6 +119,24 @@ RSpec.describe Skymap::Theme do
     end
   end
 
+  describe ".new with positional arguments" do
+    it "takes the 17 colors in the order of 0.4.0" do
+      slots = %i[
+        background sky horizon star constellation_line boundary ecliptic
+        planet sun moon moon_shadow moon_shadow_opacity constellation_name
+        star_name planet_name label font
+      ]
+      values = slots.each_with_index.map { |slot, index|
+        (slot == :moon_shadow_opacity) ? 0.5 : "color-#{index}"
+      }
+
+      theme = described_class.new(*values)
+
+      expect(slots.map { |slot| theme.public_send(slot) }).to eq(values)
+      expect(theme.grid).to eq(theme.boundary)
+    end
+  end
+
   describe "an optional color" do
     it "is the color of its fallback when it is not set" do
       theme = theme_from_0_4_0
