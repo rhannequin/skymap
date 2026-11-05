@@ -15,7 +15,7 @@ RSpec.describe Skymap::Layers::Scale do
     it "labels the largest round length that fits in a fifth of the map" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       layer = described_class.new
-      fields = [180, 50, 20, 5, 1, 0.5, 0.2, 0.05, 0.01, 0.005]
+      fields = [180, 50, 20, 3, 1, 0.5, 0.2, 0.05, 0.01, 0.005]
 
       labels = fields.map do |field_of_view|
         context = context_at(
@@ -28,7 +28,7 @@ RSpec.describe Skymap::Layers::Scale do
         layer.elements(context).grep(Skymap::Renderer::Caption).first.text
       end
 
-      expect(labels).to eq(%w[30° 10° 2° 1° 10′ 5′ 2′ 30″ 5″ 2″])
+      expect(labels).to eq(%w[20° 5° 2° 30′ 10′ 5′ 2′ 30″ 5″ 2″])
     end
 
     it "draws a bar as long as the angle it says" do
@@ -41,8 +41,33 @@ RSpec.describe Skymap::Layers::Scale do
 
       bar = layer.elements(context).grep(Skymap::Renderer::ScaleBar).first
 
-      expect(bar.to.x - bar.from.x).to be_within(0.05).of(39.6)
+      expect(bar.to.x - bar.from.x).to be_within(0.05).of(39.82)
       expect(bar.to.y).to eq(bar.from.y)
+    end
+
+    it "draws a bar as long as the angle it says where it is drawn" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      layer = described_class.new
+      degrees = {"°" => 1.0, "′" => 1 / 60.0, "″" => 1 / 3600.0}
+
+      errors = [180, 150, 120, 90, 45, 10, 1].map do |field_of_view|
+        context = context_at(
+          latitude: 48.8575,
+          canvas: canvas,
+          view: view_towards(
+            altitude: 0, azimuth: 180, field_of_view: field_of_view
+          )
+        )
+        bar, caption = layer.elements(context)
+        step, symbol = caption.text.match(/(\d+)(\D)/).captures
+        angle = sky_angle_between(
+          bar.from, bar.to, canvas: canvas, field_of_view: field_of_view
+        )
+
+        (angle / (step.to_i * degrees.fetch(symbol)) - 1).abs
+      end
+
+      expect(errors.max).to be < 0.005
     end
 
     it "keeps the bar under a fifth of the map width" do
@@ -75,7 +100,7 @@ RSpec.describe Skymap::Layers::Scale do
       expect(layer.elements(context)).to eq([])
     end
 
-    it "measures the length at the center of an equatorial view" do
+    it "sizes the bar for an equatorial view" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       layer = described_class.new
       view = Skymap::View.new(
@@ -86,7 +111,7 @@ RSpec.describe Skymap::Layers::Scale do
 
       bar = layer.elements(context).grep(Skymap::Renderer::ScaleBar).first
 
-      expect(bar.to.x - bar.from.x).to be_within(0.05).of(39.6)
+      expect(bar.to.x - bar.from.x).to be_within(0.05).of(39.82)
     end
 
     it "puts the bar and its label in the lower left of the map" do

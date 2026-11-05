@@ -32,6 +32,12 @@ module Skymap
         @scale * 2 / [1 + dot(point, @forward), MIN_DENOMINATOR].max
       end
 
+      def scale_at_point(point)
+        distance = Math.hypot(point.x - @center.x, point.y - @center.y)
+
+        @scale * (1 + (distance / (2 * @scale))**2)
+      end
+
       private
 
       def vector(altitude, azimuth)

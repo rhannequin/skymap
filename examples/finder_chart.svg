@@ -45,8 +45,8 @@ Alcyone
 <text x="326.61" y="392.01" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#3d4a60">
 Atlas
 </text>
-<polyline points="212.0,680.5 212.0,685.76 305.99,685.76 305.99,680.5" fill="none" stroke="#3d4a60" stroke-width="1.88"/>
-<text x="259.0" y="673.13" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#3d4a60">
+<polyline points="212.0,680.5 212.0,685.76 306.01,685.76 306.01,680.5" fill="none" stroke="#3d4a60" stroke-width="1.88"/>
+<text x="259.01" y="673.13" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#3d4a60">
 30′
 </text>
 </g>

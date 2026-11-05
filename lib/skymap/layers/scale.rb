@@ -11,18 +11,19 @@ module Skymap
       LEFT_RATIO = -0.5
       BOTTOM_RATIO = 0.76
       LABEL_GAP_RATIO = 0.7
+      LENGTH_ITERATIONS = 8
 
       def elements(context)
         return [] if context.full_sky?
 
         canvas = context.canvas
+        left = canvas.center.x + LEFT_RATIO * canvas.radius
+        y = canvas.center.y + BOTTOM_RATIO * canvas.radius
         max_length = MAX_LENGTH_RATIO * 2 * canvas.radius
-        length, text = longest_fitting(context, max_length)
+        length, text = longest_fitting(context, left, y, max_length)
         return [] unless length
 
         size = Renderer::Caption.size_for(canvas)
-        left = canvas.center.x + LEFT_RATIO * canvas.radius
-        y = canvas.center.y + BOTTOM_RATIO * canvas.radius
         tick = TICK_SIZE_RATIO * size
 
         [
@@ -46,14 +47,28 @@ module Skymap
 
       private
 
-      def longest_fitting(context, max_length)
+      def longest_fitting(context, left, y, max_length)
         UNITS.product(STEPS).reverse_each do |(symbol, degrees), step|
-          angle = Astronoby::Angle.from_degrees(step * degrees)
-          length = context.view_span(angle)
+          radians = Astronoby::Angle.from_degrees(step * degrees).radians
+          length = pixels_for(context, radians, left, y)
           return [length, "#{step}#{symbol}"] if length <= max_length
         end
 
         nil
+      end
+
+      def pixels_for(context, radians, left, y)
+        length = radians * context.scale_at_point(Point.new(x: left, y: y))
+
+        LENGTH_ITERATIONS.times do
+          inverses = [0, 0.5, 1].map do |along|
+            point = Point.new(x: left + along * length, y: y)
+            1 / context.scale_at_point(point)
+          end
+          length = radians * 6 / (inverses[0] + 4 * inverses[1] + inverses[2])
+        end
+
+        length
       end
     end
   end

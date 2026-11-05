@@ -47,10 +47,8 @@ module Skymap
         angle.radians
     end
 
-    def view_span(angle)
-      center = view_center
-
-      span(angle, altitude: center.altitude, azimuth: center.azimuth)
+    def scale_at_point(point, radius: @canvas.radius)
+      projection(radius).scale_at_point(point)
     end
 
     def disk_radius(default, angular_diameter:, altitude:, azimuth:)

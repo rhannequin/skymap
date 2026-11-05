@@ -467,13 +467,13 @@ Skymap::Layers::Scale.new
 ```
 
 The bar is the longest of 1, 2, 5, 10, 20 and 30 arc-seconds, arc-minutes or
-degrees that is at most a fifth of the width of the map, measured at the center
-of the view. Nothing is drawn when even 1 arc-second is too long, for a field
-of view below about 0.005 degrees. The projection stretches the sky toward the
-edge of the map, so the bar is exact at the center and only an indication
-elsewhere, especially for a field of view above 90 degrees. The bar and its
-label use the `star_name` color of the theme. With a [print size](#print-size),
-the bar is as long on paper as the angle it says.
+degrees that is at most a fifth of the width of the map. It is as long as the
+angle it says where it is drawn: the scale of the map changes from the center
+to the edge, and the bar follows it, so the label stays right on a wide field.
+Nothing is drawn when even 1 arc-second is too long, for a field of view below
+about 0.005 degrees. The bar and its label use the `star_name` color of the
+theme. With a [print size](#print-size), the bar is as long on paper as the
+angle it says.
 
 ## Examples
 
