@@ -106,13 +106,23 @@ module Skymap
           radius: radius,
           altitude: center.altitude,
           azimuth: center.azimuth,
-          field_of_view: @view.field_of_view
+          field_of_view: @view.field_of_view,
+          orientation: @view.orientation,
+          pole: celestial_pole,
+          rotation: @view.rotation,
+          mirrored: @view.mirrored
         )
       end
     end
 
     def view_center
       @view_center ||= to_horizontal(@view.center)
+    end
+
+    def celestial_pole
+      latitude = @observer.latitude
+
+      [latitude.cos, 0.0, latitude.sin]
     end
 
     def view_direction

@@ -31,18 +31,22 @@ module Skymap
             center: center,
             radius: radius,
             illuminated_fraction: moon.illuminated_fraction,
-            rotation: rotation(moon, context.observer)
+            rotation: rotation(moon, context)
           )
         ]
       end
 
       private
 
-      def rotation(moon, observer)
-        from_zenith = moon.bright_limb_position_angle.degrees -
-          moon.parallactic_angle(observer: observer).degrees
+      def rotation(moon, context)
+        angle = moon.bright_limb_position_angle.degrees
+        view = context.view
+        unless view&.orientation == :equatorial
+          angle -= moon.parallactic_angle(observer: context.observer).degrees
+        end
+        sense = view&.mirrored ? 1 : -1
 
-        -90 - from_zenith
+        sense * angle + (view&.rotation&.degrees || 0) - 90
       end
     end
   end

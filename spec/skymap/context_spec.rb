@@ -193,7 +193,10 @@ RSpec.describe Skymap::Context do
       context = context_at(
         latitude: 48.8575,
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
-        view: Skymap::View.new(center: center, field_of_view: 30)
+        view: Skymap::View.new(
+          center: center,
+          field_of_view: Astronoby::Angle.from_degrees(30)
+        )
       )
       horizontal = context.horizontal_coordinates(center)
 
@@ -377,6 +380,48 @@ RSpec.describe Skymap::Context do
       )
 
       expect(radius).to eq(6)
+    end
+  end
+
+  describe "#project with an equatorial orientation" do
+    it "puts the celestial pole above the center of the view" do
+      view = Skymap::View.new(
+        center: Astronoby::Coordinates::Horizontal.new(
+          altitude: Astronoby::Angle.from_degrees(60),
+          azimuth: Astronoby::Angle.zero,
+          observer: observer_at(latitude: 48.8575)
+        ),
+        field_of_view: Astronoby::Angle.from_degrees(40),
+        orientation: :equatorial
+      )
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+
+      pole = context.project(
+        altitude: Astronoby::Angle.from_degrees(48.8575),
+        azimuth: Astronoby::Angle.zero
+      )
+
+      expect(pole.x.round(2)).to eq(200)
+      expect(pole.y).to be < 200
+    end
+
+    it "puts the celestial pole below the center with the zenith at the top" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 60, azimuth: 0, field_of_view: 40)
+      )
+
+      pole = context.project(
+        altitude: Astronoby::Angle.from_degrees(48.8575),
+        azimuth: Astronoby::Angle.zero
+      )
+
+      expect(pole.y).to be > 200
     end
   end
 end
