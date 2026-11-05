@@ -69,7 +69,10 @@ RSpec.describe Skymap::Layers::Sun do
       observer = observer_at(latitude: 48.8575)
       sun = Astronoby::Sun.at(instant, ephem: ephemeris)
         .observed_by(observer).horizontal
-      view = Skymap::View.new(center: sun, field_of_view: 2)
+      view = Skymap::View.new(
+        center: sun,
+        field_of_view: Astronoby::Angle.from_degrees(2)
+      )
       context = Skymap::Context.new(
         observer: observer,
         instant: instant,
@@ -88,7 +91,10 @@ RSpec.describe Skymap::Layers::Sun do
       observer = observer_at(latitude: 48.8575)
       sun = Astronoby::Sun.at(instant, ephem: ephemeris)
         .observed_by(observer).horizontal
-      view = Skymap::View.new(center: sun, field_of_view: 90)
+      view = Skymap::View.new(
+        center: sun,
+        field_of_view: Astronoby::Angle.from_degrees(90)
+      )
       context = Skymap::Context.new(
         observer: observer,
         instant: instant,
