@@ -17,10 +17,21 @@ module Skymap
         canvas: @canvas,
         view: @view
       )
-      elements = layers.flat_map { |layer| layer.elements(context) }
+      elements = horizon(context) +
+        layers.flat_map { |layer| layer.elements(context) }
 
       Renderer::SVG.new(canvas: @canvas, theme: @theme, clipped: !@view.nil?)
         .render(elements)
+    end
+
+    private
+
+    def horizon(context)
+      return [] if context.full_sky?
+
+      Horizon.line(context).map do |points|
+        Renderer::HorizonLine.new(points: points)
+      end
     end
   end
 end

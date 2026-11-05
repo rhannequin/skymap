@@ -6,6 +6,7 @@ module Skymap
   module Renderer
     class SVG
       HORIZON_WIDTH = 3
+      FRAME_WIDTH = 1
       BOUNDARY_DASH_RATIO = 4
 
       def initialize(canvas:, theme:, clipped: false)
@@ -29,7 +30,7 @@ module Skymap
           r: @canvas.radius.round(2),
           fill: @theme.sky,
           stroke: @theme.horizon,
-          stroke_width: HORIZON_WIDTH
+          stroke_width: @clipped ? FRAME_WIDTH : HORIZON_WIDTH
         )
 
         if @clipped
@@ -70,6 +71,7 @@ module Skymap
           when Dot then draw_dot(svg, element)
           when Ecliptic then draw_ecliptic(svg, element)
           when Grid then draw_grid(svg, element)
+          when HorizonLine then draw_horizon_line(svg, element)
           when Label then draw_label(svg, element)
           when Moon then draw_moon(svg, element)
           when Planet then draw_planet(svg, element)
@@ -133,6 +135,18 @@ module Skymap
           fill: "none",
           stroke: stroke,
           stroke_width: element.width.round(2),
+          stroke_linejoin: "round"
+        )
+      end
+
+      def draw_horizon_line(svg, line)
+        svg.polyline(
+          points: line.points.map { |point|
+            "#{point.x.round(2)},#{point.y.round(2)}"
+          }.join(" "),
+          fill: "none",
+          stroke: @theme.horizon,
+          stroke_width: HORIZON_WIDTH,
           stroke_linejoin: "round"
         )
       end

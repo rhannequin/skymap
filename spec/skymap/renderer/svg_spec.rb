@@ -632,4 +632,22 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(ids.uniq.size).to eq(2)
     end
   end
+
+  describe "#render a horizon line" do
+    it "draws the horizon as a polyline in the horizon color" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
+      line = Skymap::Renderer::HorizonLine.new(
+        points: [point(100, 150), point(120.256, 180.004), point(250, 300)]
+      )
+
+      svg = renderer.render([line])
+      drawn = polylines_in(svg).first
+
+      expect(drawn["points"]).to eq("100,150 120.26,180.0 250,300")
+      expect(drawn["fill"]).to eq("none")
+      expect(drawn["stroke"]).to eq("#3262a8")
+      expect(drawn["stroke-width"]).to eq("3")
+    end
+  end
 end

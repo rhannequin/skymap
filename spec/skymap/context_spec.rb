@@ -86,6 +86,45 @@ RSpec.describe Skymap::Context do
     end
   end
 
+  describe "#span" do
+    it "gives the pixels an angle covers at a place of the sky" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 60)
+      )
+
+      pixels = context.span(
+        Astronoby::Angle.from_degrees(1),
+        altitude: Astronoby::Angle.from_degrees(30),
+        azimuth: Astronoby::Angle.from_degrees(180)
+      )
+
+      expect(pixels.round(2)).to eq(6.46)
+    end
+
+    it "covers more pixels when the field of view is smaller" do
+      wide = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 60)
+      )
+      narrow = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 6)
+      )
+      arguments = {
+        altitude: Astronoby::Angle.from_degrees(30),
+        azimuth: Astronoby::Angle.from_degrees(180)
+      }
+      angle = Astronoby::Angle.from_degrees(1)
+
+      expect(narrow.span(angle, **arguments))
+        .to be > wide.span(angle, **arguments) * 9
+    end
+  end
+
   describe "#full_sky?" do
     it "is the whole sky without a view" do
       context = context_at(
@@ -260,6 +299,58 @@ RSpec.describe Skymap::Context do
 
       expect(context.crosses_view?(inside)).to be(true)
       expect(context.crosses_view?(outside)).to be(false)
+    end
+  end
+
+  describe "#disk_radius" do
+    it "keeps the default radius in the whole sky" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+
+      radius = context.disk_radius(
+        6,
+        angular_diameter: Astronoby::Angle.from_degrees(30),
+        altitude: Astronoby::Angle.from_degrees(30),
+        azimuth: Astronoby::Angle.from_degrees(180)
+      )
+
+      expect(radius).to eq(6)
+    end
+
+    it "grows to the size of the angle in a view" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 60)
+      )
+
+      radius = context.disk_radius(
+        6,
+        angular_diameter: Astronoby::Angle.from_degrees(4),
+        altitude: Astronoby::Angle.from_degrees(30),
+        azimuth: Astronoby::Angle.from_degrees(180)
+      )
+
+      expect(radius.round(2)).to eq(12.93)
+    end
+
+    it "keeps the default radius when the angle is smaller" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 60)
+      )
+
+      radius = context.disk_radius(
+        6,
+        angular_diameter: Astronoby::Angle.from_degrees(1),
+        altitude: Astronoby::Angle.from_degrees(30),
+        azimuth: Astronoby::Angle.from_degrees(180)
+      )
+
+      expect(radius).to eq(6)
     end
   end
 end
