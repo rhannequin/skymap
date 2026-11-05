@@ -19,6 +19,27 @@ RSpec.describe Skymap::Canvas do
     end
   end
 
+  describe "#print_size" do
+    it "is nothing by default" do
+      canvas = described_class.new(size: 400, padding: 1.5)
+
+      expect(canvas.print_size).to be_nil
+    end
+
+    it "is the physical size the canvas is printed at" do
+      size = Skymap::PrintSize.new(length: 200, unit: :mm)
+      canvas = described_class.new(size: 400, padding: 1.5, print_size: size)
+
+      expect(canvas.print_size).to eq(size)
+    end
+
+    it "rejects anything that is not a print size" do
+      expect {
+        described_class.new(size: 400, padding: 1.5, print_size: "200mm")
+      }.to raise_error(ArgumentError, /print_size/)
+    end
+  end
+
   describe "#center" do
     it "is the middle of the canvas" do
       canvas = described_class.new(size: 400, padding: 1.5)

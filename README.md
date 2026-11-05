@@ -87,12 +87,41 @@ The canvas is the square SVG the map is drawn on. `size` is its width and
 height, and `padding` is the space between the horizon and the edge of the
 SVG.
 
+#### Print size
+
+The SVG is written in pixels by default. To print it at a known size, give the
+canvas a `print_size:`: the length of the side of the square, in millimeters
+(`:mm`), centimeters (`:cm`) or inches (`:in`):
+
+```ruby
+canvas = Skymap::Canvas.new(
+  size: 800,
+  padding: 24,
+  print_size: Skymap::PrintSize.new(length: 190, unit: :mm)
+)
+```
+
+The SVG gets `width="190mm"` and `height="190mm"`, and its `viewBox` stays in the
+units of the canvas, so the map is the same and a browser or a print dialog
+prints it at 190 mm.
+
+`Skymap::PrintSize.paper` gives the largest square that fits in the width of a
+sheet of paper, minus a margin of 10 mm on each side by default (`margin:`, in
+millimeters). The papers are `:a5`, `:a4`, `:a3`, `:letter` and `:tabloid`:
+
+```ruby
+Skymap::PrintSize.paper(:a4)                # 190 mm
+Skymap::PrintSize.paper(:letter, margin: 5) # 205.9 mm
+```
+
+Add a [scale](#scale) to the map to read angles on the printed chart.
+
 ### View
 
 By default, the map is the whole sky. Pass a `view:` to zoom on an area of it:
-the center of the area, as the equatorial coordinates of a point of the sky (or
-horizontal coordinates), and the field of view, the angle between the opposite
-sides of the map:
+the center of the area, as the equatorial coordinates of a point of the sky, at
+J2000 or at the date of the chart (or horizontal coordinates), and the field of
+view, the angle between the opposite sides of the map:
 
 ```ruby
 view = Skymap::View.new(
@@ -112,10 +141,11 @@ chart = Skymap::Chart.new(
 )
 ```
 
-The field of view is an `Astronoby::Angle` of more than 0 and up to 180
-degrees. The sky is still seen from the observer. By default, the zenith is at the top of the map, except
-when the zenith is in the view: the north is at the top then, as in the whole
-sky. The next section changes that. With
+Equatorial coordinates at any other epoch raise an `ArgumentError`. The field
+of view is an `Astronoby::Angle` of more than 0 and up to 180 degrees. The sky
+is still seen from the observer. By default, the zenith is at the top of the
+map, except when the zenith is in the view: the north is at the top then, as in
+the whole sky. The next section changes that. With
 horizontal coordinates, only the altitude and the azimuth are used, as seen by
 the observer of the chart. The layers draw what is in the view only. The
 horizon is drawn as a line when it is in the view, and the edge of the map is a
@@ -452,12 +482,29 @@ Skymap::Layers::Grid.new
 ```
 
 The lines are 30 degrees apart (2 hours of right ascension) by default. Use
-`step:` to draw them closer or further apart, in degrees. It must be a whole
-number between 1 and 90 that divides 360:
+`step:`, an `Astronoby::Angle`, to draw them closer or further apart. It is
+between 1 and 90 degrees and divides 360 degrees. For a line of right ascension
+every hour:
 
 ```ruby
-Skymap::Layers::Grid.new(step: 15)
+Skymap::Layers::Grid.new(step: Astronoby::Angle.from_hours(1))
 ```
+
+By default the grid is in the equator and equinox of J2000, like the
+coordinates of atlases and catalogs. Use `epoch: :of_date` to draw it in the
+true equator and equinox of the date of the chart instead. The declination
+circles are then centered on the true celestial pole of that date, which is
+what a polar-aligned equatorial mount shows:
+
+```ruby
+Skymap::Layers::Grid.new(epoch: :of_date)
+```
+
+The two grids differ by a fraction of a degree today, which only shows when the
+map is zoomed on a small area of the sky. For a view that follows a
+polar-aligned equatorial mount, use `:of_date`, which pairs with
+`orientation: :equatorial` (north celestial pole at the top). Keep `:j2000` to
+read coordinates off the grid and look them up in an atlas or a catalog.
 
 Give the grid first to `Chart#render` to draw the stars and the other layers
 over it.
@@ -497,6 +544,30 @@ A label that would fall outside the view is left out. Give the layer last to
 `Skymap::Layers::CardinalDirections` labels the cardinal directions (N, E, S,
 W) in the padding, with a size that follows it: a padding of about 3% of the
 size gives readable labels. It draws nothing when the map has a [view](#view).
+
+#### Scale
+
+`Skymap::Layers::Scale` draws a scale bar with its length as a label, such as
+`1°`, `30′` or `10″`, in the lower left of a map with a [view](#view). It draws
+nothing on the whole sky, where the scale changes from one place to another:
+
+```ruby
+Skymap::Layers::Scale.new
+```
+
+The bar is the longest of 1, 2, 5, 10, 20 and 30 arc-seconds, arc-minutes or
+degrees that is at most a fifth of the width of the map. It stays horizontal
+and the same in every [orientation](#orientation) of the view. The scale of the map
+changes from the center to the edge, and the bar follows it: its length is the
+angle it says at the place where it is drawn. A straight bar on the map is a
+small circle on the sky, not the shortest path between its ends, so the angle
+between the ends is a little smaller than the label on wide fields. The
+difference is below 0.01% up to a field of view of 90 degrees, which covers
+finder charts, and at most 0.1% at 120 degrees and 0.3% at 180 degrees. Nothing
+is drawn when even 1 arc-second is too long, for a field of view below about
+0.0014 degrees (5 arc-seconds). The bar and its label use the `star_name`
+color of the theme. With a [print size](#print-size), the bar is as long on
+paper as the angle it says.
 
 ### Telescope, eyepiece and fields
 

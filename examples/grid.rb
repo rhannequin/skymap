@@ -19,7 +19,7 @@ chart = Skymap::Chart.new(
   theme: theme
 )
 svg = chart.render(
-  Skymap::Layers::Grid.new(step: 15),
+  Skymap::Layers::Grid.new(step: Astronoby::Angle.from_degrees(15)),
   Skymap::Layers::Ecliptic.new,
   Skymap::Layers::ConstellationLines.new(lines: lines, stars: stars),
   Skymap::Layers::Stars.new(stars: stars),

@@ -30,7 +30,7 @@ module Skymap
         coordinates.epoch
       ]
 
-      @horizontal[key] ||= @transformation.apply(coordinates)
+      @horizontal[key] ||= convert(coordinates)
     end
 
     def to_horizontal(position)
@@ -51,6 +51,10 @@ module Skymap
     def span(angle, altitude:, azimuth:, radius: @canvas.radius)
       projection(radius).scale_at(altitude: altitude, azimuth: azimuth) *
         angle.radians
+    end
+
+    def scale_at_point(point, radius: @canvas.radius)
+      projection(radius).scale_at_point(point)
     end
 
     def disk_radius(default, angular_diameter:, altitude:, azimuth:)
@@ -95,6 +99,37 @@ module Skymap
     end
 
     private
+
+    def convert(coordinates)
+      case coordinates.epoch
+      when Astronoby::JulianDate::J2000
+        @transformation.apply(coordinates)
+      when @instant.tt
+        horizontal_of_date(coordinates)
+      else
+        raise ArgumentError,
+          "coordinates must be at J2000 or at the date of the chart"
+      end
+    end
+
+    def horizontal_of_date(coordinates)
+      Astronoby::Coordinates::Equatorial.new(
+        right_ascension: coordinates.right_ascension,
+        declination: coordinates.declination,
+        hour_angle: Astronoby::Angle.from_hours(
+          (sidereal_time - coordinates.right_ascension.hours) %
+            Astronoby::Constants::HOURS_PER_DAY
+        ),
+        epoch: coordinates.epoch
+      ).to_horizontal(time: @instant.to_time, observer: @observer)
+    end
+
+    def sidereal_time
+      @sidereal_time ||= Astronoby::LocalApparentSiderealTime.from_utc(
+        @instant.to_time,
+        longitude: @observer.longitude
+      ).time
+    end
 
     def projection(radius)
       @projections[radius] ||= if full_sky?

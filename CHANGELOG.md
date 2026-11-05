@@ -19,8 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Astronoby::Angle` and `mirrored:` to give the map the orientation of a
   telescope
 - `Skymap::Layers::Grid` draws the celestial coordinate grid, the lines of
-  right ascension and the circles of declination, every `step:` degrees (30 by
-  default), stopping at the horizon
+  right ascension and the circles of declination, every `step:` angle (30
+  degrees by default), stopping at the horizon
+- `epoch: :of_date` on `Skymap::Layers::Grid` draws the grid in the true
+  equator and equinox of the date of the chart, centered on the true celestial
+  pole, instead of J2000 (the default)
+- `Skymap::Layers::Scale` draws a scale bar with a round angular length, such
+  as `30′`, in the lower left of a map with a view
+- `print_size:` on `Skymap::Canvas`, with `Skymap::PrintSize`, writes the SVG at
+  a physical size in millimeters, centimeters or inches, for example the
+  width of an A4 sheet with `Skymap::PrintSize.paper(:a4)`
 - `Skymap::Layers::FieldCircles` draws circles of given true fields around the
   center of the view or a point of your choice, with their labels, to show what
   a finder scope or an eyepiece covers
@@ -36,6 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the observer sees it from the ground
 - `Skymap::Theme` has a `grid` color, which a theme built with
   `Skymap::Theme.new` must now give
+- Equatorial coordinates given to `Skymap::Context#horizontal_coordinates`, and
+  as the center of a `Skymap::View`, can be at J2000 or at the date of the
+  chart, and any other epoch now raises an `ArgumentError` (it was an
+  `Astronoby::IncompatibleArgumentsError`)
 
 ## [0.4.0] - 2026-11-05
 

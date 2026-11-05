@@ -123,4 +123,12 @@ circle. [Code](field_circles.rb)
 
 <img src="field_circles.svg" width="480" alt="A circle for a finder scope and one for an eyepiece around Albireo">
 
+## A finder chart to print
+
+The Pleiades in a field of 4 degrees, with a light theme and a scale bar. The
+canvas has a print size, the width of an A4 sheet minus a margin of 10 mm on
+each side, so the chart is 190 mm wide on paper at any print scale of 100%. [Code](finder_chart.rb)
+
+<img src="finder_chart.svg" width="480" alt="The Pleiades in a field of 4 degrees, with the stars, the coordinate grid and a scale bar of 30 arc-minutes">
+
 [astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md
