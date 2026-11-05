@@ -16,10 +16,11 @@ module Skymap
       end
 
       def render(elements)
+        printed_size = (@canvas.print_size || @canvas.size).to_s
         svg = Victor::SVG.new(
           viewBox: "0 0 #{@canvas.size} #{@canvas.size}",
-          width: @canvas.size,
-          height: @canvas.size
+          width: printed_size,
+          height: printed_size
         )
 
         draw_background(svg)
@@ -68,6 +69,7 @@ module Skymap
           when Boundary then draw_boundary(svg, element)
           when Caption then draw_caption(svg, element)
           when Line then draw_line(svg, element)
+          when ScaleBar then draw_scale_bar(svg, element)
           when Dot then draw_dot(svg, element)
           when Ecliptic then draw_ecliptic(svg, element)
           when Grid then draw_grid(svg, element)
@@ -102,6 +104,21 @@ module Skymap
           stroke: @theme.constellation_line,
           stroke_width: line.width.round(2),
           stroke_linecap: "round"
+        )
+      end
+
+      def draw_scale_bar(svg, bar)
+        top = bar.from.y - bar.tick
+        points = [
+          [bar.from.x, top], [bar.from.x, bar.from.y],
+          [bar.to.x, bar.to.y], [bar.to.x, top]
+        ]
+
+        svg.polyline(
+          points: points.map { |x, y| "#{x.round(2)},#{y.round(2)}" }.join(" "),
+          fill: "none",
+          stroke: @theme.star_name,
+          stroke_width: bar.width.round(2)
         )
       end
 
@@ -218,6 +235,7 @@ module Skymap
         when :constellation then @theme.constellation_name
         when :star then @theme.star_name
         when :planet then @theme.planet_name
+        when :scale then @theme.star_name
         else raise ArgumentError, "unknown caption kind: #{kind}"
         end
       end

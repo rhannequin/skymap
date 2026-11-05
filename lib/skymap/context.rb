@@ -47,6 +47,12 @@ module Skymap
         angle.radians
     end
 
+    def view_span(angle)
+      center = view_center
+
+      span(angle, altitude: center.altitude, azimuth: center.azimuth)
+    end
+
     def disk_radius(default, angular_diameter:, altitude:, azimuth:)
       return default if full_sky?
 

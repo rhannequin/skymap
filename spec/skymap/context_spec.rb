@@ -86,6 +86,20 @@ RSpec.describe Skymap::Context do
     end
   end
 
+  describe "#view_span" do
+    it "gives the pixels an angle covers at the center of the view" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 60)
+      )
+
+      pixels = context.view_span(Astronoby::Angle.from_degrees(1))
+
+      expect(pixels.round(2)).to eq(6.46)
+    end
+  end
+
   describe "#span" do
     it "gives the pixels an angle covers at a place of the sky" do
       context = context_at(

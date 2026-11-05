@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::Layers::Grid` draws the celestial coordinate grid, the lines of
   right ascension and the circles of declination, every `step:` degrees (30 by
   default), stopping at the horizon
+- `Skymap::Layers::Scale` draws a scale bar with a round angular length, such
+  as `30′`, in the lower left of a map with a view
+- `print_size:` on `Skymap::Canvas`, with `Skymap::PrintSize`, writes the SVG at
+  a physical size in millimeters, centimeters or inches, for example the
+  width of an A4 sheet with `Skymap::PrintSize.paper(:a4)`
 
 ### Changed
 
