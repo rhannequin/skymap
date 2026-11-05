@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::View` zooms the map on an area of the sky, given by the equatorial
   or horizontal coordinates of its center and a field of view in degrees, with
   `view:` on `Skymap::Chart`
+- `Skymap::Layers::Grid` draws the celestial coordinate grid, the lines of
+  right ascension and the circles of declination, every `step:` degrees (30 by
+  default), stopping at the horizon
+
+### Changed
+
+- `Skymap::Theme` has a `grid` color, which a theme built with
+  `Skymap::Theme.new` must now give
 
 ## [0.4.0] - 2026-11-05
 

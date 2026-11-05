@@ -17,7 +17,7 @@ module Skymap
       def elements(context)
         width = LINE_WIDTH_RATIO * context.canvas.radius
 
-        joined(Horizon.visible_runs(context, @points)).map do |points|
+        Horizon.joined(Horizon.visible_runs(context, @points)).map do |points|
           Renderer::Ecliptic.new(points: points, width: width)
         end
       end
@@ -32,12 +32,6 @@ module Skymap
           declination: Astronoby::Angle.asin(longitude.sin * obliquity.sin),
           epoch: Astronoby::JulianDate::J2000
         )
-      end
-
-      def joined(runs)
-        return runs unless runs.size > 1 && runs.first.first == runs.last.last
-
-        [runs.last + runs.first.drop(1)] + runs[1...-1]
       end
     end
   end
