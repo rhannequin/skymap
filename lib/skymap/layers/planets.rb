@@ -47,6 +47,8 @@ module Skymap
             azimuth: horizontal.azimuth
           )
           radius = star_size.radius(magnitude)
+          next [] unless context.in_view?(center, radius)
+
           caption = caption(planet, center, radius, context) if @labels
           [Renderer::Planet.new(center: center, radius: radius), caption]
             .compact

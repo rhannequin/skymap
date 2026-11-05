@@ -48,4 +48,18 @@ RSpec.describe Skymap::Layers::Sun do
       expect(suns).to be_empty
     end
   end
+
+  describe "#elements with a view" do
+    it "leaves out the Sun when it is outside the view" do
+      context = Skymap::Context.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 12)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 90, azimuth: 0, field_of_view: 10)
+      )
+      layer = described_class.new(ephem: ephemeris)
+
+      expect(layer.elements(context)).to be_empty
+    end
+  end
 end

@@ -23,8 +23,11 @@ module Skymap
           next if risen.sum(&:size) * 2 <= parts.sum(&:size)
 
           biggest = risen.max_by(&:size)
+          position = Point.midpoint(biggest.map { |s| context.position(s) })
+          next unless context.in_view?(position)
+
           Renderer::Caption.new(
-            position: Point.midpoint(biggest.map { |s| context.position(s) }),
+            position: position,
             text: name,
             size: Renderer::Caption.size_for(context.canvas),
             kind: :constellation

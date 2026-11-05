@@ -39,7 +39,7 @@ module Skymap
         end
 
       path.chunk { |point| !point.nil? }.filter_map do |visible, points|
-        points if visible && points.size > 1
+        points if visible && points.size > 1 && context.crosses_view?(points)
       end
     end
 
@@ -50,7 +50,7 @@ module Skymap
     end
 
     def position(context, horizontal)
-      return if below?(horizontal)
+      return if below?(horizontal) || !context.reachable?(horizontal)
 
       context.project(
         altitude: horizontal.altitude,

@@ -7,6 +7,8 @@ module Skymap
       CARDINAL_SIZE_RATIO = 0.6
 
       def elements(context)
+        return [] unless context.full_sky?
+
         canvas = context.canvas
 
         CARDINAL_DIRECTIONS.map do |text, azimuth|

@@ -8,11 +8,23 @@ module AstronomyHelpers
     )
   end
 
-  def context_at(latitude:, canvas:)
+  def context_at(latitude:, canvas:, view: nil)
     Skymap::Context.new(
       observer: observer_at(latitude: latitude),
       instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
-      canvas: canvas
+      canvas: canvas,
+      view: view
+    )
+  end
+
+  def view_towards(altitude:, azimuth:, field_of_view:, latitude: 48.8575)
+    Skymap::View.new(
+      center: Astronoby::Coordinates::Horizontal.new(
+        altitude: Astronoby::Angle.from_degrees(altitude),
+        azimuth: Astronoby::Angle.from_degrees(azimuth),
+        observer: observer_at(latitude: latitude)
+      ),
+      field_of_view: field_of_view
     )
   end
 

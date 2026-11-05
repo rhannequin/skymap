@@ -8,9 +8,10 @@ module Skymap
       HORIZON_WIDTH = 3
       BOUNDARY_DASH_RATIO = 4
 
-      def initialize(canvas:, theme:)
+      def initialize(canvas:, theme:, clipped: false)
         @canvas = canvas
         @theme = theme
+        @clipped = clipped
       end
 
       def render(elements)
@@ -31,6 +32,36 @@ module Skymap
           stroke_width: HORIZON_WIDTH
         )
 
+        if @clipped
+          clip_to_sky(svg)
+          svg.g(clip_path: "url(##{clip_id})") { draw_elements(svg, elements) }
+        else
+          draw_elements(svg, elements)
+        end
+
+        svg.render
+      end
+
+      private
+
+      def clip_to_sky(svg)
+        radius = @canvas.radius.round(2)
+        cx = @canvas.center.x.round(2)
+        cy = @canvas.center.y.round(2)
+
+        svg.defs do
+          svg.clipPath(id: clip_id) { svg.circle(cx: cx, cy: cy, r: radius) }
+        end
+      end
+
+      def clip_id
+        geometry = [@canvas.center.x, @canvas.center.y, @canvas.radius]
+          .map { |value| value.round(2).to_s.tr(".", "_") }
+
+        "sky-#{geometry.join("-")}"
+      end
+
+      def draw_elements(svg, elements)
         elements.each do |element|
           case element
           when Boundary then draw_boundary(svg, element)
@@ -46,11 +77,7 @@ module Skymap
           else raise ArgumentError, "unknown element: #{element.class}"
           end
         end
-
-        svg.render
       end
-
-      private
 
       def draw_background(svg)
         return if @theme.background == "none"

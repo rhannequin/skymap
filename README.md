@@ -87,6 +87,39 @@ The canvas is the square SVG the map is drawn on. `size` is its width and
 height, and `padding` is the space between the horizon and the edge of the
 SVG.
 
+### View
+
+By default, the map is the whole sky. Pass a `view:` to zoom on an area of it:
+the center of the area, as the equatorial coordinates of a point of the sky (or
+horizontal coordinates), and the field of view, the angle in degrees between
+the opposite sides of the map:
+
+```ruby
+view = Skymap::View.new(
+  center: Astronoby::Coordinates::Equatorial.new(
+    right_ascension: Astronoby::Angle.from_hours(5.6),
+    declination: Astronoby::Angle.zero,
+    epoch: Astronoby::JulianDate::J2000
+  ),
+  field_of_view: 50
+)
+
+chart = Skymap::Chart.new(
+  observer: observer,
+  instant: instant,
+  canvas: canvas,
+  view: view
+)
+```
+
+The field of view is more than 0 and up to 180 degrees. The sky is still
+seen from the observer. The zenith is at the top of the map, except when the
+zenith is in the view: the north is at the top then, as in the whole sky. With
+horizontal coordinates, only the altitude and the azimuth are used, as seen by
+the observer of the chart. The layers draw what is in the view only. The edge of the map is no longer the horizon, so the
+cardinal directions are not drawn. The stars are limited by the catalog: a
+field of view of 10 degrees or more shows enough of them.
+
 ### Themes
 
 A theme gives the colors of the map. `Chart` draws the dark theme by default,
@@ -389,7 +422,7 @@ over it.
 
 `Skymap::Layers::CardinalDirections` labels the cardinal directions (N, E, S,
 W) in the padding, with a size that follows it: a padding of about 3% of the
-size gives readable labels.
+size gives readable labels. It draws nothing when the map has a [view](#view).
 
 ## Examples
 

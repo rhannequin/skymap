@@ -157,4 +157,29 @@ RSpec.describe Skymap::Layers::StarNames do
       expect(large_caption.size).to be_within(0.001).of(11.2)
     end
   end
+
+  describe "#elements with a view" do
+    it "names the stars in the view only" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 0, declination: 89),
+        field_of_view: 10
+      )
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      near = star(right_ascension: 3, declination: 87, magnitude: 1, hr: 2491)
+      far = star(right_ascension: 3, declination: 60, magnitude: 1, hr: 2491)
+      names = {2491 => "Sirius"}
+
+      near_captions = described_class.new(stars: [near], names: names)
+        .elements(context)
+      far_captions = described_class.new(stars: [far], names: names)
+        .elements(context)
+
+      expect(near_captions.size).to eq(1)
+      expect(far_captions).to be_empty
+    end
+  end
 end
