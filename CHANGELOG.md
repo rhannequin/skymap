@@ -29,6 +29,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `print_size:` on `Skymap::Canvas`, with `Skymap::PrintSize`, writes the SVG at
   a physical size in millimeters, centimeters or inches, for example the
   width of an A4 sheet with `Skymap::PrintSize.paper(:a4)`
+- `Skymap::Layers::FieldCircles` draws circles of given true fields around the
+  center of the view or a point of your choice, with their labels, to show what
+  a finder scope or an eyepiece covers
+- `Skymap::Telescope`, `Skymap::Eyepiece` and `Skymap::Setup` describe the
+  equipment and compute the magnification, the true field as an
+  `Astronoby::Angle` and a label such as `25 mm, 48×, 1.1°`, and
+  `Skymap::Field` is a named field, such as a finder scope or a Telrad ring
 
 ### Changed
 

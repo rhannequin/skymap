@@ -509,6 +509,36 @@ read coordinates off the grid and look them up in an atlas or a catalog.
 Give the grid first to `Chart#render` to draw the stars and the other layers
 over it.
 
+#### Field circles
+
+`Skymap::Layers::FieldCircles` draws circles that show what a finder scope or an
+eyepiece covers in the sky. Give it the fields to draw, as `Skymap::Field` or
+`Skymap::Setup` objects (see [Telescope, eyepiece and fields](#telescope-eyepiece-and-fields)):
+
+```ruby
+Skymap::Layers::FieldCircles.new(fields: [finder, setup], labels: true)
+```
+
+The circles are centered on the center of the [view](#view), so the layer needs
+a view, and nothing is drawn without one. Use `center:` to draw them around
+another point, as the equatorial or horizontal coordinates of a point of the
+sky, such as a target when the view is wider than the circles:
+
+```ruby
+Skymap::Layers::FieldCircles.new(fields: [setup], center: target)
+```
+
+A circle has the size of its field on the sphere, then it is projected, so it
+keeps its size and its shape anywhere in the map. Each circle is drawn in the
+color of the planets (`planet` in the [theme](#themes)). In a view, a circle is
+drawn whole, even below the horizon, and a circle that does not reach the view
+is left out. In the whole sky, which has no center unless you give a `center:`,
+a circle stops at the horizon.
+
+With `labels: true`, the label of each field is written next to its circle.
+A label that would fall outside the view is left out. Give the layer last to
+`Chart#render` to draw the circles over the stars.
+
 #### Cardinal directions
 
 `Skymap::Layers::CardinalDirections` labels the cardinal directions (N, E, S,
@@ -538,6 +568,84 @@ is drawn when even 1 arc-second is too long, for a field of view below about
 0.0014 degrees (5 arc-seconds). The bar and its label use the `star_name`
 color of the theme. With a [print size](#print-size), the bar is as long on
 paper as the angle it says.
+
+### Telescope, eyepiece and fields
+
+An eyepiece in a telescope shows a small part of the sky, often less than a
+degree wide. These classes describe the equipment, compute that part of the
+sky, and give it to a [view](#view) or to the [field circles](#field-circles).
+
+`Skymap::Telescope` has a focal length and an aperture, in millimeters, as
+`focal_length_mm` and `aperture_mm`. `Skymap::Eyepiece` has a focal length in
+millimeters, as `focal_length_mm`, and the apparent field of view that its
+maker gives, as an `Astronoby::Angle`. All the numbers must be above 0, and
+the apparent field of view up to 180 degrees:
+
+```ruby
+telescope = Skymap::Telescope.new(focal_length_mm: 1200, aperture_mm: 200)
+eyepiece = Skymap::Eyepiece.new(
+  focal_length_mm: 25,
+  apparent_field_of_view: Astronoby::Angle.from_degrees(52)
+)
+```
+
+`Skymap::Setup` pairs a telescope with an eyepiece, and computes what you see
+with them:
+
+```ruby
+setup = Skymap::Setup.new(telescope: telescope, eyepiece: eyepiece)
+
+setup.magnification # => 48.0
+setup.true_field    # => an Astronoby::Angle of 1.083 degrees
+setup.label         # => "25 mm, 48×, 1.1°"
+```
+
+- `magnification` is the focal length of the telescope divided by the one of
+  the eyepiece, as a `Float`.
+- `true_field` is the part of the sky you see, as an `Astronoby::Angle`: the
+  apparent field of view divided by the magnification, the usual first-order
+  formula. With a Barlow lens or a focal reducer, give the effective focal
+  length of the telescope. It is what `field_of_view:` of a view takes, to draw
+  a map as wide as the eyepiece.
+- `label` is a short text for the circle: the focal length of the eyepiece,
+  the magnification and the true field, in degrees (with at most one decimal)
+  from 1 degree, in arcminutes (`15′`) below, and in arcseconds (`30″`) below
+  one arcminute.
+
+`Skymap::Field` is a field that does not come from a setup, such as a finder
+scope, a Telrad ring or the frame of a camera: its `true_field` as an
+`Astronoby::Angle`, and the `label` you choose:
+
+```ruby
+finder = Skymap::Field.new(
+  true_field: Astronoby::Angle.from_degrees(5),
+  label: "Finder 5°"
+)
+```
+
+`FieldCircles` takes anything with a `true_field` and a `label`, so a list of
+fields and setups draws them together around a target, on a map twice as wide
+as the eyepiece:
+
+```ruby
+view = Skymap::View.new(
+  center: target,
+  field_of_view: Astronoby::Angle.from_degrees(
+    setup.true_field.degrees * 2
+  )
+)
+
+chart = Skymap::Chart.new(
+  observer: observer,
+  instant: instant,
+  canvas: canvas,
+  view: view
+)
+svg = chart.render(
+  Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 7),
+  Skymap::Layers::FieldCircles.new(fields: [finder, setup], labels: true)
+)
+```
 
 ## Examples
 

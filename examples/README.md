@@ -113,6 +113,16 @@ is high above the horizon and the circles of declination are centered on it.
 
 <img src="grid.svg" width="480" alt="The sky over Tromsø with the coordinate grid, the constellation lines and the ecliptic">
 
+## A finder and an eyepiece
+
+What a finder scope and an eyepiece cover around Albireo, on a map 8 degrees
+wide. The finder is a field of 5 degrees. The eyepiece is a 25 mm eyepiece with
+a 52 degree apparent field in a 1200 mm telescope: `Skymap::Setup` computes its
+true field (a bit more than 1 degree) and the label that is written on the
+circle. [Code](field_circles.rb)
+
+<img src="field_circles.svg" width="480" alt="A circle for a finder scope and one for an eyepiece around Albireo">
+
 ## A finder chart to print
 
 The Pleiades in a field of 4 degrees, with a light theme and a scale bar. The
