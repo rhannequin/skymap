@@ -26,11 +26,43 @@ RSpec.describe Skymap::Layers::Grid do
       )
 
       default = described_class.new.elements(context)
-      quarters = described_class.new(step: 90).elements(context)
-      fine = described_class.new(step: 15).elements(context)
+      quarters = described_class.new(step: degrees(90)).elements(context)
+      fine = described_class.new(step: degrees(15)).elements(context)
 
       expect([default, quarters, fine].map { |grids| at_the_pole(grids) })
         .to eq([12, 4, 24])
+    end
+
+    it "lands the lines on the same angles however the step is built" do
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      steps = [
+        degrees(15),
+        Astronoby::Angle.from_hours(1),
+        Astronoby::Angle.from_dms(15, 0, 0)
+      ]
+
+      renders = steps.map { |step|
+        described_class.new(step: step).elements(context).map(&:points)
+      }
+
+      expect(renders.uniq.size).to eq(1)
+      expect(at_the_pole(described_class.new(step: steps[1]).elements(context)))
+        .to eq(24)
+    end
+
+    it "draws lines every 7.5 degrees" do
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      step = Astronoby::Angle.from_dms(7, 30, 0)
+
+      grids = described_class.new(step: step).elements(context)
+
+      expect(at_the_pole(grids)).to eq(48)
     end
 
     it "stops the lines at the horizon" do
@@ -52,7 +84,7 @@ RSpec.describe Skymap::Layers::Grid do
         latitude: 48.8575,
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
       )
-      layer = described_class.new(step: 90)
+      layer = described_class.new(step: degrees(90))
 
       grids = layer.elements(context)
       starts = grids.map { |grid| grid.points.first }
@@ -124,12 +156,12 @@ RSpec.describe Skymap::Layers::Grid do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       first = context_on(Time.utc(2026, 9, 24, 22), canvas)
       second = context_on(Time.utc(2036, 3, 1, 4), canvas)
-      layer = described_class.new(step: 15, epoch: :of_date)
+      layer = described_class.new(step: degrees(15), epoch: :of_date)
 
       first_render = layer.elements(first)
       second_render = layer.elements(second)
       first_again = layer.elements(first)
-      second_fresh = described_class.new(step: 15, epoch: :of_date)
+      second_fresh = described_class.new(step: degrees(15), epoch: :of_date)
         .elements(second)
 
       expect(first_render.map(&:points)).not_to eq(second_render.map(&:points))
@@ -161,7 +193,7 @@ RSpec.describe Skymap::Layers::Grid do
         view: view
       )
 
-      grids = described_class.new(step: 5, epoch: :of_date).elements(context)
+      grids = described_class.new(step: degrees(5), epoch: :of_date).elements(context)
 
       expect(grids).not_to be_empty
     end
@@ -178,25 +210,39 @@ RSpec.describe Skymap::Layers::Grid do
         .to raise_error(ArgumentError, /epoch must be/)
     end
 
-    it "rejects a step that is not a whole number of degrees" do
-      expect { described_class.new(step: 7.5) }
-        .to raise_error(ArgumentError, /step must be a whole number/)
+    it "rejects a step that is not an angle" do
+      expect { described_class.new(step: 15) }
+        .to raise_error(ArgumentError, /step must be an Astronoby::Angle/)
     end
 
     it "rejects a step that does not divide the circle" do
-      expect { described_class.new(step: 7) }
-        .to raise_error(ArgumentError, /divides 360/)
+      expect { described_class.new(step: degrees(7)) }
+        .to raise_error(ArgumentError, /divides 360 degrees/)
     end
 
     it "rejects a step of zero" do
-      expect { described_class.new(step: 0) }
-        .to raise_error(ArgumentError, /between 1 and 90/)
+      expect { described_class.new(step: Astronoby::Angle.zero) }
+        .to raise_error(ArgumentError, /between 1 and 90 degrees/)
+    end
+
+    it "rejects a negative step" do
+      expect { described_class.new(step: degrees(-15)) }
+        .to raise_error(ArgumentError, /between 1 and 90 degrees/)
+    end
+
+    it "rejects a step below 1 degree" do
+      expect { described_class.new(step: degrees(0.5)) }
+        .to raise_error(ArgumentError, /between 1 and 90 degrees/)
     end
 
     it "rejects a step above 90 degrees" do
-      expect { described_class.new(step: 120) }
-        .to raise_error(ArgumentError, /between 1 and 90/)
+      expect { described_class.new(step: degrees(120)) }
+        .to raise_error(ArgumentError, /between 1 and 90 degrees/)
     end
+  end
+
+  def degrees(value)
+    Astronoby::Angle.from_degrees(value)
   end
 
   def context_on(time, canvas)

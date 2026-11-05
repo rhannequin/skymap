@@ -10,13 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `Skymap::View` zooms the map on an area of the sky, given by the equatorial
-  or horizontal coordinates of its center and a field of view in degrees, with
-  `view:` on `Skymap::Chart`, with the horizon drawn as a line when it is in
-  the view, and the Sun and the Moon at their size in the sky when it is larger
-  than their usual size on the map
+  or horizontal coordinates of its center and a field of view as an
+  `Astronoby::Angle`, with `view:` on `Skymap::Chart`, with the horizon drawn as
+  a line when it is in the view, and the Sun and the Moon at their size in the
+  sky when it is larger than their usual size on the map
+- `Skymap::View` takes `orientation:` (`:zenith_up` by default, or `:equatorial`
+  to put the north celestial pole at the top), `rotation:` as an
+  `Astronoby::Angle` and `mirrored:` to give the map the orientation of a
+  telescope; the lit side of the Moon follows it
 - `Skymap::Layers::Grid` draws the celestial coordinate grid, the lines of
-  right ascension and the circles of declination, every `step:` degrees (30 by
-  default), stopping at the horizon
+  right ascension and the circles of declination, every `step:` angle (30
+  degrees by default), stopping at the horizon
 - `epoch: :of_date` on `Skymap::Layers::Grid` draws the grid in the true
   equator and equinox of the date of the chart, centered on the true celestial
   pole, instead of J2000 (the default)

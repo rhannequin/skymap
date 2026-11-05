@@ -65,6 +65,103 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
     end
   end
 
+  describe "#project with an equatorial orientation" do
+    it "puts the direction of the pole at the top" do
+      projection = looking_south(
+        orientation: :equatorial,
+        pole: [0.0, 1.0, 0.0]
+      )
+
+      towards_pole = projection.project(
+        altitude: degrees(0),
+        azimuth: degrees(90)
+      )
+
+      expect(towards_pole.x.round(2)).to eq(200)
+      expect(towards_pole.y).to be < 200
+    end
+
+    it "does not put the zenith at the top any more" do
+      projection = looking_south(
+        orientation: :equatorial,
+        pole: [0.0, 1.0, 0.0]
+      )
+
+      above = projection.project(altitude: degrees(10), azimuth: degrees(180))
+
+      expect(above.y.round(2)).to eq(200)
+      expect(above.x).not_to eq(200)
+    end
+
+    it "falls back to the zenith when the center is the pole" do
+      projection = described_class.new(
+        center: Skymap::Point.new(x: 200, y: 200),
+        radius: 198.5,
+        altitude: degrees(0),
+        azimuth: degrees(90),
+        field_of_view: degrees(30),
+        orientation: :equatorial,
+        pole: [0.0, 1.0, 0.0]
+      )
+
+      point = projection.project(altitude: degrees(10), azimuth: degrees(90))
+
+      expect(point.x).to be_finite
+      expect(point.y).to be < 200
+    end
+  end
+
+  describe "#project with a mirror" do
+    it "puts the east on the right and the west on the left" do
+      projection = looking_south(mirrored: true)
+
+      east = projection.project(altitude: degrees(30), azimuth: degrees(150))
+      west = projection.project(altitude: degrees(30), azimuth: degrees(210))
+
+      expect(east.x).to be > 200
+      expect(west.x).to be < 200
+    end
+
+    it "keeps the zenith at the top" do
+      projection = looking_south(mirrored: true)
+
+      above = projection.project(altitude: degrees(45), azimuth: degrees(180))
+
+      expect(above.y).to be < 200
+    end
+  end
+
+  describe "#project with a rotation" do
+    it "turns the map by half a turn" do
+      projection = looking_south(rotation: degrees(180))
+
+      above = projection.project(altitude: degrees(45), azimuth: degrees(180))
+      east = projection.project(altitude: degrees(30), azimuth: degrees(150))
+
+      expect(above.y).to be > 200
+      expect(east.x).to be > 200
+    end
+
+    it "turns the map clockwise by a quarter turn" do
+      projection = looking_south(rotation: degrees(90))
+
+      above = projection.project(altitude: degrees(45), azimuth: degrees(180))
+
+      expect(above.x).to be > 200
+      expect(above.y.round(2)).to eq(200)
+    end
+
+    it "turns a mirrored map the same way" do
+      projection = looking_south(rotation: degrees(180), mirrored: true)
+
+      above = projection.project(altitude: degrees(45), azimuth: degrees(180))
+      east = projection.project(altitude: degrees(30), azimuth: degrees(150))
+
+      expect(above.y).to be > 200
+      expect(east.x).to be < 200
+    end
+  end
+
   describe "#project orientation" do
     it "puts the zenith at the top when it is outside the view" do
       projection = southern_view(altitude: 40, field_of_view: 30)
@@ -88,7 +185,7 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
         radius: 198.5,
         altitude: degrees(89),
         azimuth: degrees(0),
-        field_of_view: 30
+        field_of_view: degrees(30)
       )
 
       point = projection.project(altitude: degrees(85), azimuth: degrees(0))
@@ -102,7 +199,7 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
         radius: 198.5,
         altitude: degrees(0),
         azimuth: degrees(0),
-        field_of_view: 180
+        field_of_view: degrees(180)
       )
 
       point = projection.project(altitude: degrees(45), azimuth: degrees(90))
@@ -136,13 +233,24 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
     end
   end
 
+  def looking_south(**options)
+    described_class.new(
+      center: Skymap::Point.new(x: 200, y: 200),
+      radius: 198.5,
+      altitude: degrees(30),
+      azimuth: degrees(180),
+      field_of_view: degrees(60),
+      **options
+    )
+  end
+
   def southern_view(altitude:, field_of_view:)
     described_class.new(
       center: Skymap::Point.new(x: 200, y: 200),
       radius: 198.5,
       altitude: degrees(altitude),
       azimuth: degrees(180),
-      field_of_view: field_of_view
+      field_of_view: degrees(field_of_view)
     )
   end
 

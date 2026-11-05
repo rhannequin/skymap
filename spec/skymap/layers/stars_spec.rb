@@ -94,7 +94,7 @@ RSpec.describe Skymap::Layers::Stars do
     it "draws the stars in the view only" do
       view = Skymap::View.new(
         center: equatorial(right_ascension: 0, declination: 89),
-        field_of_view: 10
+        field_of_view: Astronoby::Angle.from_degrees(10)
       )
       context = context_at(
         latitude: 90,
