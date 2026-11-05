@@ -473,8 +473,9 @@ Skymap::Layers::Grid.new(epoch: :of_date)
 
 The two grids differ by a fraction of a degree today, which only shows when the
 map is zoomed on a small area of the sky. For a view that follows a
-polar-aligned equatorial mount, use `:of_date`. Keep `:j2000` to read
-coordinates off the grid and look them up in an atlas or a catalog.
+polar-aligned equatorial mount, use `:of_date`, which pairs with
+`orientation: :equatorial` (north celestial pole at the top). Keep `:j2000` to
+read coordinates off the grid and look them up in an atlas or a catalog.
 
 Give the grid first to `Chart#render` to draw the stars and the other layers
 over it.
