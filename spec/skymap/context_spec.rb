@@ -35,6 +35,32 @@ RSpec.describe Skymap::Context do
     end
   end
 
+  describe "#horizontal_position" do
+    it "converts equatorial coordinates to horizontal ones" do
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      coordinates = equatorial(right_ascension: 3, declination: 30)
+
+      horizontal = context.horizontal_position(coordinates)
+
+      expect(horizontal.altitude.degrees.round).to eq(30)
+    end
+
+    it "gives horizontal coordinates back as they are" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      view = view_towards(altitude: 40, azimuth: 180, field_of_view: 30)
+
+      horizontal = context.horizontal_position(view.center)
+
+      expect(horizontal).to be(view.center)
+    end
+  end
+
   describe "#position" do
     it "places a star on the canvas where its position projects" do
       context = context_at(

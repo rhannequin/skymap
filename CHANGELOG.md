@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::Layers::Grid` draws the celestial coordinate grid, the lines of
   right ascension and the circles of declination, every `step:` degrees (30 by
   default), stopping at the horizon
+- `Skymap::Layers::FieldCircles` draws circles of given true fields, in
+  degrees, around the center of the view or a point of your choice, with
+  optional labels, to show what a finder scope or an eyepiece covers
+- `Skymap::Telescope` and `Skymap::Eyepiece` give the magnification and the
+  true field of an eyepiece in a telescope, in degrees, ready for
+  `Skymap::View` and `Skymap::Layers::FieldCircles`
 
 ### Changed
 

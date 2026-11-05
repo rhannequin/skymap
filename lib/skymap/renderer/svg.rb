@@ -70,6 +70,7 @@ module Skymap
           when Line then draw_line(svg, element)
           when Dot then draw_dot(svg, element)
           when Ecliptic then draw_ecliptic(svg, element)
+          when FieldCircle then draw_field_circle(svg, element)
           when Grid then draw_grid(svg, element)
           when HorizonLine then draw_horizon_line(svg, element)
           when Label then draw_label(svg, element)
@@ -121,6 +122,10 @@ module Skymap
 
       def draw_ecliptic(svg, ecliptic)
         draw_polyline(svg, ecliptic, @theme.ecliptic)
+      end
+
+      def draw_field_circle(svg, circle)
+        draw_polyline(svg, circle, @theme.planet)
       end
 
       def draw_grid(svg, grid)
@@ -218,6 +223,7 @@ module Skymap
         when :constellation then @theme.constellation_name
         when :star then @theme.star_name
         when :planet then @theme.planet_name
+        when :field then @theme.planet_name
         else raise ArgumentError, "unknown caption kind: #{kind}"
         end
       end

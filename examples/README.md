@@ -104,4 +104,13 @@ is high above the horizon and the circles of declination are centered on it.
 
 <img src="grid.svg" width="480" alt="The sky over Tromsø with the coordinate grid, the constellation lines and the ecliptic">
 
+## A finder and an eyepiece
+
+The 5 degrees of a finder scope and the true field of a 25 mm eyepiece with a
+52 degree apparent field in a 1200 mm telescope, around Albireo, on a map 8
+degrees wide. `Skymap::Telescope` and `Skymap::Eyepiece` compute the field of
+the eyepiece: a bit more than 1 degree. [Code](field_circles.rb)
+
+<img src="field_circles.svg" width="480" alt="A circle for a finder scope and one for an eyepiece around Albireo">
+
 [astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md

@@ -421,11 +421,93 @@ Skymap::Layers::Grid.new(step: 15)
 Give the grid first to `Chart#render` to draw the stars and the other layers
 over it.
 
+#### Field circles
+
+`Skymap::Layers::FieldCircles` draws circles of a given true field, in degrees,
+to show what a finder scope or an eyepiece covers. They are centered on the
+center of the [view](#view), and drawn on the sphere before they are projected,
+so they keep their size and their shape anywhere in the map. A view is needed
+to tell where the center is, unless you give a `center:`:
+
+```ruby
+Skymap::Layers::FieldCircles.new(fields: [5, 1])
+```
+
+`fields:` is a list of diameters in degrees, each above 0 and up to 180: 5
+degrees for a finder scope, 0.5, 1 and 2 degrees for the rings of a Telrad, or
+the true field of an eyepiece (see [Telescope and eyepiece](#telescope-and-eyepiece)).
+Use `center:` to draw them around another point, as the equatorial or
+horizontal coordinates of a point of the sky, such as the position of a target
+while the view is wider:
+
+```ruby
+Skymap::Layers::FieldCircles.new(fields: [1], center: target)
+```
+
+The circles are drawn in the color of the planets (`planet` in the
+[theme](#themes)). In a view, a circle is drawn whole, even below the horizon,
+and a circle that does not reach the view is left out. In the whole sky, a
+circle stops at the horizon, and without a `center:` nothing is drawn.
+
+Use `labels: true` to write the field of each circle next to it, such as `1°`
+or `0.25°`, or `names:` to write something else, with a hash from a field to
+its text. Without `labels: true`, only the circles named in `names:` have a
+label. A label outside the view is left out:
+
+```ruby
+Skymap::Layers::FieldCircles.new(
+  fields: [5, 1],
+  names: {5 => "Finder", 1 => "Eyepiece"}
+)
+```
+
+Give the layer last to `Chart#render` to draw the circles over the stars.
+
 #### Cardinal directions
 
 `Skymap::Layers::CardinalDirections` labels the cardinal directions (N, E, S,
 W) in the padding, with a size that follows it: a padding of about 3% of the
 size gives readable labels. It draws nothing when the map has a [view](#view).
+
+### Telescope and eyepiece
+
+`Skymap::Telescope` and `Skymap::Eyepiece` compute the true field of an
+eyepiece in a telescope: the part of the sky you see through it, in degrees.
+A telescope has a focal length and an aperture, in millimeters. An eyepiece
+has a focal length, in millimeters, and an apparent field of view, in degrees,
+that the maker gives. Each one must be above 0, and the apparent field of view
+up to 180:
+
+```ruby
+telescope = Skymap::Telescope.new(focal_length: 1200, aperture: 200)
+eyepiece = Skymap::Eyepiece.new(focal_length: 25, apparent_field_of_view: 52)
+
+telescope.magnification(eyepiece) # => 48.0
+telescope.true_field(eyepiece)    # => 1.0833333333333333
+```
+
+The magnification is the focal length of the telescope divided by the one of
+the eyepiece, and the true field is the apparent field of view divided by the
+magnification. It is a number of degrees, which is what `field_of_view:` of a
+[view](#view) and `fields:` of the [field circles](#field-circles) take. To
+draw a map as wide as the eyepiece, or twice as wide to see around the target:
+
+```ruby
+field = telescope.true_field(eyepiece)
+
+view = Skymap::View.new(center: target, field_of_view: 2 * field)
+
+chart = Skymap::Chart.new(
+  observer: observer,
+  instant: instant,
+  canvas: canvas,
+  view: view
+)
+svg = chart.render(
+  Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 7),
+  Skymap::Layers::FieldCircles.new(fields: [field], labels: true)
+)
+```
 
 ## Examples
 
