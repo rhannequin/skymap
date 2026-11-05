@@ -193,7 +193,9 @@ RSpec.describe Skymap::Layers::Grid do
         view: view
       )
 
-      grids = described_class.new(step: degrees(5), epoch: :of_date).elements(context)
+      layer = described_class.new(step: degrees(5), epoch: :of_date)
+
+      grids = layer.elements(context)
 
       expect(grids).not_to be_empty
     end
