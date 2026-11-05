@@ -99,6 +99,30 @@ RSpec.describe Skymap::Projection::Stereographic do
     end
   end
 
+  describe "#scale_at" do
+    it "gives the pixels of a radian at the zenith" do
+      projection = described_class.new(
+        center: Skymap::Point.new(x: 200, y: 200),
+        radius: 198.5
+      )
+
+      scale = projection.scale_at(altitude: degrees(90), azimuth: degrees(0))
+
+      expect(scale).to eq(99.25)
+    end
+
+    it "doubles towards the horizon" do
+      projection = described_class.new(
+        center: Skymap::Point.new(x: 200, y: 200),
+        radius: 198.5
+      )
+
+      scale = projection.scale_at(altitude: degrees(0), azimuth: degrees(0))
+
+      expect(scale).to eq(198.5)
+    end
+  end
+
   def degrees(value)
     Astronoby::Angle.from_degrees(value)
   end

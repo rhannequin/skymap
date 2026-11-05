@@ -112,6 +112,30 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
     end
   end
 
+  describe "#scale_at" do
+    it "gives the same scale as the full sky around the zenith" do
+      full = Skymap::Projection::Stereographic.new(
+        center: Skymap::Point.new(x: 200, y: 200),
+        radius: 198.5
+      )
+      zenith = southern_view(altitude: 90, field_of_view: 180)
+
+      expected = full.scale_at(altitude: degrees(35), azimuth: degrees(250))
+      scale = zenith.scale_at(altitude: degrees(35), azimuth: degrees(250))
+
+      expect(scale).to be_within(1e-9).of(expected)
+    end
+
+    it "gives the pixels of an angle at the center of the view" do
+      projection = southern_view(altitude: 30, field_of_view: 60)
+
+      scale = projection.scale_at(altitude: degrees(30), azimuth: degrees(180))
+      one_degree = scale * Math::PI / 180
+
+      expect(one_degree.round(2)).to eq(6.46)
+    end
+  end
+
   def southern_view(altitude:, field_of_view:)
     described_class.new(
       center: Skymap::Point.new(x: 200, y: 200),
