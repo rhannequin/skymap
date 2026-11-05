@@ -107,4 +107,64 @@ RSpec.describe Skymap::Layers::Moon do
       expect(drawn.radius).to be > 0.03 * 198.5 * 5
     end
   end
+
+  describe "#elements with an orientation" do
+    it "follows the north in an equatorial orientation" do
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 17, 30))
+      observer = observer_at(latitude: 48.8575)
+      moon = Astronoby::Moon.at(instant, ephem: ephemeris)
+      horizontal = moon.observed_by(observer).horizontal
+      parallactic = moon.parallactic_angle(observer: observer).degrees
+
+      from_zenith = rotation_with(instant, observer, horizontal, :zenith_up)
+      from_north = rotation_with(instant, observer, horizontal, :equatorial)
+
+      expect(from_north).to be_within(1e-9).of(from_zenith - parallactic)
+    end
+
+    it "turns the lit side with the rotation of the view" do
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 17, 30))
+      observer = observer_at(latitude: 48.8575)
+      horizontal = Astronoby::Moon.at(instant, ephem: ephemeris)
+        .observed_by(observer).horizontal
+
+      upright = rotation_with(instant, observer, horizontal, :zenith_up)
+      turned = rotation_with(
+        instant, observer, horizontal, :zenith_up, rotation: 180
+      )
+
+      expect(turned).to be_within(1e-9).of(upright + 180)
+    end
+
+    it "swaps the lit side in a mirrored view" do
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 17, 30))
+      observer = observer_at(latitude: 48.8575)
+      horizontal = Astronoby::Moon.at(instant, ephem: ephemeris)
+        .observed_by(observer).horizontal
+
+      upright = rotation_with(instant, observer, horizontal, :zenith_up)
+      mirrored = rotation_with(
+        instant, observer, horizontal, :zenith_up, mirrored: true
+      )
+
+      expect(upright + mirrored).to be_within(1e-9).of(-180)
+    end
+  end
+
+  def rotation_with(instant, observer, horizontal, orientation, **options)
+    view = Skymap::View.new(
+      center: horizontal,
+      field_of_view: 2,
+      orientation: orientation,
+      **options
+    )
+    context = Skymap::Context.new(
+      observer: observer,
+      instant: instant,
+      canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+      view: view
+    )
+
+    described_class.new(ephem: ephemeris).elements(context).first.rotation
+  end
 end

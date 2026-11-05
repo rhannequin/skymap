@@ -7,11 +7,23 @@ module Skymap
       NORTH = [1.0, 0.0, 0.0].freeze
       ZENITH = [0.0, 0.0, 1.0].freeze
 
-      def initialize(center:, radius:, altitude:, azimuth:, field_of_view:)
+      def initialize(
+        center:,
+        radius:,
+        altitude:,
+        azimuth:,
+        field_of_view:,
+        orientation: :zenith_up,
+        pole: NORTH,
+        rotation: 0,
+        mirrored: false
+      )
         @center = center
         @forward = vector(altitude, azimuth)
-        @up = up_from(@forward, field_of_view)
-        @right = cross(@up, @forward)
+        up = up_from(@forward, field_of_view, orientation, pole)
+        right = cross(up, @forward)
+        right = right.map(&:-@) if mirrored
+        @right, @up = turned(right, up, rotation)
         half_angle = Astronoby::Angle.from_degrees(field_of_view / 4.0)
         @scale = radius / (2 * half_angle.tan)
       end
@@ -42,16 +54,30 @@ module Skymap
         ]
       end
 
-      def up_from(forward, field_of_view)
+      def up_from(forward, field_of_view, orientation, pole)
         half_angle = Astronoby::Angle.from_degrees(field_of_view / 2.0)
-        references = [ZENITH, NORTH]
-        references.reverse! if forward[2] >= half_angle.cos
+        references = if orientation == :equatorial
+          [pole, ZENITH]
+        elsif forward[2] >= half_angle.cos
+          [NORTH, ZENITH]
+        else
+          [ZENITH, NORTH]
+        end
 
         references.each do |reference|
           up = away_from(reference, forward)
           length = Math.sqrt(dot(up, up))
           return up.map { |component| component / length } if length > 1e-9
         end
+      end
+
+      def turned(right, up, rotation)
+        angle = Astronoby::Angle.from_degrees(rotation)
+
+        [
+          right.zip(up).map { |r, u| angle.cos * r + angle.sin * u },
+          up.zip(right).map { |u, r| angle.cos * u - angle.sin * r }
+        ]
       end
 
       def away_from(reference, forward)

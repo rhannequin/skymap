@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Skymap::View` takes `orientation:` (`:zenith_up` by default, or `:equatorial`
+  to put the north celestial pole at the top), `rotation:` in degrees and
+  `mirrored:` to give the map the orientation of a telescope; the lit side of
+  the Moon follows it
+
+### Added
+
 - `Skymap::View` zooms the map on an area of the sky, given by the equatorial
   or horizontal coordinates of its center and a field of view in degrees, with
   `view:` on `Skymap::Chart`, with the horizon drawn as a line when it is in
