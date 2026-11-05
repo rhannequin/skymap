@@ -12,7 +12,7 @@ module Skymap
       center:,
       field_of_view:,
       orientation: :zenith_up,
-      rotation: 0,
+      rotation: Astronoby::Angle.zero,
       mirrored: false
     )
       unless center.is_a?(Astronoby::Coordinates::Equatorial) ||
@@ -21,11 +21,11 @@ module Skymap
           "center must be equatorial or horizontal coordinates"
       end
 
-      unless field_of_view.is_a?(Numeric) && field_of_view.real? &&
-          field_of_view > 0 && field_of_view <= 180
+      unless field_of_view.is_a?(Astronoby::Angle) &&
+          field_of_view.positive? && field_of_view.radians <= Math::PI
         raise ArgumentError,
-          "field_of_view must be a number of degrees " \
-          "above 0 and up to 180"
+          "field_of_view must be an Astronoby::Angle " \
+          "above 0 and up to 180 degrees"
       end
 
       unless View::ORIENTATIONS.include?(orientation)
@@ -33,8 +33,8 @@ module Skymap
           "orientation must be one of #{View::ORIENTATIONS.join(", ")}"
       end
 
-      unless rotation.is_a?(Numeric) && rotation.real? && rotation.finite?
-        raise ArgumentError, "rotation must be a number of degrees"
+      unless rotation.is_a?(Astronoby::Angle) && rotation.radians.finite?
+        raise ArgumentError, "rotation must be an Astronoby::Angle"
       end
 
       unless [true, false].include?(mirrored)

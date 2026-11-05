@@ -93,7 +93,10 @@ RSpec.describe Skymap::Layers::Moon do
       observer = observer_at(latitude: 48.8575)
       moon = Astronoby::Moon.at(instant, ephem: ephemeris)
         .observed_by(observer).horizontal
-      view = Skymap::View.new(center: moon, field_of_view: 2)
+      view = Skymap::View.new(
+        center: moon,
+        field_of_view: Astronoby::Angle.from_degrees(2)
+      )
       context = Skymap::Context.new(
         observer: observer,
         instant: instant,
@@ -130,7 +133,11 @@ RSpec.describe Skymap::Layers::Moon do
 
       upright = rotation_with(instant, observer, horizontal, :zenith_up)
       turned = rotation_with(
-        instant, observer, horizontal, :zenith_up, rotation: 180
+        instant,
+        observer,
+        horizontal,
+        :zenith_up,
+        rotation: Astronoby::Angle.from_degrees(180)
       )
 
       expect(turned).to be_within(1e-9).of(upright + 180)
@@ -154,7 +161,7 @@ RSpec.describe Skymap::Layers::Moon do
   def rotation_with(instant, observer, horizontal, orientation, **options)
     view = Skymap::View.new(
       center: horizontal,
-      field_of_view: 2,
+      field_of_view: Astronoby::Angle.from_degrees(2),
       orientation: orientation,
       **options
     )

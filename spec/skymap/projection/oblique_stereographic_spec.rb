@@ -99,7 +99,7 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
         radius: 198.5,
         altitude: degrees(0),
         azimuth: degrees(90),
-        field_of_view: 30,
+        field_of_view: degrees(30),
         orientation: :equatorial,
         pole: [0.0, 1.0, 0.0]
       )
@@ -133,7 +133,7 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
 
   describe "#project with a rotation" do
     it "turns the map by half a turn" do
-      projection = looking_south(rotation: 180)
+      projection = looking_south(rotation: degrees(180))
 
       above = projection.project(altitude: degrees(45), azimuth: degrees(180))
       east = projection.project(altitude: degrees(30), azimuth: degrees(150))
@@ -143,7 +143,7 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
     end
 
     it "turns the map clockwise by a quarter turn" do
-      projection = looking_south(rotation: 90)
+      projection = looking_south(rotation: degrees(90))
 
       above = projection.project(altitude: degrees(45), azimuth: degrees(180))
 
@@ -152,7 +152,7 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
     end
 
     it "turns a mirrored map the same way" do
-      projection = looking_south(rotation: 180, mirrored: true)
+      projection = looking_south(rotation: degrees(180), mirrored: true)
 
       above = projection.project(altitude: degrees(45), azimuth: degrees(180))
       east = projection.project(altitude: degrees(30), azimuth: degrees(150))
@@ -185,7 +185,7 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
         radius: 198.5,
         altitude: degrees(89),
         azimuth: degrees(0),
-        field_of_view: 30
+        field_of_view: degrees(30)
       )
 
       point = projection.project(altitude: degrees(85), azimuth: degrees(0))
@@ -199,7 +199,7 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
         radius: 198.5,
         altitude: degrees(0),
         azimuth: degrees(0),
-        field_of_view: 180
+        field_of_view: degrees(180)
       )
 
       point = projection.project(altitude: degrees(45), azimuth: degrees(90))
@@ -239,7 +239,7 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
       radius: 198.5,
       altitude: degrees(30),
       azimuth: degrees(180),
-      field_of_view: 60,
+      field_of_view: degrees(60),
       **options
     )
   end
@@ -250,7 +250,7 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
       radius: 198.5,
       altitude: degrees(altitude),
       azimuth: degrees(180),
-      field_of_view: field_of_view
+      field_of_view: degrees(field_of_view)
     )
   end
 

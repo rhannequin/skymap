@@ -151,7 +151,7 @@ RSpec.describe Skymap::Layers::ConstellationLines do
     it "draws the lines that reach the view only" do
       view = Skymap::View.new(
         center: equatorial(right_ascension: 0, declination: 89),
-        field_of_view: 10
+        field_of_view: Astronoby::Angle.from_degrees(10)
       )
       context = context_at(
         latitude: 90,
@@ -180,7 +180,7 @@ RSpec.describe Skymap::Layers::ConstellationLines do
     it "leaves out a line to a star behind the view" do
       view = Skymap::View.new(
         center: equatorial(right_ascension: 0, declination: 5),
-        field_of_view: 10
+        field_of_view: Astronoby::Angle.from_degrees(10)
       )
       context = context_at(
         latitude: 90,

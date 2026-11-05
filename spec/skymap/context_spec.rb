@@ -167,7 +167,10 @@ RSpec.describe Skymap::Context do
       context = context_at(
         latitude: 48.8575,
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
-        view: Skymap::View.new(center: center, field_of_view: 30)
+        view: Skymap::View.new(
+          center: center,
+          field_of_view: Astronoby::Angle.from_degrees(30)
+        )
       )
       horizontal = context.horizontal_coordinates(center)
 
@@ -362,7 +365,7 @@ RSpec.describe Skymap::Context do
           azimuth: Astronoby::Angle.zero,
           observer: observer_at(latitude: 48.8575)
         ),
-        field_of_view: 40,
+        field_of_view: Astronoby::Angle.from_degrees(40),
         orientation: :equatorial
       )
       context = context_at(

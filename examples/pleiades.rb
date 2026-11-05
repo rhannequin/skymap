@@ -15,9 +15,9 @@ view = Skymap::View.new(
     declination: Astronoby::Angle.from_dms(24, 7, 0),
     epoch: Astronoby::JulianDate::J2000
   ),
-  field_of_view: 4,
+  field_of_view: Astronoby::Angle.from_degrees(4),
   orientation: :equatorial,
-  rotation: 180
+  rotation: Astronoby::Angle.from_degrees(180)
 )
 
 chart = Skymap::Chart.new(

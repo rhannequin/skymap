@@ -46,7 +46,7 @@ module Skymap
         end
         sense = view&.mirrored ? 1 : -1
 
-        sense * angle + (view&.rotation || 0) - 90
+        sense * angle + (view&.rotation&.degrees || 0) - 90
       end
     end
   end

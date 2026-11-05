@@ -91,8 +91,8 @@ SVG.
 
 By default, the map is the whole sky. Pass a `view:` to zoom on an area of it:
 the center of the area, as the equatorial coordinates of a point of the sky (or
-horizontal coordinates), and the field of view, the angle in degrees between
-the opposite sides of the map:
+horizontal coordinates), and the field of view, the angle between the opposite
+sides of the map:
 
 ```ruby
 view = Skymap::View.new(
@@ -101,7 +101,7 @@ view = Skymap::View.new(
     declination: Astronoby::Angle.zero,
     epoch: Astronoby::JulianDate::J2000
   ),
-  field_of_view: 50
+  field_of_view: Astronoby::Angle.from_degrees(50)
 )
 
 chart = Skymap::Chart.new(
@@ -112,8 +112,8 @@ chart = Skymap::Chart.new(
 )
 ```
 
-The field of view is more than 0 and up to 180 degrees. The sky is still
-seen from the observer. By default, the zenith is at the top of the map, except
+The field of view is an `Astronoby::Angle` of more than 0 and up to 180
+degrees. The sky is still seen from the observer. By default, the zenith is at the top of the map, except
 when the zenith is in the view: the north is at the top then, as in the whole
 sky. The next section changes that. With
 horizontal coordinates, only the altitude and the azimuth are used, as seen by
@@ -133,7 +133,7 @@ its mount. Three options of `View` give the same orientation on the map:
   alt-az mount does at the meridian.
 - `orientation: :equatorial` puts the north celestial pole at the top and the
   east on the left, like the sky seen through an equatorial mount.
-- `rotation:` turns the map clockwise, in degrees.
+- `rotation:` turns the map clockwise, by an `Astronoby::Angle`.
 - `mirrored: true` swaps the left and the right, before the rotation.
 
 On an equatorial mount, a refractor or a catadioptric telescope with a
@@ -141,9 +141,25 @@ diagonal shows a mirrored image, and a Newtonian shows the sky turned by half a
 turn:
 
 ```ruby
-Skymap::View.new(center: center, field_of_view: 4, orientation: :equatorial)
-Skymap::View.new(center: center, field_of_view: 4, orientation: :equatorial, mirrored: true)
-Skymap::View.new(center: center, field_of_view: 4, orientation: :equatorial, rotation: 180)
+field_of_view = Astronoby::Angle.from_degrees(4)
+
+Skymap::View.new(
+  center: center,
+  field_of_view: field_of_view,
+  orientation: :equatorial
+)
+Skymap::View.new(
+  center: center,
+  field_of_view: field_of_view,
+  orientation: :equatorial,
+  mirrored: true
+)
+Skymap::View.new(
+  center: center,
+  field_of_view: field_of_view,
+  orientation: :equatorial,
+  rotation: Astronoby::Angle.from_degrees(180)
+)
 ```
 
 The north is the one of the celestial pole of the date, in both hemispheres.
