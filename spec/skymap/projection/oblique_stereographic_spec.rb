@@ -179,6 +179,38 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
       expect(point.y).to be < 200
     end
 
+    it "stays defined for a field of view in whole radians" do
+      projection = described_class.new(
+        center: Skymap::Point.new(x: 200, y: 200),
+        radius: 198.5,
+        altitude: degrees(30),
+        azimuth: degrees(180),
+        field_of_view: Astronoby::Angle.new(1)
+      )
+
+      point = projection.project(altitude: degrees(35), azimuth: degrees(180))
+
+      expect(point.x).to be_finite
+      expect(point.y).to be_finite
+    end
+
+    it "stays defined when the pole is at the zenith and in the center" do
+      projection = described_class.new(
+        center: Skymap::Point.new(x: 200, y: 200),
+        radius: 198.5,
+        altitude: degrees(90),
+        azimuth: degrees(0),
+        field_of_view: degrees(30),
+        orientation: :equatorial,
+        pole: [0.0, 0.0, 1.0]
+      )
+
+      point = projection.project(altitude: degrees(85), azimuth: degrees(0))
+
+      expect(point.x).to be_finite
+      expect(point.y).to be_finite
+    end
+
     it "puts the north at the top when the zenith is in the view" do
       projection = described_class.new(
         center: Skymap::Point.new(x: 200, y: 200),
