@@ -24,7 +24,7 @@ module Skymap
         right = cross(up, @forward)
         right = right.map(&:-@) if mirrored
         @right, @up = turned(right, up, rotation)
-        quarter = Astronoby::Angle.from_radians(field_of_view.radians / 4)
+        quarter = Astronoby::Angle.from_radians(field_of_view.radians / 4.0)
         @scale = radius / (2 * quarter.tan)
       end
 
@@ -55,9 +55,9 @@ module Skymap
       end
 
       def up_from(forward, field_of_view, orientation, pole)
-        half_angle = Astronoby::Angle.from_radians(field_of_view.radians / 2)
+        half_angle = Astronoby::Angle.from_radians(field_of_view.radians / 2.0)
         references = if orientation == :equatorial
-          [pole, ZENITH]
+          [pole, ZENITH, NORTH]
         elsif forward[2] >= half_angle.cos
           [NORTH, ZENITH]
         else
