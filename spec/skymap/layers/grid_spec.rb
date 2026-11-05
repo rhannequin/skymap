@@ -120,6 +120,39 @@ RSpec.describe Skymap::Layers::Grid do
       expect(of_date.size).to eq(j2000.size)
     end
 
+    it "draws each instant with its own epoch from the same grid" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      first = context_on(Time.utc(2026, 9, 24, 22), canvas)
+      second = context_on(Time.utc(2036, 3, 1, 4), canvas)
+      layer = described_class.new(step: 15, epoch: :of_date)
+
+      first_render = layer.elements(first)
+      second_render = layer.elements(second)
+      first_again = layer.elements(first)
+      second_fresh = described_class.new(step: 15, epoch: :of_date)
+        .elements(second)
+
+      expect(first_render.map(&:points)).not_to eq(second_render.map(&:points))
+      expect(first_again.map(&:points)).to eq(first_render.map(&:points))
+      expect(second_render.map(&:points)).to eq(second_fresh.map(&:points))
+    end
+
+    it "draws the same lines through both epochs at the J2000 instant" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      context = Skymap::Context.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_terrestrial_time(
+          Astronoby::JulianDate::J2000
+        ),
+        canvas: canvas
+      )
+
+      j2000 = described_class.new.elements(context)
+      of_date = described_class.new(epoch: :of_date).elements(context)
+
+      expect(of_date.map(&:points)).to eq(j2000.map(&:points))
+    end
+
     it "draws the lines of date in a zoomed view" do
       view = view_towards(altitude: 48.8575, azimuth: 0, field_of_view: 20)
       context = context_at(
@@ -164,6 +197,14 @@ RSpec.describe Skymap::Layers::Grid do
       expect { described_class.new(step: 120) }
         .to raise_error(ArgumentError, /between 1 and 90/)
     end
+  end
+
+  def context_on(time, canvas)
+    Skymap::Context.new(
+      observer: observer_at(latitude: 48.8575),
+      instant: Astronoby::Instant.from_time(time),
+      canvas: canvas
+    )
   end
 
   def circle_distances(grids)

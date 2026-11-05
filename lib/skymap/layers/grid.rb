@@ -21,13 +21,13 @@ module Skymap
 
         @step = step
         @epoch = epoch
-        @lines = {}
+        @lines = lines_at(Astronoby::JulianDate::J2000).freeze if j2000?
       end
 
       def elements(context)
         width = LINE_WIDTH_RATIO * context.canvas.radius
 
-        lines(context).flat_map { |line|
+        lines_for(context).flat_map { |line|
           Horizon.joined(Horizon.visible_runs(context, line))
         }.map do |points|
           Renderer::Grid.new(points: points, width: width)
@@ -36,18 +36,18 @@ module Skymap
 
       private
 
-      def lines(context)
-        epoch = if @epoch == :of_date
-          context.instant.tt
-        else
-          Astronoby::JulianDate::J2000
-        end
+      def j2000?
+        @epoch == :j2000
+      end
 
-        unless @lines.key?(epoch)
-          @lines = {epoch => parallels(@step, epoch) + meridians(@step, epoch)}
-        end
+      def lines_for(context)
+        return @lines if j2000?
 
-        @lines[epoch]
+        lines_at(context.instant.tt)
+      end
+
+      def lines_at(epoch)
+        parallels(@step, epoch) + meridians(@step, epoch)
       end
 
       def parallels(step, epoch)

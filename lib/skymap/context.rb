@@ -106,8 +106,10 @@ module Skymap
       Astronoby::Coordinates::Equatorial.new(
         right_ascension: coordinates.right_ascension,
         declination: coordinates.declination,
-        hour_angle: Astronoby::Angle.from_hours(sidereal_time) -
-          coordinates.right_ascension,
+        hour_angle: Astronoby::Angle.from_hours(
+          (sidereal_time - coordinates.right_ascension.hours) %
+            Astronoby::Constants::HOURS_PER_DAY
+        ),
         epoch: coordinates.epoch
       ).to_horizontal(time: @instant.to_time, observer: @observer)
     end

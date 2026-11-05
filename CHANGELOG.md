@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Skymap::Theme` has a `grid` color, which a theme built with
   `Skymap::Theme.new` must now give
+- Equatorial coordinates given to `Skymap::Context#horizontal_coordinates`, and
+  as the center of a `Skymap::View`, can be at J2000 or at the date of the
+  chart, and any other epoch now raises an `ArgumentError` (it was an
+  `Astronoby::IncompatibleArgumentsError`)
 
 ## [0.4.0] - 2026-11-05
 

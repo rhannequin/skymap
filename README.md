@@ -90,8 +90,9 @@ SVG.
 ### View
 
 By default, the map is the whole sky. Pass a `view:` to zoom on an area of it:
-the center of the area, as the equatorial coordinates of a point of the sky (or
-horizontal coordinates), and the field of view, the angle in degrees between
+the center of the area, as the equatorial coordinates of a point of the sky, at
+J2000 or at the date of the chart (or horizontal coordinates), and the field of
+view, the angle in degrees between
 the opposite sides of the map:
 
 ```ruby
@@ -112,7 +113,8 @@ chart = Skymap::Chart.new(
 )
 ```
 
-The field of view is more than 0 and up to 180 degrees. The sky is still
+Equatorial coordinates at any other epoch raise an `ArgumentError`. The field of
+view is more than 0 and up to 180 degrees. The sky is still
 seen from the observer. The zenith is at the top of the map, except when the
 zenith is in the view: the north is at the top then, as in the whole sky. With
 horizontal coordinates, only the altitude and the azimuth are used, as seen by
@@ -429,8 +431,8 @@ Skymap::Layers::Grid.new(epoch: :of_date)
 ```
 
 The two grids differ by a fraction of a degree today, which only shows when the
-map is zoomed on a small area of the sky. For a view that follows an equatorial
-mount, use `:of_date` with `orientation: :equatorial`. Keep `:j2000` to read
+map is zoomed on a small area of the sky. For a view that follows a
+polar-aligned equatorial mount, use `:of_date`. Keep `:j2000` to read
 coordinates off the grid and look them up in an atlas or a catalog.
 
 Give the grid first to `Chart#render` to draw the stars and the other layers

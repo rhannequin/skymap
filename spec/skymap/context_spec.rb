@@ -234,6 +234,32 @@ RSpec.describe Skymap::Context do
     end
   end
 
+  describe "#project with a view centered at the date of the chart" do
+    it "centers the view on equatorial coordinates of date" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22))
+      center = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(3),
+        declination: Astronoby::Angle.from_degrees(30),
+        epoch: instant.tt
+      )
+      context = Skymap::Context.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: instant,
+        canvas: canvas,
+        view: Skymap::View.new(center: center, field_of_view: 30)
+      )
+      horizontal = context.horizontal_coordinates(center)
+
+      point = context.project(
+        altitude: horizontal.altitude,
+        azimuth: horizontal.azimuth
+      )
+
+      expect([point.x.round(2), point.y.round(2)]).to eq([200, 200])
+    end
+  end
+
   describe "#in_view?" do
     it "accepts every point without a view" do
       context = context_at(
