@@ -14,13 +14,17 @@ module Skymap
         horizontal = moon.observed_by(context.observer).horizontal
         return [] if horizontal.altitude.negative?
 
+        center = context.project(
+          altitude: horizontal.altitude,
+          azimuth: horizontal.azimuth
+        )
+        radius = MOON_RADIUS_RATIO * context.canvas.radius
+        return [] unless context.in_view?(center, radius)
+
         [
           Renderer::Moon.new(
-            center: context.project(
-              altitude: horizontal.altitude,
-              azimuth: horizontal.azimuth
-            ),
-            radius: MOON_RADIUS_RATIO * context.canvas.radius,
+            center: center,
+            radius: radius,
             illuminated_fraction: moon.illuminated_fraction,
             rotation: rotation(moon, context.observer)
           )

@@ -44,7 +44,7 @@ module Skymap
     end
 
     def position(context, horizontal)
-      return if below?(horizontal)
+      return if below?(horizontal) || !context.reachable?(horizontal)
 
       context.project(
         altitude: horizontal.altitude,

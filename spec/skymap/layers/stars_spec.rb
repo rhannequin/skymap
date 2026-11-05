@@ -89,4 +89,25 @@ RSpec.describe Skymap::Layers::Stars do
       expect(large_dot.radius.round(2)).to eq(1.0)
     end
   end
+
+  describe "#elements with a view" do
+    it "draws the stars in the view only" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 0, declination: 89),
+        field_of_view: 10
+      )
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      near = star(right_ascension: 3, declination: 87, magnitude: 2)
+      far = star(right_ascension: 3, declination: 60, magnitude: 2)
+      layer = described_class.new(stars: [near, far])
+
+      dots = layer.elements(context)
+
+      expect(dots.map(&:center)).to eq([context.position(near)])
+    end
+  end
 end

@@ -105,4 +105,36 @@ RSpec.describe Skymap::Chart do
       end
     end.new
   end
+
+  describe "#render with a view" do
+    it "clips what is drawn to the sky" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 20),
+        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 30)
+      )
+      stars = [star(right_ascension: 0, declination: 89, magnitude: 2)]
+
+      svg = chart.render(Skymap::Layers::Stars.new(stars: stars))
+      root = REXML::Document.new(svg).root
+      clip = root.elements["defs/clipPath"]
+
+      expect(clip["id"]).to eq("sky")
+      expect(clip.elements["circle"]["r"]).to eq("180.0")
+      expect(root.elements["g"]["clip-path"]).to eq("url(#sky)")
+    end
+
+    it "does not clip the full sky" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 20)
+      )
+
+      svg = chart.render(Skymap::Layers::CardinalDirections.new)
+
+      expect(svg).not_to include("clipPath")
+    end
+  end
 end

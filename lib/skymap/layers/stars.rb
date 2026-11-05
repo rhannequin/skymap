@@ -21,10 +21,11 @@ module Skymap
 
           next if context.horizontal(star).altitude.negative?
 
-          Renderer::Dot.new(
-            center: context.position(star),
-            radius: star_size.radius(star.magnitude)
-          )
+          center = context.position(star)
+          radius = star_size.radius(star.magnitude)
+          next unless context.in_view?(center, radius)
+
+          Renderer::Dot.new(center: center, radius: radius)
         end
       end
     end

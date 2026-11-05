@@ -24,6 +24,7 @@ require_relative "skymap/layers/star_names"
 require_relative "skymap/layers/stars"
 require_relative "skymap/layers/sun"
 require_relative "skymap/point"
+require_relative "skymap/projection/oblique_stereographic"
 require_relative "skymap/projection/stereographic"
 require_relative "skymap/renderer/boundary"
 require_relative "skymap/renderer/caption"
@@ -39,6 +40,7 @@ require_relative "skymap/star"
 require_relative "skymap/star_size"
 require_relative "skymap/theme"
 require_relative "skymap/version"
+require_relative "skymap/view"
 
 module Skymap
   class Error < StandardError; end

@@ -2,12 +2,15 @@
 
 module Skymap
   class Context
-    attr_reader :observer, :instant, :canvas
+    MAX_ANGLE_FROM_VIEW_COSINE = Math.cos(150 * Math::PI / 180)
 
-    def initialize(observer:, instant:, canvas:)
+    attr_reader :observer, :instant, :canvas, :view
+
+    def initialize(observer:, instant:, canvas:, view: nil)
       @observer = observer
       @instant = instant
       @canvas = canvas
+      @view = view
       @transformation = Astronoby::HorizontalTransformation.new(
         observer: observer,
         instant: instant
@@ -39,13 +42,53 @@ module Skymap
       projection(radius).project(altitude: altitude, azimuth: azimuth)
     end
 
+    def full_sky?
+      @view.nil?
+    end
+
+    def in_view?(point, margin = 0)
+      return true if full_sky?
+
+      distance = Math.hypot(point.x - @canvas.center.x,
+        point.y - @canvas.center.y)
+      distance <= @canvas.radius + margin
+    end
+
+    def reachable?(horizontal)
+      return true if full_sky?
+
+      direction = Horizon.direction([horizontal])
+      cosine = direction.zip(view_direction).sum { |a, b| a * b }
+      cosine > MAX_ANGLE_FROM_VIEW_COSINE
+    end
+
     private
 
     def projection(radius)
-      @projections[radius] ||= Projection::Stereographic.new(
-        center: @canvas.center,
-        radius: radius
-      )
+      @projections[radius] ||= if full_sky?
+        Projection::Stereographic.new(center: @canvas.center, radius: radius)
+      else
+        center = view_center
+        Projection::ObliqueStereographic.new(
+          center: @canvas.center,
+          radius: radius,
+          altitude: center.altitude,
+          azimuth: center.azimuth,
+          field_of_view: @view.field_of_view
+        )
+      end
+    end
+
+    def view_center
+      @view_center ||= if @view.center.is_a?(Astronoby::Coordinates::Equatorial)
+        horizontal_coordinates(@view.center)
+      else
+        @view.center
+      end
+    end
+
+    def view_direction
+      @view_direction ||= Horizon.direction([view_center])
     end
   end
 end

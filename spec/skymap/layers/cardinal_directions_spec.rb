@@ -33,4 +33,16 @@ RSpec.describe Skymap::Layers::CardinalDirections do
       expect(sizes).to all(eq(12.0))
     end
   end
+
+  describe "#elements with a view" do
+    it "draws no direction, as the horizon is not the edge of the map" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 20),
+        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 30)
+      )
+
+      expect(described_class.new.elements(context)).to be_empty
+    end
+  end
 end

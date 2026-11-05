@@ -31,9 +31,13 @@ module Skymap
 
           next if context.horizontal(star).altitude.negative?
 
+          center = context.position(star)
+          radius = star_size.radius(star.magnitude)
+          next unless context.in_view?(center, radius)
+
           Renderer::Caption.beside(
-            center: context.position(star),
-            radius: star_size.radius(star.magnitude),
+            center: center,
+            radius: radius,
             canvas: context.canvas,
             text: name,
             kind: :star

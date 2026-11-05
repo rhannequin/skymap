@@ -80,6 +80,14 @@ option, along the ecliptic. [Code](zodiac.rb)
 
 <img src="zodiac.svg" width="480" alt="The constellations of the zodiac, with their names in French">
 
+## Zooming on Orion
+
+A view on the area around Orion, 50 degrees wide, with the boundaries and the
+names of the constellations and the stars down to magnitude 6.
+[Code](orion.rb)
+
+<img src="orion.svg" width="480" alt="A zoom on the constellation Orion and its neighbors">
+
 ## A blueprint
 
 A theme of your own, built from the dark one: white lines on blue, with a

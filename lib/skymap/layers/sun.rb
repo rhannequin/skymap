@@ -14,15 +14,14 @@ module Skymap
         horizontal = sun.observed_by(context.observer).horizontal
         return [] if horizontal.altitude.negative?
 
-        [
-          Renderer::Sun.new(
-            center: context.project(
-              altitude: horizontal.altitude,
-              azimuth: horizontal.azimuth
-            ),
-            radius: SUN_RADIUS_RATIO * context.canvas.radius
-          )
-        ]
+        center = context.project(
+          altitude: horizontal.altitude,
+          azimuth: horizontal.azimuth
+        )
+        radius = SUN_RADIUS_RATIO * context.canvas.radius
+        return [] unless context.in_view?(center, radius)
+
+        [Renderer::Sun.new(center: center, radius: radius)]
       end
     end
   end

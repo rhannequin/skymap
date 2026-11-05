@@ -566,4 +566,28 @@ RSpec.describe Skymap::Renderer::SVG do
       end
     ]
   end
+
+  describe "#render when clipped" do
+    it "clips the elements and leaves the labels out of the clip" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      renderer = described_class.new(
+        canvas: canvas,
+        theme: Skymap::Theme.dark,
+        clipped: true
+      )
+      dot = Skymap::Renderer::Dot.new(center: point(10, 10), radius: 3)
+      label = Skymap::Renderer::Label.new(
+        position: point(200, 10), text: "N", size: 10
+      )
+
+      svg = renderer.render([dot, label])
+      root = REXML::Document.new(svg).root
+      group = root.elements["g"]
+
+      expect(group["clip-path"]).to eq("url(#sky)")
+      expect(group.elements.to_a("circle").size).to eq(1)
+      expect(texts_in(svg).size).to eq(1)
+      expect(group.elements.to_a("text")).to be_empty
+    end
+  end
 end

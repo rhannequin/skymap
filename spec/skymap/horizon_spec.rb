@@ -82,4 +82,46 @@ RSpec.describe Skymap::Horizon do
       expect(runs.size).to eq(2)
     end
   end
+
+  describe ".visible_runs with a view" do
+    it "leaves out the points behind the view" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 0, declination: 5),
+        field_of_view: 30
+      )
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      behind = [
+        equatorial(right_ascension: 12, declination: 5),
+        equatorial(right_ascension: 12.1, declination: 5)
+      ]
+
+      runs = described_class.visible_runs(context, behind)
+
+      expect(runs).to be_empty
+    end
+
+    it "keeps the points in front of the view" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 0, declination: 40),
+        field_of_view: 30
+      )
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      points = [
+        equatorial(right_ascension: 0, declination: 40),
+        equatorial(right_ascension: 0.1, declination: 41)
+      ]
+
+      runs = described_class.visible_runs(context, points)
+
+      expect(runs.map(&:size)).to eq([2])
+    end
+  end
 end
