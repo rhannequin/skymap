@@ -46,7 +46,7 @@ RSpec.describe Skymap::Renderer::SVG do
       svg = renderer.render(elements)
       sky, star, planet, sun = circles_in(svg)
       line = lines_in(svg).first
-      boundary, ecliptic = polylines_in(svg)
+      boundary, ecliptic, grid = polylines_in(svg)
       label, *captions = texts_in(svg)
 
       expect(sky["fill"]).to eq(theme.sky)
@@ -57,6 +57,7 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(line["stroke"]).to eq(theme.constellation_line)
       expect(boundary["stroke"]).to eq(theme.boundary)
       expect(ecliptic["stroke"]).to eq(theme.ecliptic)
+      expect(grid["stroke"]).to eq(theme.grid)
       expect(label["fill"]).to eq(theme.label)
       expect(captions.map { |c| c["fill"] }).to eq(
         [theme.constellation_name, theme.star_name, theme.planet_name]
@@ -381,6 +382,24 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["stroke-dasharray"]).to be_nil
     end
 
+    it "draws the grid as a solid polyline" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
+      grid = Skymap::Renderer::Grid.new(
+        points: [point(100, 150), point(120.256, 180.004), point(250, 300)],
+        width: 0.5
+      )
+
+      svg = renderer.render([grid])
+      drawn = polylines_in(svg).first
+
+      expect(drawn["points"]).to eq("100,150 120.26,180.0 250,300")
+      expect(drawn["fill"]).to eq("none")
+      expect(drawn["stroke"]).to eq("#22324a")
+      expect(drawn["stroke-width"]).to eq("0.5")
+      expect(drawn["stroke-dasharray"]).to be_nil
+    end
+
     it "draws the Moon as a dark disk with its lit part on top" do
       canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
       renderer = described_class.new(canvas: canvas, theme: Skymap::Theme.dark)
@@ -547,6 +566,9 @@ RSpec.describe Skymap::Renderer::SVG do
       ),
       Skymap::Renderer::Line.new(from: point(1, 1), to: point(2, 2), width: 1),
       Skymap::Renderer::Ecliptic.new(
+        points: [point(1, 1), point(2, 2)], width: 1
+      ),
+      Skymap::Renderer::Grid.new(
         points: [point(1, 1), point(2, 2)], width: 1
       ),
       Skymap::Renderer::Dot.new(center: point(10, 10), radius: 1),

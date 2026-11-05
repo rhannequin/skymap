@@ -87,4 +87,13 @@ background that fills the whole SVG. [Code](blueprint.rb)
 
 <img src="blueprint.svg" width="480" alt="A white on blue map of the constellations">
 
+## The coordinate grid
+
+The grid of right ascension and declination, every 15 degrees (1 hour), under
+the stars and the ecliptic. From Tromsø, far in the north, the celestial pole
+is high above the horizon and the circles of declination are centered on it.
+[Code](grid.rb)
+
+<img src="grid.svg" width="480" alt="The sky over Tromsø with the coordinate grid, the constellation lines and the ecliptic">
+
 [astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md

@@ -82,4 +82,30 @@ RSpec.describe Skymap::Horizon do
       expect(runs.size).to eq(2)
     end
   end
+
+  describe ".joined" do
+    it "joins the end of a closed line to its beginning" do
+      runs = [[1, 2, 3], [5, 6], [8, 9, 1]]
+
+      joined = described_class.joined(runs)
+
+      expect(joined).to eq([[8, 9, 1, 2, 3], [5, 6]])
+    end
+
+    it "keeps the runs of a line that is not closed" do
+      runs = [[1, 2, 3], [5, 6], [8, 9, 4]]
+
+      joined = described_class.joined(runs)
+
+      expect(joined).to eq(runs)
+    end
+
+    it "keeps a single run" do
+      runs = [[1, 2, 3, 1]]
+
+      joined = described_class.joined(runs)
+
+      expect(joined).to eq(runs)
+    end
+  end
 end

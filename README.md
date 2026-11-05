@@ -136,7 +136,7 @@ theme = Skymap::Theme.dark.with(
 
 The colors are `background` (the square behind the sky, which the cardinal
 directions are written on), `sky`, `horizon`, `star`, `constellation_line`, `boundary`,
-`ecliptic`, `planet`, `sun`, `moon`, `moon_shadow` (with its
+`ecliptic`, `grid`, `planet`, `sun`, `moon`, `moon_shadow` (with its
 `moon_shadow_opacity`, between 0 and 1), `constellation_name`, `star_name`,
 `planet_name` and `label` (the cardinal directions). `font` is the font family
 of every text.
@@ -361,6 +361,29 @@ data, and it stops at the horizon:
 ```ruby
 Skymap::Layers::Ecliptic.new
 ```
+
+#### Grid
+
+`Skymap::Layers::Grid` draws the celestial coordinate grid: the lines of right
+ascension and the circles of declination, including the celestial equator. They
+are the coordinates of the stars in a catalog, and the grid shows where the
+sky turns around the celestial pole. It needs no data, and it stops at the
+horizon:
+
+```ruby
+Skymap::Layers::Grid.new
+```
+
+The lines are 30 degrees apart (2 hours of right ascension) by default. Use
+`step:` to draw them closer or further apart, in degrees. It must be a whole
+number between 1 and 90 that divides 360:
+
+```ruby
+Skymap::Layers::Grid.new(step: 15)
+```
+
+Give the grid first to `Chart#render` to draw the stars and the other layers
+over it.
 
 #### Cardinal directions
 
