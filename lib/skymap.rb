@@ -46,6 +46,7 @@ require_relative "skymap/star"
 require_relative "skymap/star_size"
 require_relative "skymap/telescope"
 require_relative "skymap/theme"
+require_relative "skymap/vector"
 require_relative "skymap/version"
 require_relative "skymap/view"
 

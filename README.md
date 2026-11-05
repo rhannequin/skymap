@@ -488,7 +488,9 @@ telescope.true_field(eyepiece)    # => 1.0833333333333333
 
 The magnification is the focal length of the telescope divided by the one of
 the eyepiece, and the true field is the apparent field of view divided by the
-magnification. It is a number of degrees, which is what `field_of_view:` of a
+magnification, the usual first-order formula. With a Barlow lens or a focal
+reducer, give the effective focal length of the telescope. The true field is a
+number of degrees, which is what `field_of_view:` of a
 [view](#view) and `fields:` of the [field circles](#field-circles) take. To
 draw a map as wide as the eyepiece, or twice as wide to see around the target:
 

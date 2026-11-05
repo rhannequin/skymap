@@ -7,8 +7,6 @@ module Skymap
       MAX_DEVIATION = 0.1
       MIN_SAMPLES = 16
       MAX_SAMPLES = 360
-      ZENITH = [0.0, 0.0, 1.0].freeze
-      NORTH = [1.0, 0.0, 0.0].freeze
 
       def initialize(fields:, center: nil, labels: false, names: {})
         check_fields(fields)
@@ -40,7 +38,7 @@ module Skymap
         path = ring(frame, radius, samples).map do |altitude, azimuth|
           position(context, altitude, azimuth)
         end
-        runs = Horizon.joined(runs_of(context, path))
+        runs = Horizon.joined(Horizon.runs_of(context, path))
         return [] if runs.empty?
 
         circles = runs.map do |points|
@@ -95,12 +93,6 @@ module Skymap
         context.project(altitude: altitude, azimuth: azimuth)
       end
 
-      def runs_of(context, path)
-        path.chunk { |point| !point.nil? }.filter_map do |visible, points|
-          points if visible && points.size > 1 && context.crosses_view?(points)
-        end
-      end
-
       def caption(context, field, points)
         text = text_for(field)
         return [] unless text
@@ -121,7 +113,8 @@ module Skymap
       end
 
       def text_for(field)
-        return @names[field] if @names.key?(field)
+        _, name = @names.find { |named, _| named == field }
+        return name if name
         return unless @labels
 
         "#{degrees_text(field)}°"
@@ -146,30 +139,9 @@ module Skymap
           center.altitude.cos * center.azimuth.sin,
           center.altitude.sin
         ]
-        reference = (forward[2].abs > 0.999) ? NORTH : ZENITH
-        up = normalize(away_from(reference, forward))
+        up = Vector.up_from(forward, 1)
 
-        [forward, cross(up, forward), up]
-      end
-
-      def away_from(reference, forward)
-        along = reference.zip(forward).sum { |r, f| r * f }
-
-        reference.zip(forward).map { |r, f| r - along * f }
-      end
-
-      def normalize(vector)
-        length = Math.sqrt(vector.sum { |component| component**2 })
-
-        vector.map { |component| component / length }
-      end
-
-      def cross(a, b)
-        [
-          a[1] * b[2] - a[2] * b[1],
-          a[2] * b[0] - a[0] * b[2],
-          a[0] * b[1] - a[1] * b[0]
-        ]
+        [forward, Vector.cross(up, forward), up]
       end
 
       def check_fields(fields)

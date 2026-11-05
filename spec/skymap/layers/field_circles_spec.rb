@@ -288,6 +288,22 @@ RSpec.describe Skymap::Layers::FieldCircles do
       expect(captions.map(&:text)).to eq(["Finder", "2°", "1°"])
     end
 
+    it "matches a name to a field that is the same number" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
+      )
+      layer = described_class.new(
+        fields: [2.0, 1],
+        names: {2 => "Finder", 1.0 => "Eyepiece"}
+      )
+
+      captions = layer.elements(context).grep(Skymap::Renderer::Caption)
+
+      expect(captions.map(&:text)).to eq(["Finder", "Eyepiece"])
+    end
+
     it "writes only the names it is given without labels" do
       context = context_at(
         latitude: 48.8575,
