@@ -89,6 +89,19 @@ RSpec.describe Skymap::Layers::Scale do
       expect(lengths).to all(be_between(0.1 * 2 * 198.5, 0.2 * 2 * 198.5))
     end
 
+    it "draws a bar of 1 arc-second just above the smallest field" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 45, azimuth: 180, field_of_view: 0.0015)
+      )
+      layer = described_class.new
+
+      caption = layer.elements(context).grep(Skymap::Renderer::Caption).first
+
+      expect(caption.text).to eq("1″")
+    end
+
     it "draws nothing when the field is too small for any length" do
       context = context_at(
         latitude: 48.8575,

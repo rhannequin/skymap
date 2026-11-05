@@ -475,9 +475,9 @@ between the ends is a little smaller than the label on wide fields. The
 difference is below 0.01% up to a field of view of 90 degrees, which covers
 finder charts, and at most 0.1% at 120 degrees and 0.3% at 180 degrees. Nothing
 is drawn when even 1 arc-second is too long, for a field of view below about
-0.005 degrees. The bar and its label use the `star_name` color of the theme.
-With a [print size](#print-size), the bar is as long on paper as the angle it
-says.
+0.0014 degrees (5 arc-seconds). The bar and its label use the `star_name`
+color of the theme. With a [print size](#print-size), the bar is as long on
+paper as the angle it says.
 
 ## Examples
 
