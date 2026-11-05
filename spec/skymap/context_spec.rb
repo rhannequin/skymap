@@ -140,6 +140,56 @@ RSpec.describe Skymap::Context do
     end
   end
 
+  describe "#scale_at_point" do
+    it "gives the pixels per radian at a point of the map" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      context = context_at(
+        latitude: 48.8575,
+        canvas: canvas,
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 60)
+      )
+
+      center = context.scale_at_point(canvas.center)
+      edge = context.scale_at_point(Skymap::Point.new(x: 200, y: 1.5))
+
+      expect((center * Math::PI / 180).round(2)).to eq(6.46)
+      expect(edge).to be > center
+    end
+
+    it "matches the scale of a place of the sky" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 120)
+      )
+      altitude = Astronoby::Angle.from_degrees(70)
+      azimuth = Astronoby::Angle.from_degrees(150)
+
+      point = context.project(altitude: altitude, azimuth: azimuth)
+      expected = context.span(
+        Astronoby::Angle.from_radians(1),
+        altitude: altitude,
+        azimuth: azimuth
+      )
+
+      expect(context.scale_at_point(point)).to be_within(1e-6).of(expected)
+    end
+
+    it "is the scale of the whole sky without a view" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      altitude = Astronoby::Angle.from_degrees(20)
+      azimuth = Astronoby::Angle.from_degrees(100)
+
+      point = context.project(altitude: altitude, azimuth: azimuth)
+
+      expect(context.scale_at_point(point))
+        .to be_within(1e-6).of(198.5 / (1 + altitude.sin))
+    end
+  end
+
   describe "#span" do
     it "gives the pixels an angle covers at a place of the sky" do
       context = context_at(

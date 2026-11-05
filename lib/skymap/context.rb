@@ -47,6 +47,10 @@ module Skymap
         angle.radians
     end
 
+    def scale_at_point(point, radius: @canvas.radius)
+      projection(radius).scale_at_point(point)
+    end
+
     def disk_radius(default, angular_diameter:, altitude:, azimuth:)
       return default if full_sky?
 

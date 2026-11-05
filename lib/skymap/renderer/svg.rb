@@ -16,10 +16,11 @@ module Skymap
       end
 
       def render(elements)
+        printed_size = (@canvas.print_size || @canvas.size).to_s
         svg = Victor::SVG.new(
           viewBox: "0 0 #{@canvas.size} #{@canvas.size}",
-          width: @canvas.size,
-          height: @canvas.size
+          width: printed_size,
+          height: printed_size
         )
 
         draw_background(svg)
@@ -68,6 +69,7 @@ module Skymap
           when Boundary then draw_boundary(svg, element)
           when Caption then draw_caption(svg, element)
           when Line then draw_line(svg, element)
+          when ScaleBar then draw_scale_bar(svg, element)
           when Dot then draw_dot(svg, element)
           when Ecliptic then draw_ecliptic(svg, element)
           when Grid then draw_grid(svg, element)
@@ -79,6 +81,11 @@ module Skymap
           else raise ArgumentError, "unknown element: #{element.class}"
           end
         end
+      end
+
+      def format_points(points)
+        points.map { |point| "#{point.x.round(2)},#{point.y.round(2)}" }
+          .join(" ")
       end
 
       def draw_background(svg)
@@ -105,13 +112,26 @@ module Skymap
         )
       end
 
+      def draw_scale_bar(svg, bar)
+        top = bar.from.y - bar.tick
+        points = [
+          Point.new(x: bar.from.x, y: top), bar.from,
+          bar.to, Point.new(x: bar.to.x, y: top)
+        ]
+
+        svg.polyline(
+          points: format_points(points),
+          fill: "none",
+          stroke: @theme.star_name,
+          stroke_width: bar.width.round(2)
+        )
+      end
+
       def draw_boundary(svg, boundary)
         dash = (boundary.width * BOUNDARY_DASH_RATIO).round(2)
 
         svg.polyline(
-          points: boundary.points.map { |point|
-            "#{point.x.round(2)},#{point.y.round(2)}"
-          }.join(" "),
+          points: format_points(boundary.points),
           fill: "none",
           stroke: @theme.boundary,
           stroke_width: boundary.width.round(2),
@@ -129,9 +149,7 @@ module Skymap
 
       def draw_polyline(svg, element, stroke)
         svg.polyline(
-          points: element.points.map { |point|
-            "#{point.x.round(2)},#{point.y.round(2)}"
-          }.join(" "),
+          points: format_points(element.points),
           fill: "none",
           stroke: stroke,
           stroke_width: element.width.round(2),
@@ -141,9 +159,7 @@ module Skymap
 
       def draw_horizon_line(svg, line)
         svg.polyline(
-          points: line.points.map { |point|
-            "#{point.x.round(2)},#{point.y.round(2)}"
-          }.join(" "),
+          points: format_points(line.points),
           fill: "none",
           stroke: @theme.horizon,
           stroke_width: HORIZON_WIDTH,
@@ -218,6 +234,7 @@ module Skymap
         when :constellation then @theme.constellation_name
         when :star then @theme.star_name
         when :planet then @theme.planet_name
+        when :scale then @theme.star_name
         else raise ArgumentError, "unknown caption kind: #{kind}"
         end
       end

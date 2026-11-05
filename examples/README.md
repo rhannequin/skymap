@@ -113,4 +113,12 @@ is high above the horizon and the circles of declination are centered on it.
 
 <img src="grid.svg" width="480" alt="The sky over Tromsø with the coordinate grid, the constellation lines and the ecliptic">
 
+## A finder chart to print
+
+The Pleiades in a field of 4 degrees, with a light theme and a scale bar. The
+canvas has a print size, the width of an A4 sheet minus a margin of 10 mm on
+each side, so the chart is 190 mm wide on paper at any print scale of 100%. [Code](finder_chart.rb)
+
+<img src="finder_chart.svg" width="480" alt="The Pleiades in a field of 4 degrees, with the stars, the coordinate grid and a scale bar of 30 arc-minutes">
+
 [astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md
