@@ -17,6 +17,7 @@ theme = Skymap::Theme.dark.with(
   star: "#ffffff",
   constellation_line: "#bcd2ff",
   boundary: "#6f95e0",
+  grid: "#2a5cb8",
   constellation_name: "#ffffff",
   label: "#ffffff"
 )
@@ -28,6 +29,7 @@ chart = Skymap::Chart.new(
   theme: theme
 )
 svg = chart.render(
+  Skymap::Layers::Grid.new,
   Skymap::Layers::ConstellationBoundaries.new(
     boundaries: Skymap::Catalog::ConstellationBoundaries.new
   ),

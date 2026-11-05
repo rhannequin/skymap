@@ -83,8 +83,9 @@ option, along the ecliptic. [Code](zodiac.rb)
 ## A blueprint
 
 A theme of your own, built from the dark one: white lines on blue, with a
-background that fills the whole SVG. [Code](blueprint.rb)
+background that fills the whole SVG, and the coordinate grid under the
+constellations. [Code](blueprint.rb)
 
-<img src="blueprint.svg" width="480" alt="A white on blue map of the constellations">
+<img src="blueprint.svg" width="480" alt="A white on blue map of the constellations, over a coordinate grid">
 
 [astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md

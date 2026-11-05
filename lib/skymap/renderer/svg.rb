@@ -38,6 +38,7 @@ module Skymap
           when Line then draw_line(svg, element)
           when Dot then draw_dot(svg, element)
           when Ecliptic then draw_ecliptic(svg, element)
+          when Grid then draw_grid(svg, element)
           when Label then draw_label(svg, element)
           when Moon then draw_moon(svg, element)
           when Planet then draw_planet(svg, element)
@@ -97,6 +98,18 @@ module Skymap
           fill: "none",
           stroke: @theme.ecliptic,
           stroke_width: ecliptic.width.round(2),
+          stroke_linejoin: "round"
+        )
+      end
+
+      def draw_grid(svg, grid)
+        svg.polyline(
+          points: grid.points.map { |point|
+            "#{point.x.round(2)},#{point.y.round(2)}"
+          }.join(" "),
+          fill: "none",
+          stroke: @theme.grid,
+          stroke_width: grid.width.round(2),
           stroke_linejoin: "round"
         )
       end
