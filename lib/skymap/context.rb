@@ -42,6 +42,11 @@ module Skymap
       projection(radius).project(altitude: altitude, azimuth: azimuth)
     end
 
+    def span(angle, altitude:, azimuth:, radius: @canvas.radius)
+      projection(radius).scale_at(altitude: altitude, azimuth: azimuth) *
+        angle.radians
+    end
+
     def full_sky?
       @view.nil?
     end

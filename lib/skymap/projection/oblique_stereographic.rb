@@ -24,6 +24,12 @@ module Skymap
         )
       end
 
+      def scale_at(altitude:, azimuth:)
+        point = vector(altitude, azimuth)
+
+        @scale * 2 / [1 + dot(point, @forward), MIN_DENOMINATOR].max
+      end
+
       private
 
       def vector(altitude, azimuth)

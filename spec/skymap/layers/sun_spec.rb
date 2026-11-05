@@ -62,4 +62,44 @@ RSpec.describe Skymap::Layers::Sun do
       expect(layer.elements(context)).to be_empty
     end
   end
+
+  describe "#elements when zoomed on the Sun" do
+    it "draws the Sun at its size in the sky once that is larger" do
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 12))
+      observer = observer_at(latitude: 48.8575)
+      sun = Astronoby::Sun.at(instant, ephem: ephemeris)
+        .observed_by(observer).horizontal
+      view = Skymap::View.new(center: sun, field_of_view: 2)
+      context = Skymap::Context.new(
+        observer: observer,
+        instant: instant,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      layer = described_class.new(ephem: ephemeris)
+
+      drawn, = layer.elements(context)
+
+      expect(drawn.radius).to be_within(1).of(52)
+    end
+
+    it "keeps the default size in a wide view" do
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 12))
+      observer = observer_at(latitude: 48.8575)
+      sun = Astronoby::Sun.at(instant, ephem: ephemeris)
+        .observed_by(observer).horizontal
+      view = Skymap::View.new(center: sun, field_of_view: 90)
+      context = Skymap::Context.new(
+        observer: observer,
+        instant: instant,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      layer = described_class.new(ephem: ephemeris)
+
+      drawn, = layer.elements(context)
+
+      expect(drawn.radius).to eq(0.03 * 198.5)
+    end
+  end
 end

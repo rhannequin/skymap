@@ -86,6 +86,45 @@ RSpec.describe Skymap::Context do
     end
   end
 
+  describe "#span" do
+    it "gives the pixels an angle covers at a place of the sky" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 60)
+      )
+
+      pixels = context.span(
+        Astronoby::Angle.from_degrees(1),
+        altitude: Astronoby::Angle.from_degrees(30),
+        azimuth: Astronoby::Angle.from_degrees(180)
+      )
+
+      expect(pixels.round(2)).to eq(6.46)
+    end
+
+    it "covers more pixels when the field of view is smaller" do
+      wide = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 60)
+      )
+      narrow = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 30, azimuth: 180, field_of_view: 6)
+      )
+      arguments = {
+        altitude: Astronoby::Angle.from_degrees(30),
+        azimuth: Astronoby::Angle.from_degrees(180)
+      }
+      angle = Astronoby::Angle.from_degrees(1)
+
+      expect(narrow.span(angle, **arguments))
+        .to be > wide.span(angle, **arguments) * 9
+    end
+  end
+
   describe "#full_sky?" do
     it "is the whole sky without a view" do
       context = context_at(

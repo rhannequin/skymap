@@ -86,4 +86,25 @@ RSpec.describe Skymap::Layers::Moon do
       expect(moons).to be_empty
     end
   end
+
+  describe "#elements when zoomed on the Moon" do
+    it "draws the Moon at its size in the sky once that is larger" do
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 17, 30))
+      observer = observer_at(latitude: 48.8575)
+      moon = Astronoby::Moon.at(instant, ephem: ephemeris)
+        .observed_by(observer).horizontal
+      view = Skymap::View.new(center: moon, field_of_view: 2)
+      context = Skymap::Context.new(
+        observer: observer,
+        instant: instant,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      layer = described_class.new(ephem: ephemeris)
+
+      drawn, = layer.elements(context)
+
+      expect(drawn.radius).to be > 0.03 * 198.5 * 5
+    end
+  end
 end

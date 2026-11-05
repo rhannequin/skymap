@@ -114,9 +114,12 @@ chart = Skymap::Chart.new(
 
 The field of view is more than 0 and up to 180 degrees. The sky is still
 seen from the observer, with the zenith at the top, and the layers draw what is
-in the view only. The edge of the map is no longer the horizon, so the
-cardinal directions are not drawn. The stars are limited by the catalog: a
-field of view of 10 degrees or more shows enough of them.
+in the view only. The horizon is drawn as a line when it is in the view, and
+the edge of the map is a thin outline. It is no longer the horizon, so the
+cardinal directions are not drawn. The Sun and the Moon are drawn at their size
+in the sky once it is larger than their usual size on the map. The stars are
+limited by the catalog: a field of view of 10 degrees or more shows enough of
+them.
 
 ### Themes
 

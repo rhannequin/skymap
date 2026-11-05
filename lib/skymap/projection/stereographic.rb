@@ -16,6 +16,10 @@ module Skymap
           y: @center.y - distance * azimuth.cos
         )
       end
+
+      def scale_at(altitude:, azimuth:)
+        @radius / (1 + altitude.sin)
+      end
     end
   end
 end

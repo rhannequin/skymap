@@ -124,4 +124,57 @@ RSpec.describe Skymap::Horizon do
       expect(runs.map(&:size)).to eq([2])
     end
   end
+
+  describe ".line" do
+    it "is a circle around the center when the whole sky is the view" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 90, azimuth: 0, field_of_view: 180)
+      )
+
+      line, = described_class.line(context)
+      distances = line.map { |point| distance_from_center(point) }
+
+      expect(distances.uniq).to eq([198.5])
+    end
+
+    it "is one closed line when the horizon is entirely in the view" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 90, azimuth: 0, field_of_view: 180)
+      )
+
+      lines = described_class.line(context)
+
+      expect(lines.size).to eq(1)
+      expect(lines.first.first).to eq(lines.first.last)
+    end
+
+    it "crosses the middle of the map when the view is centered on it" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 0, azimuth: 180, field_of_view: 30)
+      )
+
+      lines = described_class.line(context)
+      middle = lines.flatten.min_by { |point| (point.x - 200).abs }
+
+      expect(middle.y.round(2)).to eq(200)
+    end
+
+    it "leaves out the part of the horizon behind the view" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 0, azimuth: 180, field_of_view: 30)
+      )
+
+      lines = described_class.line(context)
+
+      expect(lines.sum(&:size)).to be < 360
+    end
+  end
 end

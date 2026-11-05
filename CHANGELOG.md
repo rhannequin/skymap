@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Skymap::View` zooms the map on an area of the sky, given by the equatorial
   or horizontal coordinates of its center and a field of view in degrees, with
-  `view:` on `Skymap::Chart`
+  `view:` on `Skymap::Chart`, with the horizon drawn as a line when it is in
+  the view, and the Sun and the Moon at their size in the sky when it is larger
+  than their usual size on the map
 
 ## [0.4.0] - 2026-11-05
 

@@ -137,4 +137,47 @@ RSpec.describe Skymap::Chart do
       expect(svg).not_to include("clipPath")
     end
   end
+
+  describe "#render with a view that shows the horizon" do
+    it "draws the horizon as a line" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 20),
+        view: view_towards(altitude: 0, azimuth: 180, field_of_view: 30)
+      )
+
+      svg = chart.render
+      horizon = REXML::Document.new(svg).root.elements["g/polyline"]
+
+      expect(horizon["stroke"]).to eq(Skymap::Theme.dark.horizon)
+      expect(horizon["stroke-width"]).to eq("3")
+    end
+
+    it "outlines the sky with a thin line" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 20),
+        view: view_towards(altitude: 0, azimuth: 180, field_of_view: 30)
+      )
+
+      svg = chart.render
+      sky = REXML::Document.new(svg).root.elements["circle"]
+
+      expect(sky["stroke-width"]).to eq("1")
+    end
+
+    it "draws no horizon line of its own in the full sky" do
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: Skymap::Canvas.new(size: 400, padding: 20)
+      )
+
+      svg = chart.render
+
+      expect(polylines_in(svg)).to be_empty
+    end
+  end
 end
