@@ -8,7 +8,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
-      layer = described_class.new(fields: [5])
+      layer = described_class.new(fields: fields_of(5))
 
       circle, = layer.elements(context)
       left, right, top, bottom = extent(circle.points)
@@ -23,7 +23,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
-      layer = described_class.new(fields: [5])
+      layer = described_class.new(fields: fields_of(5))
 
       circle, = layer.elements(context)
       left, right, top, bottom = extent(circle.points)
@@ -38,7 +38,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
-      layer = described_class.new(fields: [1, 2, 4])
+      layer = described_class.new(fields: fields_of(1, 2, 4))
 
       circles = layer.elements(context)
       widths = circles.map do |circle|
@@ -56,7 +56,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
-      layer = described_class.new(fields: [1])
+      layer = described_class.new(fields: fields_of(1))
 
       circle, = layer.elements(context)
 
@@ -70,7 +70,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 60)
       )
       center = horizontal(altitude: 65, azimuth: 180)
-      layer = described_class.new(fields: [8], center: center)
+      layer = described_class.new(fields: fields_of(8), center: center)
 
       circle, = layer.elements(context)
       left, right, top, bottom = extent(circle.points)
@@ -89,7 +89,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         view: view_towards(altitude: 49, azimuth: 0, field_of_view: 30)
       )
       target = equatorial(right_ascension: 2.5, declination: 85)
-      layer = described_class.new(fields: [2], center: target)
+      layer = described_class.new(fields: fields_of(2), center: target)
 
       circle, = layer.elements(context)
       left, right, top, bottom = extent(circle.points)
@@ -106,13 +106,16 @@ RSpec.describe Skymap::Layers::FieldCircles do
 
     it "centers on the view when it is given equatorial coordinates" do
       target = equatorial(right_ascension: 2.5, declination: 85)
-      view = Skymap::View.new(center: target, field_of_view: 10)
+      view = Skymap::View.new(
+        center: target,
+        field_of_view: Astronoby::Angle.from_degrees(10)
+      )
       context = context_at(
         latitude: 48.8575,
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view
       )
-      layer = described_class.new(fields: [2])
+      layer = described_class.new(fields: fields_of(2))
 
       circle, = layer.elements(context)
       left, right, top, bottom = extent(circle.points)
@@ -127,7 +130,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
-      layer = described_class.new(fields: [0.1, 5])
+      layer = described_class.new(fields: fields_of(0.1, 5))
 
       small, large = layer.elements(context)
 
@@ -142,7 +145,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
       center = horizontal(altitude: 60, azimuth: 120)
-      layer = described_class.new(fields: [120], center: center)
+      layer = described_class.new(fields: fields_of(120), center: center)
 
       points = layer.elements(context).sum { |circle| circle.points.size }
 
@@ -156,7 +159,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
       far = horizontal(altitude: 40, azimuth: 0)
-      layer = described_class.new(fields: [1, 5], center: far)
+      layer = described_class.new(fields: fields_of(1, 5), center: far)
 
       circles = layer.elements(context)
 
@@ -169,7 +172,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 5)
       )
-      layer = described_class.new(fields: [30])
+      layer = described_class.new(fields: fields_of(30))
 
       circles = layer.elements(context)
 
@@ -183,7 +186,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
       edge = horizontal(altitude: 40, azimuth: 180 + 6.5)
-      layer = described_class.new(fields: [4], center: edge)
+      layer = described_class.new(fields: fields_of(4), center: edge)
 
       circles = layer.elements(context)
 
@@ -196,7 +199,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 1, azimuth: 180, field_of_view: 10)
       )
-      layer = described_class.new(fields: [4])
+      layer = described_class.new(fields: fields_of(4))
 
       circles = layer.elements(context)
 
@@ -206,7 +209,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
 
     it "draws a thin line that scales with the canvas" do
       view = view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
-      layer = described_class.new(fields: [1])
+      layer = described_class.new(fields: fields_of(1))
       small = context_at(
         latitude: 48.8575,
         canvas: Skymap::Canvas.new(size: 400, padding: 0),
@@ -231,57 +234,57 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
-      layer = described_class.new(fields: [1, 2])
+      layer = described_class.new(fields: fields_of(1, 2))
 
       captions = layer.elements(context).grep(Skymap::Renderer::Caption)
 
       expect(captions).to be_empty
     end
 
-    it "writes the field of each circle in degrees with labels" do
+    it "writes the label of each field when asked to" do
       context = context_at(
         latitude: 48.8575,
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
       layer = described_class.new(
-        fields: [4, 2.5, 0.25, 1.0833333],
+        fields: [
+          field_of(4, "Finder"),
+          field_of(2, "Eyepiece"),
+          field_of(1, "Telrad")
+        ],
         labels: true
       )
 
       captions = layer.elements(context).grep(Skymap::Renderer::Caption)
 
-      expect(captions.map(&:text)).to eq(["4°", "2.5°", "0.25°", "1.1°"])
+      expect(captions.map(&:text)).to eq(%w[Finder Eyepiece Telrad])
       expect(captions.map(&:kind).uniq).to eq([:field])
     end
 
-    it "writes a short field as it was given" do
-      context = context_at(
-        latitude: 48.8575,
-        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
-        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 100)
-      )
-      layer = described_class.new(
-        fields: [30, 12.5, 2.25, 0.05],
-        labels: true
-      )
-
-      captions = layer.elements(context).grep(Skymap::Renderer::Caption)
-
-      expect(captions.map(&:text)).to eq(["30°", "12.5°", "2.25°", "0.05°"])
-    end
-
-    it "rounds a long field to two digits" do
+    it "draws the true field and the label of a setup" do
       context = context_at(
         latitude: 48.8575,
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
-      layer = described_class.new(fields: [1.0833333, 0.083333], labels: true)
+      setup = Skymap::Setup.new(
+        telescope: Skymap::Telescope.new(
+          focal_length_mm: 1200,
+          aperture_mm: 200
+        ),
+        eyepiece: Skymap::Eyepiece.new(
+          focal_length_mm: 25,
+          apparent_field_of_view: Astronoby::Angle.from_degrees(52)
+        )
+      )
+      layer = described_class.new(fields: [setup], labels: true)
 
-      captions = layer.elements(context).grep(Skymap::Renderer::Caption)
+      circle, caption = layer.elements(context)
+      left, right, = extent(circle.points)
 
-      expect(captions.map(&:text)).to eq(["1.1°", "0.083°"])
+      expect(caption.text).to eq("25 mm, 48×, 1.1°")
+      expect(right - left).to be_within(0.2).of(198.5 * 1.0833 / 5)
     end
 
     it "writes the label next to its circle" do
@@ -290,7 +293,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
-      layer = described_class.new(fields: [2], labels: true)
+      layer = described_class.new(fields: fields_of(2), labels: true)
 
       circle, caption = layer.elements(context)
       left, right, = extent(circle.points)
@@ -300,52 +303,6 @@ RSpec.describe Skymap::Layers::FieldCircles do
       )
     end
 
-    it "writes the names it is given instead of the field" do
-      context = context_at(
-        latitude: 48.8575,
-        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
-        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
-      )
-      layer = described_class.new(
-        fields: [4, 2, 1],
-        labels: true,
-        names: {4 => "Finder"}
-      )
-
-      captions = layer.elements(context).grep(Skymap::Renderer::Caption)
-
-      expect(captions.map(&:text)).to eq(["Finder", "2°", "1°"])
-    end
-
-    it "matches a name to a field that is the same number" do
-      context = context_at(
-        latitude: 48.8575,
-        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
-        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
-      )
-      layer = described_class.new(
-        fields: [2.0, 1],
-        names: {2 => "Finder", 1.0 => "Eyepiece"}
-      )
-
-      captions = layer.elements(context).grep(Skymap::Renderer::Caption)
-
-      expect(captions.map(&:text)).to eq(["Finder", "Eyepiece"])
-    end
-
-    it "writes only the names it is given without labels" do
-      context = context_at(
-        latitude: 48.8575,
-        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
-        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
-      )
-      layer = described_class.new(fields: [4, 2], names: {2 => "Eyepiece"})
-
-      captions = layer.elements(context).grep(Skymap::Renderer::Caption)
-
-      expect(captions.map(&:text)).to eq(["Eyepiece"])
-    end
-
     it "leaves out the label of a circle that does not reach the view" do
       context = context_at(
         latitude: 48.8575,
@@ -353,7 +310,11 @@ RSpec.describe Skymap::Layers::FieldCircles do
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
       far = horizontal(altitude: 40, azimuth: 0)
-      layer = described_class.new(fields: [1], center: far, labels: true)
+      layer = described_class.new(
+        fields: fields_of(1),
+        center: far,
+        labels: true
+      )
 
       elements = layer.elements(context)
 
@@ -366,7 +327,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
         view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
       )
-      layer = described_class.new(fields: [9.9], labels: true)
+      layer = described_class.new(fields: fields_of(9.9), labels: true)
 
       elements = layer.elements(context)
 
@@ -381,7 +342,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         latitude: 48.8575,
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
       )
-      layer = described_class.new(fields: [5], labels: true)
+      layer = described_class.new(fields: fields_of(5), labels: true)
 
       elements = layer.elements(context)
 
@@ -394,7 +355,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
       )
       center = horizontal(altitude: 60, azimuth: 90)
-      layer = described_class.new(fields: [10], center: center)
+      layer = described_class.new(fields: fields_of(10), center: center)
 
       circle, = layer.elements(context)
       left, right, top, bottom = extent(circle.points)
@@ -412,7 +373,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
       )
       center = horizontal(altitude: 2, azimuth: 90)
-      layer = described_class.new(fields: [10], center: center)
+      layer = described_class.new(fields: fields_of(10), center: center)
 
       circle, = layer.elements(context)
       distances = circle.points.map { |point| distance_from_center(point) }
@@ -427,7 +388,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
       )
       center = horizontal(altitude: 5, azimuth: 90)
-      layer = described_class.new(fields: [20], center: center)
+      layer = described_class.new(fields: fields_of(20), center: center)
 
       circle, = layer.elements(context)
 
@@ -443,7 +404,11 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
       )
       center = horizontal(altitude: -40, azimuth: 90)
-      layer = described_class.new(fields: [10], center: center, labels: true)
+      layer = described_class.new(
+        fields: fields_of(10),
+        center: center,
+        labels: true
+      )
 
       elements = layer.elements(context)
 
@@ -456,7 +421,7 @@ RSpec.describe Skymap::Layers::FieldCircles do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
       )
       center = horizontal(altitude: 90, azimuth: 0)
-      layer = described_class.new(fields: [10], center: center)
+      layer = described_class.new(fields: fields_of(10), center: center)
 
       circle, = layer.elements(context)
       distances = circle.points.map { |point| distance_from_center(point) }
@@ -477,40 +442,63 @@ RSpec.describe Skymap::Layers::FieldCircles do
         .to raise_error(ArgumentError, /fields must be/)
     end
 
-    it "rejects a field of zero" do
-      expect { described_class.new(fields: [1, 0]) }
+    it "rejects a field that is a number" do
+      expect { described_class.new(fields: [5]) }
         .to raise_error(ArgumentError, /fields must be/)
     end
 
-    it "rejects a negative field" do
-      expect { described_class.new(fields: [-1]) }
+    it "rejects a field without a label" do
+      field = Struct.new(:true_field).new(angle(5))
+
+      expect { described_class.new(fields: [field]) }
         .to raise_error(ArgumentError, /fields must be/)
     end
 
-    it "rejects a field above 180 degrees" do
-      expect { described_class.new(fields: [181]) }
+    it "rejects a field with a label that is not a string" do
+      expect { described_class.new(fields: [loose_field(angle(5), 5)]) }
         .to raise_error(ArgumentError, /fields must be/)
     end
 
-    it "rejects a field that is not a number" do
-      expect { described_class.new(fields: ["1"]) }
+    it "rejects a true field that is not an angle" do
+      expect { described_class.new(fields: [loose_field(5, "5°")]) }
         .to raise_error(ArgumentError, /fields must be/)
     end
 
-    it "rejects a field that is not a real number" do
-      expect { described_class.new(fields: [Float::NAN]) }
+    it "rejects a true field of zero" do
+      expect { described_class.new(fields: [loose_field(angle(0), "0°")]) }
         .to raise_error(ArgumentError, /fields must be/)
     end
 
-    it "rejects names that are not a hash" do
-      expect { described_class.new(fields: [1], names: ["Finder"]) }
-        .to raise_error(ArgumentError, /names must be/)
+    it "rejects a negative true field" do
+      expect { described_class.new(fields: [loose_field(angle(-1), "-1°")]) }
+        .to raise_error(ArgumentError, /fields must be/)
+    end
+
+    it "rejects a true field above 180 degrees" do
+      expect { described_class.new(fields: [loose_field(angle(181), "181°")]) }
+        .to raise_error(ArgumentError, /fields must be/)
     end
 
     it "rejects a center that is not a coordinates object" do
-      expect { described_class.new(fields: [1], center: [5.6, 0]) }
+      expect { described_class.new(fields: fields_of(1), center: [5.6, 0]) }
         .to raise_error(ArgumentError, /center must be/)
     end
+  end
+
+  def fields_of(*degrees)
+    degrees.map { |value| field_of(value, "#{value}°") }
+  end
+
+  def field_of(degrees, label)
+    Skymap::Field.new(true_field: angle(degrees), label: label)
+  end
+
+  def loose_field(true_field, label)
+    Struct.new(:true_field, :label).new(true_field, label)
+  end
+
+  def angle(degrees)
+    Astronoby::Angle.from_degrees(degrees)
   end
 
   def horizontal(altitude:, azimuth:)

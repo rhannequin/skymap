@@ -8,15 +8,13 @@ module Skymap
       MIN_SAMPLES = 16
       MAX_SAMPLES = 360
 
-      def initialize(fields:, center: nil, labels: false, names: {})
+      def initialize(fields:, center: nil, labels: false)
         check_fields(fields)
         check_center(center)
-        check_names(names)
 
         @fields = fields
         @center = center
         @labels = labels
-        @names = names
       end
 
       def elements(context)
@@ -34,7 +32,7 @@ module Skymap
       private
 
       def circle(context, center, frame, field, width)
-        radius = Astronoby::Angle.from_degrees(field / 2.0)
+        radius = Astronoby::Angle.from_radians(field.true_field.radians / 2.0)
         samples = sample_count(context, center, radius)
         path = path_of(context, ring(context, frame, radius, samples))
         runs = Horizon.joined(Horizon.runs_of(context, path))
@@ -106,8 +104,7 @@ module Skymap
       end
 
       def caption(context, field, points)
-        text = text_for(field)
-        return [] unless text
+        return [] unless @labels
 
         xs, ys = points.map(&:x), points.map(&:y)
         caption = Renderer::Caption.beside(
@@ -117,27 +114,11 @@ module Skymap
           ),
           radius: (ys.max - ys.min) / 2.0,
           canvas: context.canvas,
-          text: text,
+          text: field.label,
           kind: :field
         )
 
         context.in_view?(caption.position) ? [caption] : []
-      end
-
-      def text_for(field)
-        _, name = @names.find { |named, _| named == field }
-        return name if name
-        return unless @labels
-
-        "#{degrees_text(field)}°"
-      end
-
-      def degrees_text(field)
-        return field.to_f.to_s.delete_suffix(".0") if field.round(2) == field
-
-        digits = 1 - Math.log10(field).floor
-
-        field.to_f.round(digits).to_s.delete_suffix(".0")
       end
 
       def center_in(context)
@@ -158,14 +139,20 @@ module Skymap
       end
 
       def check_fields(fields)
-        valid = fields.is_a?(Array) && !fields.empty? && fields.all? { |field|
-          field.is_a?(Numeric) && field.real? && field > 0 && field <= 180
-        }
+        valid = fields.is_a?(Array) && !fields.empty? &&
+          fields.all? { |field| field?(field) }
         return if valid
 
         raise ArgumentError,
-          "fields must be a list of numbers of degrees " \
-          "above 0 and up to 180"
+          "fields must be a list of Skymap::Field or Skymap::Setup, " \
+          "or anything with a true_field angle and a label"
+      end
+
+      def field?(field)
+        field.respond_to?(:true_field) && field.respond_to?(:label) &&
+          field.true_field.is_a?(Astronoby::Angle) &&
+          field.true_field.positive? && field.true_field.radians <= Math::PI &&
+          field.label.is_a?(String)
       end
 
       def check_center(center)
@@ -175,12 +162,6 @@ module Skymap
 
         raise ArgumentError,
           "center must be equatorial or horizontal coordinates"
-      end
-
-      def check_names(names)
-        return if names.is_a?(Hash)
-
-        raise ArgumentError, "names must be a hash from a field to its text"
       end
     end
   end
