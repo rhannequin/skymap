@@ -120,9 +120,8 @@ RSpec.describe Skymap::Chart do
       root = REXML::Document.new(svg).root
       clip = root.elements["defs/clipPath"]
 
-      expect(clip["id"]).to eq("sky")
       expect(clip.elements["circle"]["r"]).to eq("180.0")
-      expect(root.elements["g"]["clip-path"]).to eq("url(#sky)")
+      expect(root.elements["g"]["clip-path"]).to eq("url(##{clip["id"]})")
     end
 
     it "does not clip the full sky" do

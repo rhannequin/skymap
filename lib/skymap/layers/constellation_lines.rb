@@ -16,6 +16,9 @@ module Skymap
         @lines.filter_map do |line|
           ends = [line.from, line.to].map { |hrs| stars_by_hr.values_at(*hrs) }
           next if ends.flatten.include?(nil)
+          next unless ends.flatten.all? { |star|
+            context.reachable?(context.horizontal(star))
+          }
 
           directions = ends.map do |end_stars|
             Horizon.direction(
@@ -34,6 +37,8 @@ module Skymap
               Point.midpoint(end_stars.map { |star| context.position(star) })
             end
           end
+          next unless context.crosses_view?([from, to])
+
           Renderer::Line.new(
             from: from,
             to: to,

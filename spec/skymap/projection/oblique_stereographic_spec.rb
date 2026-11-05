@@ -65,6 +65,53 @@ RSpec.describe Skymap::Projection::ObliqueStereographic do
     end
   end
 
+  describe "#project orientation" do
+    it "puts the zenith at the top when it is outside the view" do
+      projection = southern_view(altitude: 40, field_of_view: 30)
+
+      point = projection.project(altitude: degrees(45), azimuth: degrees(180))
+
+      expect(point.y).to be < 200
+    end
+
+    it "puts the north at the top when the zenith is the center" do
+      projection = southern_view(altitude: 90, field_of_view: 30)
+
+      point = projection.project(altitude: degrees(85), azimuth: degrees(0))
+
+      expect(point.y).to be < 200
+    end
+
+    it "puts the north at the top when the zenith is in the view" do
+      projection = described_class.new(
+        center: Skymap::Point.new(x: 200, y: 200),
+        radius: 198.5,
+        altitude: degrees(89),
+        azimuth: degrees(0),
+        field_of_view: 30
+      )
+
+      point = projection.project(altitude: degrees(85), azimuth: degrees(0))
+
+      expect(point.y).to be < 200
+    end
+
+    it "stays defined for a view of the whole sky centered on the horizon" do
+      projection = described_class.new(
+        center: Skymap::Point.new(x: 200, y: 200),
+        radius: 198.5,
+        altitude: degrees(0),
+        azimuth: degrees(0),
+        field_of_view: 180
+      )
+
+      point = projection.project(altitude: degrees(45), azimuth: degrees(90))
+
+      expect(point.x).to be_finite
+      expect(point.y).to be_finite
+    end
+  end
+
   def southern_view(altitude:, field_of_view:)
     described_class.new(
       center: Skymap::Point.new(x: 200, y: 200),

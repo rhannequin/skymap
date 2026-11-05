@@ -54,11 +54,23 @@ module Skymap
       distance <= @canvas.radius + margin
     end
 
+    def crosses_view?(points)
+      return true if full_sky?
+
+      return in_view?(points.first) if points.size == 1
+
+      points.each_cons(2).any? do |from, to|
+        distance_to_segment(@canvas.center, from, to) <= @canvas.radius
+      end
+    end
+
     def reachable?(horizontal)
       return true if full_sky?
 
-      direction = Horizon.direction([horizontal])
-      cosine = direction.zip(view_direction).sum { |a, b| a * b }
+      east, north, up = view_direction
+      cosine = horizontal.altitude.cos *
+        (horizontal.azimuth.cos * east + horizontal.azimuth.sin * north) +
+        horizontal.altitude.sin * up
       cosine > MAX_ANGLE_FROM_VIEW_COSINE
     end
 
@@ -89,6 +101,18 @@ module Skymap
 
     def view_direction
       @view_direction ||= Horizon.direction([view_center])
+    end
+
+    def distance_to_segment(point, from, to)
+      dx = to.x - from.x
+      dy = to.y - from.y
+      length = dx * dx + dy * dy
+      return Math.hypot(from.x - point.x, from.y - point.y) if length.zero?
+
+      along = (((point.x - from.x) * dx + (point.y - from.y) * dy) / length)
+        .clamp(0, 1)
+
+      Math.hypot(from.x + along * dx - point.x, from.y + along * dy - point.y)
     end
   end
 end

@@ -211,4 +211,55 @@ RSpec.describe Skymap::Context do
       expect(context.reachable?(ahead)).to be(true)
     end
   end
+
+  describe "#crosses_view?" do
+    it "accepts every line without a view" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      line = [Skymap::Point.new(x: 5000, y: 0),
+        Skymap::Point.new(x: 6000, y: 0)]
+
+      expect(context.crosses_view?(line)).to be(true)
+    end
+
+    it "accepts a line that goes through the disk from outside" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 30)
+      )
+      line = [Skymap::Point.new(x: -500, y: 200),
+        Skymap::Point.new(x: 900, y: 200)]
+
+      expect(context.crosses_view?(line)).to be(true)
+    end
+
+    it "rejects a line that stays outside the disk" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 30)
+      )
+      line = [Skymap::Point.new(x: -500, y: -100),
+        Skymap::Point.new(x: 900, y: -100)]
+
+      expect(context.crosses_view?(line)).to be(false)
+    end
+
+    it "judges a single point by its place" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 30)
+      )
+
+      inside = [Skymap::Point.new(x: 200, y: 200)]
+      outside = [Skymap::Point.new(x: 5, y: 5)]
+
+      expect(context.crosses_view?(inside)).to be(true)
+      expect(context.crosses_view?(outside)).to be(false)
+    end
+  end
 end

@@ -124,4 +124,26 @@ RSpec.describe Skymap::Horizon do
       expect(runs.map(&:size)).to eq([2])
     end
   end
+
+  describe ".visible_runs when zoomed" do
+    it "leaves out the runs that never reach the view" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 0, declination: 89),
+        field_of_view: 10
+      )
+      context = context_at(
+        latitude: 90,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      points = [
+        equatorial(right_ascension: 3, declination: 60),
+        equatorial(right_ascension: 3.1, declination: 60)
+      ]
+
+      runs = described_class.visible_runs(context, points)
+
+      expect(runs).to be_empty
+    end
+  end
 end

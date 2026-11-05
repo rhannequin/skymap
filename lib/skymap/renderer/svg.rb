@@ -34,9 +34,7 @@ module Skymap
 
         if @clipped
           clip_to_sky(svg)
-          drawn, labels = elements.partition { |element| !element.is_a?(Label) }
-          svg.g(clip_path: "url(#sky)") { draw_elements(svg, drawn) }
-          draw_elements(svg, labels)
+          svg.g(clip_path: "url(##{clip_id})") { draw_elements(svg, elements) }
         else
           draw_elements(svg, elements)
         end
@@ -52,8 +50,15 @@ module Skymap
         cy = @canvas.center.y.round(2)
 
         svg.defs do
-          svg.clipPath(id: "sky") { svg.circle(cx: cx, cy: cy, r: radius) }
+          svg.clipPath(id: clip_id) { svg.circle(cx: cx, cy: cy, r: radius) }
         end
+      end
+
+      def clip_id
+        geometry = [@canvas.center.x, @canvas.center.y, @canvas.radius]
+          .map { |value| value.round(2).to_s.tr(".", "_") }
+
+        "sky-#{geometry.join("-")}"
       end
 
       def draw_elements(svg, elements)
