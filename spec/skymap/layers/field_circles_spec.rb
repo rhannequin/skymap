@@ -398,6 +398,51 @@ RSpec.describe Skymap::Layers::FieldCircles do
         .of(198.5)
     end
 
+    it "leaves out a circle around the nadir" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      nadir = horizontal(altitude: -90, azimuth: 0)
+      layer = described_class.new(
+        fields: fields_of(10),
+        center: nadir,
+        labels: true
+      )
+
+      elements = layer.elements(context)
+
+      expect(elements).to be_empty
+    end
+
+    it "leaves out a circle just above the nadir" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      near_nadir = horizontal(altitude: -89.99, azimuth: 0)
+      layer = described_class.new(fields: fields_of(10), center: near_nadir)
+
+      elements = layer.elements(context)
+
+      expect(elements).to be_empty
+    end
+
+    it "draws a circle that reaches the horizon from just under it" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      center = horizontal(altitude: -1, azimuth: 0)
+      layer = described_class.new(fields: fields_of(10), center: center)
+
+      circle, = layer.elements(context)
+
+      expect(circle.points.size).to be <= 361
+      expect(distance_from_center(circle.points.first)).to be_within(0.01)
+        .of(198.5)
+    end
+
     it "leaves out a circle below the horizon" do
       context = context_at(
         latitude: 48.8575,

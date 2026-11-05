@@ -123,49 +123,30 @@ RSpec.describe Skymap::Setup do
       expect(setup.label).to end_with(", 2°")
     end
 
-    it "writes exactly one degree as degrees" do
-      setup = described_class.new(
-        telescope: telescope_of(1200),
-        eyepiece: eyepiece_of(25, 48)
-      )
+    {
+      29 => "29″",
+      30 => "30″",
+      45 => "45″",
+      59 => "59″",
+      59.6 => "1′",
+      60 => "1′",
+      90 => "2′",
+      (59.4 * 60) => "59′",
+      (59.6 * 60) => "1°",
+      3600 => "1°",
+      (1.04 * 3600) => "1°",
+      (1.08 * 3600) => "1.1°",
+      (2 * 3600) => "2°"
+    }.each do |arcseconds, text|
+      it "writes a true field of #{arcseconds} arcseconds as #{text}" do
+        apparent = arcseconds / 75.0
+        setup = described_class.new(
+          telescope: telescope_of(1200),
+          eyepiece: eyepiece_of(25, apparent)
+        )
 
-      expect(setup.label).to end_with(", 1°")
-    end
-
-    it "writes a field that rounds to 60 arcminutes as one degree" do
-      setup = described_class.new(
-        telescope: telescope_of(1200),
-        eyepiece: eyepiece_of(25, 47.76)
-      )
-
-      expect(setup.label).to end_with(", 1°")
-    end
-
-    it "writes a field just under one degree in arcminutes" do
-      setup = described_class.new(
-        telescope: telescope_of(1200),
-        eyepiece: eyepiece_of(25, 47.52)
-      )
-
-      expect(setup.label).to end_with(", 59′")
-    end
-
-    it "writes a field of less than a degree in arcminutes" do
-      setup = described_class.new(
-        telescope: telescope_of(1200),
-        eyepiece: eyepiece_of(25, 12)
-      )
-
-      expect(setup.label).to end_with(", 15′")
-    end
-
-    it "writes a field of less than an arcminute in arcseconds" do
-      setup = described_class.new(
-        telescope: telescope_of(1200),
-        eyepiece: eyepiece_of(25, 0.2)
-      )
-
-      expect(setup.label).to end_with(", 15″")
+        expect(setup.label).to end_with(", #{text}")
+      end
     end
   end
 

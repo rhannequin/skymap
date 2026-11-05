@@ -51,6 +51,7 @@ module Skymap
           azimuth: center.azimuth
         )
         step = Math.acos([1 - MAX_DEVIATION / pixels, -1].max)
+        return MAX_SAMPLES unless step.positive?
 
         samples = (Math::PI / step).ceil.clamp(MIN_SAMPLES, MAX_SAMPLES)
 

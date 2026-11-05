@@ -32,11 +32,13 @@ module Skymap
     private
 
     def plain_angle(angle)
-      minutes = angle.degrees * 60
-      return "#{plain(angle.degrees.round(1))}°" if minutes.round >= 60
-      return "#{minutes.round}′" if minutes.round >= 1
+      seconds = (angle.degrees * 3600).round
+      return "#{seconds}″" if seconds < 60
 
-      "#{(minutes * 60).round}″"
+      minutes = (angle.degrees * 60).round
+      return "#{minutes}′" if minutes < 60
+
+      "#{plain(angle.degrees.round(1))}°"
     end
 
     def plain(number)
