@@ -29,13 +29,9 @@ module Skymap
       )
     end
 
-    def visible_runs(context, coordinates, of_date: false)
+    def visible_runs(context, coordinates)
       horizontals = coordinates.map do |point|
-        if of_date
-          context.horizontal_of_date(point)
-        else
-          context.horizontal_coordinates(point)
-        end
+        context.horizontal_coordinates(point)
       end
       path = [position(context, horizontals.first)] +
         horizontals.each_cons(2).flat_map do |from, to|

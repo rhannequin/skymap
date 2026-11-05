@@ -35,7 +35,7 @@ RSpec.describe Skymap::Context do
     end
   end
 
-  describe "#horizontal_of_date" do
+  describe "#horizontal_coordinates at the date of the chart" do
     it "puts the pole of date at the altitude of the latitude" do
       context = context_at(
         latitude: 48.8575,
@@ -44,14 +44,48 @@ RSpec.describe Skymap::Context do
       pole = Astronoby::Coordinates::Equatorial.new(
         right_ascension: Astronoby::Angle.from_hours(5),
         declination: Astronoby::Angle.from_degrees(90),
-        epoch: nil
+        epoch: context.instant.tt
       )
 
-      horizontal = context.horizontal_of_date(pole)
+      horizontal = context.horizontal_coordinates(pole)
 
       expect(horizontal.altitude.degrees).to be_within(1e-6).of(48.8575)
       expect(horizontal.azimuth.degrees % 360)
         .to be_within(1e-4).of(0).or be_within(1e-4).of(360)
+    end
+
+    it "does not give the same position as the same numbers at J2000" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      of_date = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(5),
+        declination: Astronoby::Angle.from_degrees(20),
+        epoch: context.instant.tt
+      )
+      j2000 = equatorial(right_ascension: 5, declination: 20)
+
+      first = context.horizontal_coordinates(of_date)
+      second = context.horizontal_coordinates(j2000)
+
+      expect(first.altitude.degrees)
+        .not_to be_within(0.01).of(second.altitude.degrees)
+    end
+
+    it "rejects coordinates at another epoch" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      coordinates = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(5),
+        declination: Astronoby::Angle.from_degrees(20),
+        epoch: Astronoby::JulianDate::J2000 + 1000
+      )
+
+      expect { context.horizontal_coordinates(coordinates) }
+        .to raise_error(ArgumentError, /J2000 or at the date of the chart/)
     end
   end
 

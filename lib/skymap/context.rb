@@ -30,17 +30,7 @@ module Skymap
         coordinates.epoch
       ]
 
-      @horizontal[key] ||= @transformation.apply(coordinates)
-    end
-
-    def horizontal_of_date(coordinates)
-      Astronoby::Coordinates::Equatorial.new(
-        right_ascension: coordinates.right_ascension,
-        declination: coordinates.declination,
-        hour_angle: Astronoby::Angle.from_hours(sidereal_time) -
-          coordinates.right_ascension,
-        epoch: @instant.tt
-      ).to_horizontal(time: @instant.to_time, observer: @observer)
+      @horizontal[key] ||= convert(coordinates)
     end
 
     def position(star)
@@ -99,6 +89,28 @@ module Skymap
     end
 
     private
+
+    def convert(coordinates)
+      case coordinates.epoch
+      when Astronoby::JulianDate::J2000
+        @transformation.apply(coordinates)
+      when @instant.tt
+        horizontal_of_date(coordinates)
+      else
+        raise ArgumentError,
+          "coordinates must be at J2000 or at the date of the chart"
+      end
+    end
+
+    def horizontal_of_date(coordinates)
+      Astronoby::Coordinates::Equatorial.new(
+        right_ascension: coordinates.right_ascension,
+        declination: coordinates.declination,
+        hour_angle: Astronoby::Angle.from_hours(sidereal_time) -
+          coordinates.right_ascension,
+        epoch: coordinates.epoch
+      ).to_horizontal(time: @instant.to_time, observer: @observer)
+    end
 
     def sidereal_time
       @sidereal_time ||= Astronoby::LocalApparentSiderealTime.from_utc(

@@ -19,15 +19,16 @@ module Skymap
           raise ArgumentError, "epoch must be :j2000 or :of_date"
         end
 
+        @step = step
         @epoch = epoch
-        @lines = parallels(step) + meridians(step)
+        @lines = {}
       end
 
       def elements(context)
         width = LINE_WIDTH_RATIO * context.canvas.radius
 
-        @lines.flat_map { |line|
-          Horizon.joined(Horizon.visible_runs(context, line, of_date: of_date?))
+        lines(context).flat_map { |line|
+          Horizon.joined(Horizon.visible_runs(context, line))
         }.map do |points|
           Renderer::Grid.new(points: points, width: width)
         end
@@ -35,36 +36,46 @@ module Skymap
 
       private
 
-      def of_date?
-        @epoch == :of_date
+      def lines(context)
+        epoch = if @epoch == :of_date
+          context.instant.tt
+        else
+          Astronoby::JulianDate::J2000
+        end
+
+        unless @lines.key?(epoch)
+          @lines = {epoch => parallels(@step, epoch) + meridians(@step, epoch)}
+        end
+
+        @lines[epoch]
       end
 
-      def parallels(step)
+      def parallels(step, epoch)
         declinations = (step...90).step(step).flat_map { |degrees|
           [degrees, -degrees]
         } + [0]
 
         declinations.map do |declination|
           points = (0...360).step(SAMPLING_STEP_IN_DEGREES).map do |degrees|
-            point_at(degrees, declination)
+            point_at(degrees, declination, epoch)
           end
           points + points.first(1)
         end
       end
 
-      def meridians(step)
+      def meridians(step, epoch)
         (0...360).step(step).map do |right_ascension|
           (-90..90).step(SAMPLING_STEP_IN_DEGREES).map do |declination|
-            point_at(right_ascension, declination)
+            point_at(right_ascension, declination, epoch)
           end
         end
       end
 
-      def point_at(right_ascension, declination)
+      def point_at(right_ascension, declination, epoch)
         Astronoby::Coordinates::Equatorial.new(
           right_ascension: Astronoby::Angle.from_degrees(right_ascension),
           declination: Astronoby::Angle.from_degrees(declination),
-          epoch: of_date? ? nil : Astronoby::JulianDate::J2000
+          epoch: epoch
         )
       end
     end
