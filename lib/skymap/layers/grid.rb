@@ -5,7 +5,7 @@ module Skymap
     class Grid
       DEFAULT_STEP = 30
       LINE_WIDTH_RATIO = 0.0025
-      STEP_IN_DEGREES = 1
+      SAMPLING_STEP_IN_DEGREES = 1
 
       def initialize(step: DEFAULT_STEP)
         unless step.is_a?(Integer) && step.between?(1, 90) && (360 % step).zero?
@@ -35,8 +35,8 @@ module Skymap
         } + [0]
 
         declinations.map do |declination|
-          points = (0...360).step(STEP_IN_DEGREES).map do |right_ascension|
-            point_at(right_ascension, declination)
+          points = (0...360).step(SAMPLING_STEP_IN_DEGREES).map do |degrees|
+            point_at(degrees, declination)
           end
           points + points.first(1)
         end
@@ -44,7 +44,7 @@ module Skymap
 
       def meridians(step)
         (0...360).step(step).map do |right_ascension|
-          (-90..90).step(STEP_IN_DEGREES).map do |declination|
+          (-90..90).step(SAMPLING_STEP_IN_DEGREES).map do |declination|
             point_at(right_ascension, declination)
           end
         end

@@ -91,25 +91,21 @@ module Skymap
       end
 
       def draw_ecliptic(svg, ecliptic)
-        svg.polyline(
-          points: ecliptic.points.map { |point|
-            "#{point.x.round(2)},#{point.y.round(2)}"
-          }.join(" "),
-          fill: "none",
-          stroke: @theme.ecliptic,
-          stroke_width: ecliptic.width.round(2),
-          stroke_linejoin: "round"
-        )
+        draw_polyline(svg, ecliptic, @theme.ecliptic)
       end
 
       def draw_grid(svg, grid)
+        draw_polyline(svg, grid, @theme.grid)
+      end
+
+      def draw_polyline(svg, element, stroke)
         svg.polyline(
-          points: grid.points.map { |point|
+          points: element.points.map { |point|
             "#{point.x.round(2)},#{point.y.round(2)}"
           }.join(" "),
           fill: "none",
-          stroke: @theme.grid,
-          stroke_width: grid.width.round(2),
+          stroke: stroke,
+          stroke_width: element.width.round(2),
           stroke_linejoin: "round"
         )
       end

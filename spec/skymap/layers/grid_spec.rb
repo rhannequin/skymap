@@ -47,6 +47,20 @@ RSpec.describe Skymap::Layers::Grid do
       expect(distances.max).to eq(198.5)
     end
 
+    it "draws a parallel that crosses the horizon as one line" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      layer = described_class.new(step: 90)
+
+      grids = layer.elements(context)
+      starts = grids.map { |grid| grid.points.first }
+      ends = grids.map { |grid| grid.points.last }
+
+      expect(starts & ends).to be_empty
+    end
+
     it "draws a thin line that scales with the canvas" do
       layer = described_class.new
       small = context_at(
