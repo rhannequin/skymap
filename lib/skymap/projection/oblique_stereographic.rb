@@ -57,7 +57,7 @@ module Skymap
       def up_from(forward, field_of_view, orientation, pole)
         half_angle = Astronoby::Angle.from_radians(field_of_view.radians / 2)
         references = if orientation == :equatorial
-          [pole, ZENITH]
+          [pole, ZENITH, NORTH]
         elsif forward[2] >= half_angle.cos
           [NORTH, ZENITH]
         else
