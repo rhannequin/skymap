@@ -10,13 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `Skymap::View` zooms the map on an area of the sky, given by the equatorial
-  or horizontal coordinates of its center and a field of view in degrees, with
-  `view:` on `Skymap::Chart`, with the horizon drawn as a line when it is in
-  the view, and the Sun and the Moon at their size in the sky when it is larger
-  than their usual size on the map
+  or horizontal coordinates of its center and a field of view as an
+  `Astronoby::Angle`, with `view:` on `Skymap::Chart`, with the horizon drawn as
+  a line when it is in the view, and the Sun and the Moon at their size in the
+  sky when it is larger than their usual size on the map
+- `Skymap::View` takes `orientation:` (`:zenith_up` by default, or `:equatorial`
+  to put the north celestial pole at the top), `rotation:` as an
+  `Astronoby::Angle` and `mirrored:` to give the map the orientation of a
+  telescope
 - `Skymap::Layers::Grid` draws the celestial coordinate grid, the lines of
-  right ascension and the circles of declination, every `step:` degrees (30 by
-  default), stopping at the horizon
+  right ascension and the circles of declination, every `step:` angle (30
+  degrees by default), stopping at the horizon
+- `epoch: :of_date` on `Skymap::Layers::Grid` draws the grid in the true
+  equator and equinox of the date of the chart, centered on the true celestial
+  pole, instead of J2000 (the default)
 - `Skymap::Layers::Scale` draws a scale bar with a round angular length, such
   as `30′`, in the lower left of a map with a view
 - `print_size:` on `Skymap::Canvas`, with `Skymap::PrintSize`, writes the SVG at
@@ -25,8 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The lit side of `Skymap::Layers::Moon` faces the Sun on the map, wherever
+  the Moon is and in every orientation of the view, instead of being drawn as
+  the observer sees it from the ground
 - `Skymap::Theme` has a `grid` color, which a theme built with
   `Skymap::Theme.new` must now give
+- Equatorial coordinates given to `Skymap::Context#horizontal_coordinates`, and
+  as the center of a `Skymap::View`, can be at J2000 or at the date of the
+  chart, and any other epoch now raises an `ArgumentError` (it was an
+  `Astronoby::IncompatibleArgumentsError`)
 
 ## [0.4.0] - 2026-11-05
 

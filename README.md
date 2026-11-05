@@ -119,9 +119,9 @@ Add a [scale](#scale) to the map to read angles on the printed chart.
 ### View
 
 By default, the map is the whole sky. Pass a `view:` to zoom on an area of it:
-the center of the area, as the equatorial coordinates of a point of the sky (or
-horizontal coordinates), and the field of view, the angle in degrees between
-the opposite sides of the map:
+the center of the area, as the equatorial coordinates of a point of the sky, at
+J2000 or at the date of the chart (or horizontal coordinates), and the field of
+view, the angle between the opposite sides of the map:
 
 ```ruby
 view = Skymap::View.new(
@@ -130,7 +130,7 @@ view = Skymap::View.new(
     declination: Astronoby::Angle.zero,
     epoch: Astronoby::JulianDate::J2000
   ),
-  field_of_view: 50
+  field_of_view: Astronoby::Angle.from_degrees(50)
 )
 
 chart = Skymap::Chart.new(
@@ -141,9 +141,11 @@ chart = Skymap::Chart.new(
 )
 ```
 
-The field of view is more than 0 and up to 180 degrees. The sky is still
-seen from the observer. The zenith is at the top of the map, except when the
-zenith is in the view: the north is at the top then, as in the whole sky. With
+Equatorial coordinates at any other epoch raise an `ArgumentError`. The field
+of view is an `Astronoby::Angle` of more than 0 and up to 180 degrees. The sky
+is still seen from the observer. By default, the zenith is at the top of the
+map, except when the zenith is in the view: the north is at the top then, as in
+the whole sky. The next section changes that. With
 horizontal coordinates, only the altitude and the azimuth are used, as seen by
 the observer of the chart. The layers draw what is in the view only. The
 horizon is drawn as a line when it is in the view, and the edge of the map is a
@@ -151,6 +153,47 @@ thin outline. It is no longer the horizon, so the cardinal directions are not
 drawn. The Sun and the Moon are drawn at their size in the sky once it is
 larger than their usual size on the map. The stars are limited by the catalog:
 a field of view of 10 degrees or more shows enough of them.
+
+#### Orientation
+
+A map in a telescope is turned in a way that depends on the telescope and on
+its mount. Three options of `View` give the same orientation on the map:
+
+- `orientation: :zenith_up` (the default) keeps the zenith at the top, like an
+  alt-az mount does at the meridian.
+- `orientation: :equatorial` puts the north celestial pole at the top and the
+  east on the left, like the sky seen through an equatorial mount.
+- `rotation:` turns the map clockwise, by an `Astronoby::Angle`.
+- `mirrored: true` swaps the left and the right, before the rotation.
+
+On an equatorial mount, a refractor or a catadioptric telescope with a
+diagonal shows a mirrored image, and a Newtonian shows the sky turned by half a
+turn:
+
+```ruby
+field_of_view = Astronoby::Angle.from_degrees(4)
+
+Skymap::View.new(
+  center: center,
+  field_of_view: field_of_view,
+  orientation: :equatorial
+)
+Skymap::View.new(
+  center: center,
+  field_of_view: field_of_view,
+  orientation: :equatorial,
+  mirrored: true
+)
+Skymap::View.new(
+  center: center,
+  field_of_view: field_of_view,
+  orientation: :equatorial,
+  rotation: Astronoby::Angle.from_degrees(180)
+)
+```
+
+The north is the one of the celestial pole of the date, in both hemispheres.
+The lit side of the Moon follows the orientation too.
 
 ### Themes
 
@@ -344,9 +387,8 @@ Skymap::Layers::ConstellationNames.new(
 #### Moon
 
 `Skymap::Layers::Moon` draws the Moon where it is in the sky, with its phase.
-The Moon is drawn upright, as the observer sees it from the ground, so a
-crescent over the western horizon is tilted as it is in the real sky. On the
-chart, this means the lit side does not always face the Sun's position.
+The lit side of the Moon faces the Sun on the map: the Moon is turned with the
+projection, wherever it is on the map and whatever the orientation of the view.
 
 Astronoby needs an ephemeris to compute where the Moon is: download one once,
 load it and give it to the layer (see the
@@ -440,12 +482,29 @@ Skymap::Layers::Grid.new
 ```
 
 The lines are 30 degrees apart (2 hours of right ascension) by default. Use
-`step:` to draw them closer or further apart, in degrees. It must be a whole
-number between 1 and 90 that divides 360:
+`step:`, an `Astronoby::Angle`, to draw them closer or further apart. It is
+between 1 and 90 degrees and divides 360 degrees. For a line of right ascension
+every hour:
 
 ```ruby
-Skymap::Layers::Grid.new(step: 15)
+Skymap::Layers::Grid.new(step: Astronoby::Angle.from_hours(1))
 ```
+
+By default the grid is in the equator and equinox of J2000, like the
+coordinates of atlases and catalogs. Use `epoch: :of_date` to draw it in the
+true equator and equinox of the date of the chart instead. The declination
+circles are then centered on the true celestial pole of that date, which is
+what a polar-aligned equatorial mount shows:
+
+```ruby
+Skymap::Layers::Grid.new(epoch: :of_date)
+```
+
+The two grids differ by a fraction of a degree today, which only shows when the
+map is zoomed on a small area of the sky. For a view that follows a
+polar-aligned equatorial mount, use `:of_date`, which pairs with
+`orientation: :equatorial` (north celestial pole at the top). Keep `:j2000` to
+read coordinates off the grid and look them up in an atlas or a catalog.
 
 Give the grid first to `Chart#render` to draw the stars and the other layers
 over it.

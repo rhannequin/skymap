@@ -88,6 +88,15 @@ names of the constellations and the stars down to magnitude 6.
 
 <img src="orion.svg" width="480" alt="A zoom on the constellation Orion and its neighbors">
 
+## The Pleiades in a Newtonian telescope
+
+An equatorial orientation, turned by half a turn: the way a Newtonian
+telescope on an equatorial mount shows the Pleiades, with the north at the
+bottom and the east on the right. Remove `rotation:`, or use `mirrored: true`,
+for a telescope with a diagonal. [Code](pleiades.rb)
+
+<img src="pleiades.svg" width="480" alt="The Pleiades turned upside down, as in a Newtonian telescope">
+
 ## A blueprint
 
 A theme of your own, built from the dark one: white lines on blue, with a

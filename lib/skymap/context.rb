@@ -30,7 +30,7 @@ module Skymap
         coordinates.epoch
       ]
 
-      @horizontal[key] ||= @transformation.apply(coordinates)
+      @horizontal[key] ||= convert(coordinates)
     end
 
     def position(star)
@@ -94,6 +94,37 @@ module Skymap
 
     private
 
+    def convert(coordinates)
+      case coordinates.epoch
+      when Astronoby::JulianDate::J2000
+        @transformation.apply(coordinates)
+      when @instant.tt
+        horizontal_of_date(coordinates)
+      else
+        raise ArgumentError,
+          "coordinates must be at J2000 or at the date of the chart"
+      end
+    end
+
+    def horizontal_of_date(coordinates)
+      Astronoby::Coordinates::Equatorial.new(
+        right_ascension: coordinates.right_ascension,
+        declination: coordinates.declination,
+        hour_angle: Astronoby::Angle.from_hours(
+          (sidereal_time - coordinates.right_ascension.hours) %
+            Astronoby::Constants::HOURS_PER_DAY
+        ),
+        epoch: coordinates.epoch
+      ).to_horizontal(time: @instant.to_time, observer: @observer)
+    end
+
+    def sidereal_time
+      @sidereal_time ||= Astronoby::LocalApparentSiderealTime.from_utc(
+        @instant.to_time,
+        longitude: @observer.longitude
+      ).time
+    end
+
     def projection(radius)
       @projections[radius] ||= if full_sky?
         Projection::Stereographic.new(center: @canvas.center, radius: radius)
@@ -104,7 +135,11 @@ module Skymap
           radius: radius,
           altitude: center.altitude,
           azimuth: center.azimuth,
-          field_of_view: @view.field_of_view
+          field_of_view: @view.field_of_view,
+          orientation: @view.orientation,
+          pole: celestial_pole,
+          rotation: @view.rotation,
+          mirrored: @view.mirrored
         )
       end
     end
@@ -115,6 +150,12 @@ module Skymap
       else
         @view.center
       end
+    end
+
+    def celestial_pole
+      latitude = @observer.latitude
+
+      [latitude.cos, 0.0, latitude.sin]
     end
 
     def view_direction
