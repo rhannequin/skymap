@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `view:` on `Skymap::Chart`, with the horizon drawn as a line when it is in
   the view, and the Sun and the Moon at their size in the sky when it is larger
   than their usual size on the map
+- `Skymap::Layers::Grid` draws the celestial coordinate grid, the lines of
+  right ascension and the circles of declination, every `step:` degrees (30 by
+  default), stopping at the horizon
+
+### Changed
+
+- `Skymap::Theme` has a `grid` color, which a theme built with
+  `Skymap::Theme.new` must now give
 
 ## [0.4.0] - 2026-11-05
 
