@@ -5,7 +5,25 @@ module Skymap
     CAPTION_SIZE_RATIO = 0.028
     CAPTION_CHARACTER_WIDTH_RATIO = 0.55
 
-    Caption = Data.define(:position, :text, :size, :kind) do
+    Caption = Data.define(
+      :position,
+      :text,
+      :size,
+      :kind,
+      :anchor,
+      :clearance
+    ) do
+      def initialize(
+        position:,
+        text:,
+        size:,
+        kind:,
+        anchor: nil,
+        clearance: 0.0
+      )
+        super
+      end
+
       def self.size_for(canvas)
         CAPTION_SIZE_RATIO * canvas.radius
       end
@@ -22,7 +40,9 @@ module Skymap
           ),
           text: text,
           size: size,
-          kind: kind
+          kind: kind,
+          anchor: center,
+          clearance: radius
         )
       end
 

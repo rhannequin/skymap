@@ -21,7 +21,7 @@ module Skymap
         layers.flat_map { |layer| layer.elements(context) }
 
       Renderer::SVG.new(canvas: @canvas, theme: @theme, clipped: !@view.nil?)
-        .render(elements)
+        .render(LabelPlacement.new(canvas: @canvas).arrange(elements))
     end
 
     private

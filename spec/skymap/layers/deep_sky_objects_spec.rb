@@ -51,6 +51,22 @@ RSpec.describe Skymap::Layers::DeepSkyObjects do
       expect(symbol.center.y).to be_within(1e-9).of(expected.y)
     end
 
+    it "gives the brighter objects first, objects without a magnitude last" do
+      faint = deep_sky_object(designation: "M2", magnitude: 9,
+        right_ascension: 20.9)
+      unknown = deep_sky_object(designation: "M3", right_ascension: 21.0)
+      bright = deep_sky_object(designation: "M4", magnitude: 4,
+        right_ascension: 21.1)
+      layer = described_class.new(
+        objects: [faint, unknown, bright],
+        labels: true
+      )
+
+      labels = layer.elements(context_for).grep(Skymap::Renderer::Caption)
+
+      expect(labels.map(&:text)).to eq(%w[M4 M2 M3])
+    end
+
     it "draws the symbol of the type of the object" do
       objects = Skymap::DeepSkyObject::TYPES.map do |type|
         deep_sky_object(type: type)

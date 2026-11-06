@@ -284,6 +284,15 @@ A map is the sky, with the layers given to `Chart#render` drawn on top of it,
 in order: each layer is drawn over the previous ones. Without layers,
 `Chart#render` draws an empty sky. Leave a layer out to hide what it draws.
 
+Labels never overlap. A label is written above or below its object, and moves
+to another side of it when that place is taken by another label, a deep-sky
+symbol, a planet, the Sun, the Moon or a bright star. A label with no room
+around its object is left out, so a crowded field shows fewer labels, and a
+larger map or a smaller field shows more. Labels of fields, planets, stars and
+deep-sky objects are placed in this order, and the brighter objects come first
+among deep-sky objects. The names of the constellations, the scale and the
+cardinal directions stay where they are.
+
 #### Stars
 
 `Skymap::Layers::Stars` draws stars, bigger the brighter they are.
@@ -462,10 +471,9 @@ says which way: it is drawn as a circle with the same area as the ellipse,
 whose diameter is the square root of the product of its axes.
 
 With `labels: true`, the designation of each object (such as `M31`) is written
-next to its symbol, in the `deep_sky` color too. Labels are not moved, so those
-of objects that are close to each other can overlap on a wide field. Objects
-below the horizon or outside the view are left out. Give the layer after the
-stars to draw its symbols over them.
+next to its symbol, in the `deep_sky` color too. Objects below the horizon or
+outside the view are left out. Give the layer after the stars to draw its
+symbols over them.
 
 #### Moon
 
