@@ -662,6 +662,19 @@ their Harvard Revised number (`hr`), J2000 coordinates (`right_ascension` in
 hours, `declination` in degrees) and visual magnitude (`magnitude`). The 14
 non-stellar entries kept only for numbering are left out.
 
+The catalog also gives the astrometry of each star, blank when unknown: the
+proper motion in right ascension (`proper_motion_ra`, which includes the cosine
+of the declination) and in declination (`proper_motion_dec`) in mas/yr for
+every star, the `parallax` in mas for the 3,100 stars that have a positive one
+(387 of them are dynamical parallaxes, not trigonometric ones), and the
+`radial_velocity` in km/s for 9,090 stars.
+
+`Skymap::Catalog::Stars` loads them as an `Astronoby::AngularVelocity`, an
+`Astronoby::Angle` and an `Astronoby::Velocity` on `Skymap::Star`. They are all
+optional, so a list of your own stars can leave them out: the proper motions are
+given together, and the parallax and the radial velocity are `nil` when
+unknown.
+
 > Hoffleit, D., Warren Jr., W. H., 1991, _The Bright Star Catalogue, 5th
 > Revised Ed. (Preliminary Version)_, Astronomical Data Center, NSSDC/ADC.
 

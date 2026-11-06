@@ -29,8 +29,30 @@ module Skymap
             declination: Astronoby::Angle.from_degrees(row["declination"].to_f),
             epoch: Astronoby::JulianDate::J2000
           ),
-          magnitude: row["magnitude"].to_f
+          magnitude: row["magnitude"].to_f,
+          proper_motion_ra: proper_motion(row["proper_motion_ra"]),
+          proper_motion_dec: proper_motion(row["proper_motion_dec"]),
+          parallax: parallax(row["parallax"]),
+          radial_velocity: radial_velocity(row["radial_velocity"])
         )
+      end
+
+      def proper_motion(value)
+        return unless value
+
+        Astronoby::AngularVelocity.from_milliarcseconds_per_year(value.to_i)
+      end
+
+      def parallax(value)
+        return unless value
+
+        Astronoby::Angle.from_degree_arcseconds(value.to_i / 1000.0)
+      end
+
+      def radial_velocity(value)
+        return unless value
+
+        Astronoby::Velocity.from_kilometers_per_second(value.to_i)
       end
     end
   end
