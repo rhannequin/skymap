@@ -8,6 +8,7 @@ module Skymap
       include Enumerable
 
       PATH = File.expand_path("../../../data/deep_sky_objects.csv", __dir__)
+      MAGNITUDE_BANDS = {"V" => :visual, "B" => :blue}.freeze
 
       def each
         return enum_for(:each) unless block_given?
@@ -32,10 +33,15 @@ module Skymap
             epoch: Astronoby::JulianDate::J2000
           ),
           magnitude: row["magnitude"]&.to_f,
+          magnitude_band: magnitude_band(row["magnitude_band"]),
           major_axis: arcminutes(row["major_axis"]),
           minor_axis: arcminutes(row["minor_axis"]),
           position_angle: position_angle(row["position_angle"])
         )
+      end
+
+      def magnitude_band(value)
+        MAGNITUDE_BANDS.fetch(value) if value
       end
 
       def arcminutes(value)

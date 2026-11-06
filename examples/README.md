@@ -133,11 +133,12 @@ each side, so the chart is 190 mm wide on paper at any print scale of 100%. [Cod
 
 ## The galaxies of Virgo
 
-A view of 10 degrees on the Virgo Cluster, with the Messier galaxies and their
-designations. Each galaxy is an ellipse turned the way it lies in the sky, in a
-map with the north at the top. [Code](deep_sky.rb)
+A view of 10 degrees on the Virgo Cluster, with the Messier and NGC galaxies
+and their designations, such as Markarian's Chain. Each galaxy is an ellipse
+turned the way it lies in the sky, in a map with the north at the top, and the
+labels move away from each other. [Code](deep_sky.rb)
 
-<img src="deep_sky.svg" width="480" alt="The Messier galaxies of the Virgo Cluster drawn as ellipses with their designations">
+<img src="deep_sky.svg" width="480" alt="The galaxies of the Virgo Cluster drawn as ellipses with their designations">
 
 ## The Messier objects of Sagittarius
 

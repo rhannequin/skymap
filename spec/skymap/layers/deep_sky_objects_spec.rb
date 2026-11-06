@@ -32,7 +32,8 @@ RSpec.describe Skymap::Layers::DeepSkyObjects do
 
   describe "DEFAULT_MAGNITUDE_LIMIT" do
     it "keeps every Messier object" do
-      faintest = Skymap::Catalog::DeepSkyObjects.new.filter_map(&:magnitude).max
+      faintest = Skymap::Catalog::DeepSkyObjects.new
+        .select(&:messier?).filter_map(&:magnitude).max
 
       expect(described_class::DEFAULT_MAGNITUDE_LIMIT).to be >= faintest
     end
@@ -131,7 +132,8 @@ RSpec.describe Skymap::Layers::DeepSkyObjects do
     end
 
     it "draws an object as faint as the faintest Messier object by default" do
-      faintest = Skymap::Catalog::DeepSkyObjects.new.filter_map(&:magnitude).max
+      faintest = Skymap::Catalog::DeepSkyObjects.new
+        .select(&:messier?).filter_map(&:magnitude).max
       layer = described_class.new(
         objects: [deep_sky_object(magnitude: faintest)]
       )

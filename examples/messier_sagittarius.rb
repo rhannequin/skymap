@@ -28,7 +28,7 @@ chart = Skymap::Chart.new(
 svg = chart.render(
   Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 6),
   Skymap::Layers::DeepSkyObjects.new(
-    objects: Skymap::Catalog::DeepSkyObjects.new,
+    objects: Skymap::Catalog::DeepSkyObjects.new.select(&:messier?),
     labels: true
   ),
   Skymap::Layers::Scale.new

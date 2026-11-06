@@ -17,6 +17,7 @@ module DeepSkyObjectBuilder
     right_ascension
     declination
     magnitude
+    magnitude_band
     major_axis
     minor_axis
     position_angle
@@ -43,7 +44,9 @@ module DeepSkyObjectBuilder
     "**" => "double_star",
     "Other" => "other"
   }.freeze
+  IGNORED_TYPES = %w[Dup NonEx * Nova DrkN].freeze
   CATALOGS = %w[M NGC IC].freeze
+  MAGNITUDE_LIMIT = 12.0
 
   def self.fetch(file)
     response = Net::HTTP.get_response(URI("#{SOURCE}/#{file}"))
@@ -69,7 +72,18 @@ module DeepSkyObjectBuilder
   end
 
   def self.selected?(record)
-    !blank?(record["M"]) && record["Type"] != "Dup"
+    return false if IGNORED_TYPES.include?(record["Type"])
+    return false if record["Name"].match?(/ NED\d+\z/)
+
+    return true unless blank?(record["M"])
+
+    record["Name"].match?(/\A(NGC|IC)\d/) && bright?(record)
+  end
+
+  def self.bright?(record)
+    magnitude = magnitude(record)
+
+    !magnitude.nil? && magnitude <= MAGNITUDE_LIMIT
   end
 
   def self.designation(record)
@@ -113,6 +127,14 @@ module DeepSkyObjectBuilder
     Float(value) if value
   end
 
+  def self.magnitude_band(record)
+    if !blank?(record["V-Mag"])
+      "V"
+    elsif !blank?(record["B-Mag"])
+      "B"
+    end
+  end
+
   def self.number(value)
     Float(value) unless blank?(value)
   end
@@ -125,6 +147,7 @@ module DeepSkyObjectBuilder
       right_ascension(record["RA"]),
       declination(record["Dec"]),
       magnitude(record),
+      magnitude_band(record),
       number(record["MajAx"]),
       number(record["MinAx"]),
       number(record["PosAng"])

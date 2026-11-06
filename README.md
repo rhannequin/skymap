@@ -429,13 +429,21 @@ Skymap::Layers::ConstellationNames.new(
 
 `Skymap::Layers::DeepSkyObjects` draws galaxies, clusters, nebulae and other
 deep-sky objects. `Skymap::Catalog::DeepSkyObjects` gives the 109 Messier
-objects (see [Data sources](#data-sources)), but the layer accepts any list of
+objects and the NGC and IC objects of magnitude 12 or brighter, 1,741 in all
+(see [Data sources](#data-sources)), but the layer accepts any list of
 `Skymap::DeepSkyObject`, such as the objects you pick from the catalog:
 
 ```ruby
 objects = Skymap::Catalog::DeepSkyObjects.new
 
 Skymap::Layers::DeepSkyObjects.new(objects: objects)
+```
+
+`messier?` tells the Messier objects from the others, so you can draw only
+those:
+
+```ruby
+Skymap::Layers::DeepSkyObjects.new(objects: objects.select(&:messier?))
 ```
 
 Each type of object has its own symbol, drawn as an outline in the `deep_sky`
@@ -455,7 +463,11 @@ color of the [theme](#themes), as in most atlases:
 
 By default, objects of magnitude 11 or brighter are drawn, which keeps every
 Messier object, and an object without a magnitude is always drawn. Use
-`magnitude_limit:` to draw fewer objects, or select the objects you want:
+`magnitude_limit:` to draw fewer objects, or up to 12 to draw all of the
+catalog, or select the objects you want. The `magnitude` of an object is a
+visual one unless its `magnitude_band` is `:blue`, as for 65 faint NGC and IC
+objects that only have a blue magnitude, which is about a magnitude fainter for
+most objects:
 
 ```ruby
 galaxies = objects.select { |object| object.type == :galaxy }
@@ -896,16 +908,19 @@ borders and precesses them to J2000 with Astronoby.
 
 ### Deep-sky objects
 
-`data/deep_sky_objects.csv` holds the 109 Messier objects, from
+`data/deep_sky_objects.csv` holds 1,741 deep-sky objects, from
 [OpenNGC][openngc] (release v20260501, commit `36cb178`), one row per object:
+the 109 Messier objects, then the 1,496 NGC and 136 IC objects of magnitude 12
+or brighter that are not Messier objects.
 
-- `designation`: `M31` for a Messier object. Objects of the NGC and IC
-  catalogs, once added, are named like `NGC 7000`, without zero padding.
+- `designation`: `M31` for a Messier object, `NGC 7000` or `IC 434` for the
+  others, without zero padding.
 - `name`: the first common name of OpenNGC, blank when it has none.
 - `type`: one of the types below.
 - `right_ascension` (hours) and `declination` (degrees): J2000 coordinates.
 - `magnitude`: the visual (V) magnitude, or the blue (B) one when there is no
-  V magnitude. Every Messier object has a V magnitude.
+  V magnitude. Every object has one, and every Messier object has a V magnitude.
+- `magnitude_band`: `V` or `B`, the band of the `magnitude`.
 - `major_axis` and `minor_axis`: the size in arcminutes, blank when unknown.
 - `position_angle`: the angle of the major axis in degrees, from the north
   through the east, blank when unknown. OpenNGC only gives it to galaxies, M24
@@ -942,10 +957,17 @@ and it follows the assumption of NED), so M102 is left out and the file has no
 `M102`. M40 and M45 are not in the NGC and IC catalogs: they come from the
 addendum of OpenNGC, where the Pleiades are listed as Melotte 22.
 
+The file leaves out the objects of OpenNGC that are not in the sky or not
+objects (duplicates, non-existent objects, stars, novae and dark nebulae), the
+components of a galaxy listed apart (such as `NGC 520 NED01`), the objects of
+the addendum other than M40 and M45, and every NGC and IC object without a
+magnitude or fainter than magnitude 12. This keeps the objects you can look
+for in an amateur telescope, without the thousands of faint galaxies.
+
 The file is generated with `bin/build_deep_sky_objects`, which downloads
-`NGC.csv` and `addendum.csv` from the pinned commit of OpenNGC and keeps the
-Messier objects. Pass the path of a local directory holding the two files to
-build from it. The output must not change when you run it again.
+`NGC.csv` and `addendum.csv` from the pinned commit of OpenNGC and keeps these
+objects. Pass the path of a local directory holding the two files to build from
+it. The output must not change when you run it again.
 
 OpenNGC is released under the [Creative Commons Attribution-ShareAlike 4.0
 International][cc-by-sa-4] license, and so is `data/deep_sky_objects.csv`: the

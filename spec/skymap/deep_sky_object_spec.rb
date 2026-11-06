@@ -94,6 +94,58 @@ RSpec.describe Skymap::DeepSkyObject do
       expect(larger.minor_axis).to eq(arcminutes(20))
     end
 
+    it "takes a magnitude as a visual one unless told otherwise" do
+      visual = object(magnitude: 8.4)
+      blue = object(magnitude: 4.0, magnitude_band: :blue)
+
+      expect(visual.magnitude_band).to eq(:visual)
+      expect(blue.magnitude_band).to eq(:blue)
+    end
+
+    it "can lose its magnitude with its default band" do
+      visual = object(magnitude: 8.4)
+
+      without = visual.with(magnitude: nil)
+
+      expect(without.magnitude).to be_nil
+      expect(without.magnitude_band).to be_nil
+    end
+
+    it "gets the default band of a magnitude it is given later" do
+      without = object
+
+      with = without.with(magnitude: 9.1)
+
+      expect(with.magnitude_band).to eq(:visual)
+    end
+
+    it "has no magnitude band without a magnitude" do
+      expect(object.magnitude_band).to be_nil
+    end
+
+    it "rejects an unknown magnitude band" do
+      expect { object(magnitude: 8, magnitude_band: :red) }.to raise_error(
+        ArgumentError,
+        "magnitude_band must be one of visual, blue or nil"
+      )
+    end
+
+    it "rejects a magnitude band without a magnitude" do
+      expect { object(magnitude_band: :blue) }.to raise_error(
+        ArgumentError,
+        "magnitude_band must come with a magnitude"
+      )
+    end
+
+    it "tells a Messier object from an NGC or IC object" do
+      messier = object(designation: "M31")
+      ngc = object(designation: "NGC 7000")
+      ic = object(designation: "IC 434")
+
+      expect([messier.messier?, ngc.messier?, ic.messier?])
+        .to eq([true, false, false])
+    end
+
     it "keeps both axes unknown when the size is unknown" do
       object = object()
 
