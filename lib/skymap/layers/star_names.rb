@@ -11,6 +11,12 @@ module Skymap
         stars_magnitude_limit: Stars::DEFAULT_MAGNITUDE_LIMIT,
         names: Catalog::StarNames.new
       )
+        MagnitudeLimit.check(magnitude_limit, allow_nil: true)
+        MagnitudeLimit.check(
+          stars_magnitude_limit,
+          name: :stars_magnitude_limit
+        )
+
         @stars = stars
         @magnitude_limit = magnitude_limit
         @stars_magnitude_limit = stars_magnitude_limit

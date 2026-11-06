@@ -1,6 +1,20 @@
 # frozen_string_literal: true
 
 RSpec.describe Skymap::Layers::Stars do
+  describe ".new" do
+    it "rejects a magnitude limit that is not a number" do
+      expect { described_class.new(stars: [], magnitude_limit: nil) }
+        .to raise_error(ArgumentError, /magnitude_limit/)
+      expect { described_class.new(stars: [], magnitude_limit: "5") }
+        .to raise_error(ArgumentError, /magnitude_limit/)
+    end
+
+    it "rejects a magnitude limit that is not finite" do
+      expect { described_class.new(stars: [], magnitude_limit: Float::NAN) }
+        .to raise_error(ArgumentError, /magnitude_limit/)
+    end
+  end
+
   describe "#elements" do
     it "draws a star that never sets" do
       context = context_at(

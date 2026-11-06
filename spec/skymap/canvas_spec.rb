@@ -2,6 +2,30 @@
 
 RSpec.describe Skymap::Canvas do
   describe ".new" do
+    it "rejects a size that is not a number" do
+      expect { described_class.new(size: "400", padding: 0) }
+        .to raise_error(ArgumentError, /size/)
+      expect { described_class.new(size: nil, padding: 0) }
+        .to raise_error(ArgumentError, /size/)
+    end
+
+    it "rejects a size that is not above 0" do
+      expect { described_class.new(size: 0, padding: 0) }
+        .to raise_error(ArgumentError, /size/)
+      expect { described_class.new(size: -400, padding: 0) }
+        .to raise_error(ArgumentError, /size/)
+    end
+
+    it "rejects a size that is not finite" do
+      expect { described_class.new(size: Float::INFINITY, padding: 0) }
+        .to raise_error(ArgumentError, /size/)
+    end
+
+    it "rejects a padding that is not a number" do
+      expect { described_class.new(size: 400, padding: "10") }
+        .to raise_error(ArgumentError, /padding/)
+    end
+
     it "accepts no padding" do
       canvas = described_class.new(size: 400, padding: 0)
 

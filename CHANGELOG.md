@@ -117,6 +117,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ones are never covered by a fainter one, whatever the order of the stars
 - `data/stars.csv` is no longer in the gem: it is the extract of the Bright Star
   Catalogue that `bin/build_stars` reads
+- The gemspec lists the licenses of the data files shipped with the gem, CC
+  BY-SA 4.0 and CC BY-NC 3.0 IGO, next to the MIT license of the code
+- `Skymap::Canvas` raises an `ArgumentError` for a `size` that is not a number
+  above 0, and `Skymap::Star` for an `hr` that is not a positive integer, for
+  coordinates that are not equatorial and for a magnitude that is not a finite
+  number. They used to be accepted, or to fail later with a `NoMethodError`
+- `Skymap::Layers::Stars`, `Skymap::Layers::StarNames`,
+  `Skymap::Layers::Planets` and `Skymap::Layers::DeepSkyObjects` raise an
+  `ArgumentError` when they are created with a `magnitude_limit:` that is not a
+  finite number, instead of a `NoMethodError` when they draw. `magnitude_limit:`
+  of `Skymap::Layers::StarNames` can still be `nil` to name every star
+
+### Fixed
+
+- `Skymap::Catalog::StarRecords.encode`, which `bin/build_stars` uses, raises an
+  `ArgumentError` for a value that does not fit in `data/stars.bin`, such as a
+  proper motion above 32,767 mas/yr, instead of writing a wrong one, and keeps a
+  star at the celestial pole instead of moving it to the opposite pole
 
 ## [0.4.0] - 2026-11-05
 

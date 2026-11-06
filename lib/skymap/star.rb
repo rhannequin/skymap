@@ -23,6 +23,19 @@ module Skymap
       parallax: nil,
       radial_velocity: nil
     )
+      unless hr?(hr)
+        raise ArgumentError, "hr must be a positive Integer or nil"
+      end
+
+      unless equatorial_coordinates.is_a?(Astronoby::Coordinates::Equatorial)
+        raise ArgumentError,
+          "equatorial_coordinates must be Astronoby::Coordinates::Equatorial"
+      end
+
+      unless magnitude?(magnitude)
+        raise ArgumentError, "magnitude must be a finite Numeric"
+      end
+
       unless proper_motion?(proper_motion_ra)
         raise ArgumentError,
           "proper_motion_ra must be an Astronoby::AngularVelocity or nil"
@@ -91,6 +104,14 @@ module Skymap
     }
 
     private
+
+    def hr?(value)
+      value.nil? || (value.is_a?(Integer) && value.positive?)
+    end
+
+    def magnitude?(value)
+      value.is_a?(Numeric) && value.real? && value.finite?
+    end
 
     def proper_motion?(value)
       value.nil? ||

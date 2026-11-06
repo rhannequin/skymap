@@ -2,6 +2,38 @@
 
 RSpec.describe Skymap::Star do
   describe ".new" do
+    it "rejects a magnitude that is not a finite number" do
+      coordinates = equatorial(right_ascension: 6.75, declination: -16.7)
+
+      [nil, "1", Float::NAN, Float::INFINITY].each do |magnitude|
+        expect {
+          described_class.new(
+            hr: nil, equatorial_coordinates: coordinates, magnitude: magnitude
+          )
+        }.to raise_error(ArgumentError, /magnitude/)
+      end
+    end
+
+    it "rejects coordinates that are not equatorial" do
+      expect {
+        described_class.new(
+          hr: nil, equatorial_coordinates: "06h45m", magnitude: -1.46
+        )
+      }.to raise_error(ArgumentError, /equatorial_coordinates/)
+    end
+
+    it "rejects a Harvard Revised number that is not a positive integer" do
+      coordinates = equatorial(right_ascension: 6.75, declination: -16.7)
+
+      ["2491", 0, -1, 2491.0].each do |hr|
+        expect {
+          described_class.new(
+            hr: hr, equatorial_coordinates: coordinates, magnitude: -1.46
+          )
+        }.to raise_error(ArgumentError, /hr/)
+      end
+    end
+
     it "has no astrometry by default" do
       star = star(right_ascension: 6.75, declination: -16.7, magnitude: -1.46)
 

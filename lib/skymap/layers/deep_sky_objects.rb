@@ -12,6 +12,8 @@ module Skymap
         magnitude_limit: DEFAULT_MAGNITUDE_LIMIT,
         labels: false
       )
+        MagnitudeLimit.check(magnitude_limit)
+
         @objects = objects
         @magnitude_limit = magnitude_limit
         @labels = labels

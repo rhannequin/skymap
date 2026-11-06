@@ -22,6 +22,8 @@ module Skymap
         labels: false,
         names: NAMES
       )
+        MagnitudeLimit.check(magnitude_limit)
+
         @ephem = ephem
         @magnitude_limit = magnitude_limit
         @labels = labels
