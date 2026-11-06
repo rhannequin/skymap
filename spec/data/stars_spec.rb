@@ -4,7 +4,7 @@ require "csv"
 
 RSpec.describe "data/stars.csv" do
   def rows
-    CSV.read(Skymap::Catalog::Stars::PATH, headers: true)
+    CSV.read(File.expand_path("../../data/stars.csv", __dir__), headers: true)
   end
 
   def row(hr)
@@ -86,5 +86,66 @@ RSpec.describe "data/stars.csv" do
 
     expect(star["parallax"]).to be_nil
     expect(star["radial_velocity"]).to be_nil
+  end
+end
+
+RSpec.describe "data/stars.bin" do
+  def records
+    Skymap::Catalog::StarRecords.new(
+      File.binread(Skymap::Catalog::Stars::PATH)
+    )
+  end
+
+  it "has the 9,096 stars of the Bright Star Catalogue and 121,460 more" do
+    catalog = records
+
+    numbered = catalog.each_with_hr.count
+    others = catalog.count - numbered
+
+    expect(numbered).to eq(9096)
+    expect(others).to eq(121_460)
+  end
+
+  it "has no star fainter than magnitude 9" do
+    catalog = records
+
+    faintest = catalog.each.map(&:magnitude).max
+
+    expect(faintest).to eq(9.0)
+  end
+
+  it "gives a proper motion to all but 6 stars" do
+    catalog = records
+
+    missing = catalog.each.count { |star| star.proper_motion_ra.nil? }
+
+    expect(missing).to eq(6)
+  end
+
+  it "gives a parallax to 120,940 stars" do
+    catalog = records
+
+    count = catalog.each.count(&:parallax)
+
+    expect(count).to eq(120_940)
+  end
+
+  it "gives a radial velocity to 104,692 stars" do
+    catalog = records
+
+    count = catalog.each.count(&:radial_velocity)
+
+    expect(count).to eq(104_692)
+  end
+
+  it "gives a proper motion, a parallax and a radial velocity to most others" do
+    catalog = records
+
+    count = catalog.each.count do |star|
+      star.hr.nil? && star.proper_motion_ra && star.parallax &&
+        star.radial_velocity
+    end
+
+    expect(count).to be > 95_000
   end
 end

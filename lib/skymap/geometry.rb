@@ -8,6 +8,14 @@ module Skymap
       a.zip(b).sum { |x, y| x * y }
     end
 
+    def direction(right_ascension, declination)
+      [
+        Math.cos(declination) * Math.cos(right_ascension),
+        Math.cos(declination) * Math.sin(right_ascension),
+        Math.sin(declination)
+      ]
+    end
+
     def cross(a, b)
       [
         a[1] * b[2] - a[2] * b[1],

@@ -1,0 +1,35 @@
+data/stars.bin
+
+This file merges the Yale Bright Star Catalogue (Hoffleit & Warren, 1991) with
+data of Tycho-2 (Høg et al., 2000), of the new reduction of Hipparcos (van
+Leeuwen, 2007) and of Gaia DR3 (Gaia Collaboration, 2023), adapted and packed
+into a binary format by bin/build_stars.
+
+Credit: ESA, Gaia DPAC
+Credit: ESA
+
+This work has made use of data from the European Space Agency (ESA) mission
+Gaia (https://www.cosmos.esa.int/gaia), processed by the Gaia Data Processing
+and Analysis Consortium (DPAC,
+https://www.cosmos.esa.int/web/gaia/dpac/consortium).
+
+ESA distributes the Gaia and Hipparcos data, and the Hipparcos and Tycho
+catalogues, under the Creative Commons Attribution-NonCommercial 3.0 IGO license
+(CC BY-NC 3.0 IGO), and Tycho-2 is treated the same way here. This file is
+released under the same license:
+
+  https://creativecommons.org/licenses/by-nc/3.0/igo/
+
+ESA asks for authorization before any use of its data that directly or
+indirectly generates a financial gain, under the Terms and Conditions for the
+use of data in the ESA space science archives:
+
+  https://www.cosmos.esa.int/web/esdc/terms-and-conditions
+
+Requests go to data.licences@esa.int. The data may not be used to state or imply
+that ESA endorses a commercial product, service or activity.
+
+The rest of the Skymap gem is released under the MIT License (LICENSE.txt).
+This license applies to this data file only. If you share this file or data
+adapted from it, you must give credit as above, indicate your changes and
+release your version under CC BY-NC 3.0 IGO.

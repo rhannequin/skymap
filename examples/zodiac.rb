@@ -8,7 +8,7 @@ observer = Astronoby::Observer.new(
 )
 instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 23, 19))
 canvas = Skymap::Canvas.new(size: 800, padding: 24)
-stars = Skymap::Catalog::Stars.new.to_a
+stars = Skymap::Catalog::Stars.new
 names = {
   "Ari" => "Bélier",
   "Tau" => "Taureau",

@@ -11,7 +11,7 @@ module Skymap
     :radial_velocity
   ) do
     def self.by_hr(stars)
-      stars.to_h { |star| [star.hr, star] }
+      stars.filter_map { |star| [star.hr, star] if star.hr }.to_h
     end
 
     def initialize(

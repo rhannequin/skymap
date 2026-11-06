@@ -8,7 +8,7 @@ observer = Astronoby::Observer.new(
 )
 instant = Astronoby::Instant.from_time(Time.utc(2027, 8, 15, 21))
 canvas = Skymap::Canvas.new(size: 800, padding: 24)
-stars = Skymap::Catalog::Stars.new.to_a
+stars = Skymap::Catalog::Stars.new
 telescope = Skymap::Telescope.new(focal_length_mm: 1200, aperture_mm: 200)
 eyepiece = Skymap::Eyepiece.new(
   focal_length_mm: 25,

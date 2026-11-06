@@ -5,6 +5,17 @@ module GeometryHelpers
     Math.hypot(point.x - 200, point.y - 200).round(2)
   end
 
+  def separation_in_degrees(from, to)
+    directions = [from, to].map do |coordinates|
+      Skymap::Geometry.direction(
+        coordinates.right_ascension.radians,
+        coordinates.declination.radians
+      )
+    end
+
+    Math.acos(Skymap::Geometry.dot(*directions).clamp(-1, 1)) * 180 / Math::PI
+  end
+
   def sky_angle_between(from, to, canvas:, field_of_view:)
     scale = canvas.radius / (2 * Math.tan(field_of_view * Math::PI / 720))
     directions = [from, to].map do |point|

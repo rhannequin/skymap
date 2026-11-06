@@ -8,7 +8,7 @@ observer = Astronoby::Observer.new(
 )
 instant = Astronoby::Instant.from_time(Time.utc(2027, 4, 15, 21))
 canvas = Skymap::Canvas.new(size: 800, padding: 24)
-stars = Skymap::Catalog::Stars.new.to_a
+stars = Skymap::Catalog::Stars.new
 galaxies = Skymap::Catalog::DeepSkyObjects.new.select do |object|
   object.type == :galaxy
 end

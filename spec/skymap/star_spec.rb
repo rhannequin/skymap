@@ -194,6 +194,20 @@ RSpec.describe Skymap::Star do
 
       expect(stars).to eq(2491 => sirius, 7001 => vega)
     end
+
+    it "leaves out the stars without a Harvard Revised number" do
+      sirius = star(
+        right_ascension: 6.75,
+        declination: -16.7,
+        magnitude: -1.46,
+        hr: 2491
+      )
+      faint = star(right_ascension: 1, declination: 2, magnitude: 8)
+
+      stars = described_class.by_hr([sirius, faint])
+
+      expect(stars).to eq(2491 => sirius)
+    end
   end
 
   describe "#coordinates_at" do

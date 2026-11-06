@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
     "CHANGELOG.md",
     "LICENSE.txt",
     "README.md"
-  ]
+  ] - ["data/stars.csv"]
   spec.require_paths = ["lib"]
 
   spec.add_dependency "astronoby", "~> 0.11"

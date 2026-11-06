@@ -10,7 +10,7 @@ module Skymap
       end
 
       def elements(context)
-        stars_by_hr = Star.by_hr(@stars)
+        stars_by_hr = StarList.wrap(@stars).by_hr
 
         @lines.group_by(&:constellation).filter_map do |abbreviation, lines|
           name = @names[abbreviation]

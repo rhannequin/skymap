@@ -8,7 +8,7 @@ observer = Astronoby::Observer.new(
 )
 instant = Astronoby::Instant.from_time(Time.utc(2026, 12, 14, 21))
 canvas = Skymap::Canvas.new(size: 800, padding: 24)
-stars = Skymap::Catalog::Stars.new.to_a
+stars = Skymap::Catalog::Stars.new
 view = Skymap::View.new(
   center: Astronoby::Coordinates::Equatorial.new(
     right_ascension: Astronoby::Angle.from_hms(3, 47, 0),

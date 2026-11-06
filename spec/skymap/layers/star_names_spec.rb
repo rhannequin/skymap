@@ -184,4 +184,20 @@ RSpec.describe Skymap::Layers::StarNames do
       expect(far_captions).to be_empty
     end
   end
+
+  describe "#elements with stars without a Harvard Revised number" do
+    it "does not ask the names for them" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 0)
+      )
+      unnumbered = star(right_ascension: 0, declination: 89, magnitude: 1)
+      names = Hash.new { |_, hr| raise KeyError, "no name for #{hr.inspect}" }
+      layer = described_class.new(stars: [unnumbered], names: names)
+
+      captions = layer.elements(context)
+
+      expect(captions).to be_empty
+    end
+  end
 end

@@ -8,7 +8,7 @@ observer = Astronoby::Observer.new(
 )
 instant = Astronoby::Instant.from_time(Time.utc(2026, 12, 21, 20))
 canvas = Skymap::Canvas.new(size: 800, padding: 24)
-stars = Skymap::Catalog::Stars.new.to_a
+stars = Skymap::Catalog::Stars.new
 lines = Skymap::Catalog::ConstellationLines.new.to_a
 theme = Skymap::Theme.dark.with(grid: "#3b5273")
 

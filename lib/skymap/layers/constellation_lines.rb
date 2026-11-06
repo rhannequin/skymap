@@ -11,7 +11,7 @@ module Skymap
       end
 
       def elements(context)
-        stars_by_hr = Star.by_hr(@stars)
+        stars_by_hr = StarList.wrap(@stars).by_hr
 
         @lines.filter_map do |line|
           ends = [line.from, line.to].map { |hrs| stars_by_hr.values_at(*hrs) }

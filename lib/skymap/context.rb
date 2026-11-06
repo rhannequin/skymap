@@ -10,9 +10,14 @@ module Skymap
     SPEED_OF_LIGHT = 299_792_458.0
     PROPER_MOTION_ROUNDING = 1e-15
     POSITION_ANGLE_STEP = 1e-4
-    private_constant :STAR_POSITION_TOLERANCE, :SHIFT_SLACK,
-      :SECONDS_PER_JULIAN_YEAR, :ASTRONOMICAL_UNIT, :SPEED_OF_LIGHT,
-      :PROPER_MOTION_ROUNDING, :POSITION_ANGLE_STEP
+    PRECESSION_ARCSECONDS_PER_YEAR = 50.3
+    FASTEST_PROPER_MOTION_ARCSECONDS_PER_YEAR = 10.4
+    NUTATION_AND_ABERRATION_ARCSECONDS = 60.0
+    private_constant :PRECESSION_ARCSECONDS_PER_YEAR,
+      :FASTEST_PROPER_MOTION_ARCSECONDS_PER_YEAR,
+      :NUTATION_AND_ABERRATION_ARCSECONDS, :STAR_POSITION_TOLERANCE,
+      :SHIFT_SLACK, :SECONDS_PER_JULIAN_YEAR, :ASTRONOMICAL_UNIT,
+      :SPEED_OF_LIGHT, :PROPER_MOTION_ROUNDING, :POSITION_ANGLE_STEP
 
     attr_reader :observer, :instant, :canvas, :view
 
@@ -106,6 +111,18 @@ module Skymap
       @view.nil?
     end
 
+    def cone
+      return if full_sky?
+
+      @cone ||= Cone.new(
+        center: view_equatorial,
+        radius: Astronoby::Angle.from_radians(
+          [view_reach(StarSize::MAX_RADIUS_RATIO * @canvas.radius) +
+            cone_drift, Math::PI].min
+        )
+      )
+    end
+
     def in_view?(point, margin = 0)
       return true if full_sky?
 
@@ -131,6 +148,48 @@ module Skymap
     end
 
     private
+
+    def view_equatorial
+      center = @view.center
+      unless center.is_a?(Astronoby::Coordinates::Horizontal)
+        return Astronoby::Coordinates::Equatorial.new(
+          right_ascension: center.right_ascension,
+          declination: center.declination,
+          epoch: Astronoby::JulianDate::J2000
+        )
+      end
+
+      latitude = @observer.latitude
+      altitude = center.altitude
+      azimuth = center.azimuth
+      hour_angle = Math.atan2(
+        -azimuth.sin * altitude.cos,
+        altitude.sin * latitude.cos - altitude.cos * latitude.sin * azimuth.cos
+      )
+
+      Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_radians(
+          (Astronoby::Angle.from_hours(sidereal_time).radians - hour_angle) %
+            (2 * Math::PI)
+        ),
+        declination: Astronoby::Angle.from_radians(
+          Math.asin(
+            (altitude.sin * latitude.sin +
+              altitude.cos * latitude.cos * azimuth.cos).clamp(-1, 1)
+          )
+        ),
+        epoch: Astronoby::JulianDate::J2000
+      )
+    end
+
+    def cone_drift
+      arcseconds = elapsed_years * (
+        PRECESSION_ARCSECONDS_PER_YEAR +
+        FASTEST_PROPER_MOTION_ARCSECONDS_PER_YEAR
+      ) + NUTATION_AND_ABERRATION_ARCSECONDS
+
+      Astronoby::Angle.from_degree_arcseconds(arcseconds).radians
+    end
 
     def project_horizontal(horizontal)
       project(altitude: horizontal.altitude, azimuth: horizontal.azimuth)

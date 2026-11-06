@@ -7,45 +7,60 @@
 </clipPath>
 </defs>
 <g clip-path="url(#sky-400_0-400_0-376_0)">
-<circle cx="135.96" cy="630.1" r="1.16" fill="#ffffff"/>
-<circle cx="306.0" cy="432.82" r="1.45" fill="#ffffff"/>
-<circle cx="308.88" cy="399.7" r="2.53" fill="#ffffff"/>
-<circle cx="321.95" cy="536.07" r="1.36" fill="#ffffff"/>
-<circle cx="323.54" cy="466.14" r="2.12" fill="#ffffff"/>
-<circle cx="349.91" cy="447.31" r="2.41" fill="#ffffff"/>
-<circle cx="353.48" cy="482.45" r="1.31" fill="#ffffff"/>
+<circle cx="513.77" cy="102.29" r="0.94" fill="#ffffff"/>
+<circle cx="414.91" cy="341.0" r="0.94" fill="#ffffff"/>
+<circle cx="412.07" cy="326.64" r="0.94" fill="#ffffff"/>
+<circle cx="464.42" cy="442.89" r="0.94" fill="#ffffff"/>
+<circle cx="566.32" cy="370.93" r="0.94" fill="#ffffff"/>
+<circle cx="348.32" cy="217.86" r="0.95" fill="#ffffff"/>
+<circle cx="399.78" cy="475.78" r="0.96" fill="#ffffff"/>
+<circle cx="527.46" cy="349.59" r="0.96" fill="#ffffff"/>
+<circle cx="421.13" cy="432.17" r="0.96" fill="#ffffff"/>
+<circle cx="588.55" cy="596.97" r="0.97" fill="#ffffff"/>
+<circle cx="621.09" cy="596.99" r="0.97" fill="#ffffff"/>
+<circle cx="501.27" cy="449.59" r="1.01" fill="#ffffff"/>
+<circle cx="447.6" cy="563.77" r="1.04" fill="#ffffff"/>
+<circle cx="483.72" cy="351.07" r="1.04" fill="#ffffff"/>
 <circle cx="359.52" cy="477.4" r="1.05" fill="#ffffff"/>
-<circle cx="371.03" cy="368.38" r="2.2" fill="#ffffff"/>
-<circle cx="420.83" cy="397.7" r="3.17" fill="#ffffff"/>
-<circle cx="457.87" cy="269.1" r="1.45" fill="#ffffff"/>
-<circle cx="492.76" cy="387.99" r="2.58" fill="#ffffff"/>
-<circle cx="493.81" cy="403.64" r="1.64" fill="#ffffff"/>
+<circle cx="415.07" cy="399.83" r="1.11" fill="#ffffff"/>
 <circle cx="517.09" cy="323.8" r="1.14" fill="#ffffff"/>
+<circle cx="135.96" cy="630.1" r="1.16" fill="#ffffff"/>
 <circle cx="526.08" cy="47.99" r="1.18" fill="#ffffff"/>
+<circle cx="353.48" cy="482.45" r="1.31" fill="#ffffff"/>
+<circle cx="321.95" cy="536.07" r="1.36" fill="#ffffff"/>
+<circle cx="306.0" cy="432.82" r="1.45" fill="#ffffff"/>
+<circle cx="457.87" cy="269.1" r="1.45" fill="#ffffff"/>
 <circle cx="541.26" cy="674.92" r="1.55" fill="#ffffff"/>
-<text x="306.0" y="420.85" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
-Celaeno
-</text>
-<text x="308.88" y="386.64" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+<circle cx="493.81" cy="403.64" r="1.64" fill="#ffffff"/>
+<circle cx="323.54" cy="466.14" r="2.12" fill="#ffffff"/>
+<circle cx="371.03" cy="368.38" r="2.2" fill="#ffffff"/>
+<circle cx="349.91" cy="447.31" r="2.41" fill="#ffffff"/>
+<circle cx="308.88" cy="399.7" r="2.53" fill="#ffffff"/>
+<circle cx="492.76" cy="387.99" r="2.58" fill="#ffffff"/>
+<circle cx="420.83" cy="397.7" r="3.17" fill="#ffffff"/>
+<text x="308.88" y="412.76" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Electra
-</text>
-<text x="323.54" y="453.49" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
-Taygeta
 </text>
 <text x="349.91" y="434.37" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Maia
-</text>
-<text x="353.48" y="470.61" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
-Asterope
-</text>
-<text x="371.03" y="381.1" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
-Merope
 </text>
 <text x="420.83" y="411.4" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Alcyone
 </text>
 <text x="492.76" y="401.1" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Atlas
+</text>
+<text x="371.03" y="381.1" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+Merope
+</text>
+<text x="323.54" y="453.49" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+Taygeta
+</text>
+<text x="279.02" y="432.82" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+Celaeno
+</text>
+<text x="353.48" y="470.61" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+Asterope
 </text>
 </g>
 </svg>

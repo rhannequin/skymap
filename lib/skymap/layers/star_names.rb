@@ -23,8 +23,13 @@ module Skymap
           magnitude_limit: @stars_magnitude_limit
         )
 
-        @stars.filter_map do |star|
-          next if star.magnitude > @magnitude_limit
+        candidates = StarList.wrap(@stars).search(
+          magnitude_limit: @magnitude_limit,
+          cone: context.cone
+        )
+
+        candidates.filter_map do |star|
+          next unless star.hr
 
           name = @names[star.hr]
           next unless name

@@ -65,9 +65,42 @@ RSpec.describe Skymap::Layers::Stars do
       faint = star(right_ascension: 12, declination: 89, magnitude: 5)
       layer = described_class.new(stars: [bright, faint])
 
-      bright_dot, faint_dot = layer.elements(context)
+      faint_dot, bright_dot = layer.elements(context)
 
       expect(bright_dot.radius).to be > faint_dot.radius
+    end
+
+    it "draws the faintest stars first, under the brighter ones" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      bright = star(right_ascension: 0, declination: 89, magnitude: 1)
+      middle = star(right_ascension: 6, declination: 89, magnitude: 3)
+      faint = star(right_ascension: 12, declination: 89, magnitude: 5)
+      layer = described_class.new(stars: [middle, bright, faint])
+
+      dots = layer.elements(context)
+
+      expect(dots.map(&:center)).to eq(
+        [faint, middle, bright].map { |star| context.position(star) }
+      )
+    end
+
+    it "draws stars of the same magnitude in the order they come in" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      first = star(right_ascension: 0, declination: 89, magnitude: 3)
+      second = star(right_ascension: 6, declination: 89, magnitude: 3)
+      layer = described_class.new(stars: [first, second])
+
+      dots = layer.elements(context)
+
+      expect(dots.map(&:center)).to eq(
+        [first, second].map { |star| context.position(star) }
+      )
     end
 
     it "scales stars with the size of the sky" do
@@ -108,6 +141,54 @@ RSpec.describe Skymap::Layers::Stars do
       dots = layer.elements(context)
 
       expect(dots.map(&:center)).to eq([context.position(near)])
+    end
+
+    it "draws the same stars from the catalog as from its whole list" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 18.6, declination: 38.8),
+        field_of_view: Astronoby::Angle.from_degrees(10),
+        orientation: :equatorial
+      )
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      catalog = Skymap::Catalog::Stars.new
+      everything = catalog.to_a
+
+      from_catalog = described_class.new(stars: catalog, magnitude_limit: 9)
+        .elements(context)
+      from_list = described_class.new(stars: everything, magnitude_limit: 9)
+        .elements(context)
+
+      expect(from_catalog).not_to be_empty
+      expect(from_catalog.map { |dot| [dot.center.x, dot.center.y] }).to eq(
+        from_list.map { |dot| [dot.center.x, dot.center.y] }
+      )
+    end
+
+    it "draws the catalog stars fainter than the Bright Star Catalogue" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 18.6, declination: 38.8),
+        field_of_view: Astronoby::Angle.from_degrees(2),
+        orientation: :equatorial
+      )
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+      catalog = Skymap::Catalog::Stars.new
+      bright = catalog.by_hr.values
+
+      all = described_class.new(stars: catalog, magnitude_limit: 9)
+        .elements(context)
+      bright_only = described_class.new(stars: bright, magnitude_limit: 9)
+        .elements(context)
+
+      expect(bright_only.size).to eq(3)
+      expect(all.size).to eq(13)
     end
   end
 end
