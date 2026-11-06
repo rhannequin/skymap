@@ -824,9 +824,9 @@ OpenNGC type stops the build.
 
 `Skymap::Catalog::DeepSkyObjects` loads them as `Skymap::DeepSkyObject`, with
 the sizes as `Astronoby::Angle`. A `minor_axis` is blank for most clusters and
-some nebulae: `Skymap::DeepSkyObject#axes` gives the major and the minor axis
-of an object, and takes a blank minor axis as a round object, with the same
-diameter as the major axis. It gives `nil` when the size is unknown (M40, M73).
+some nebulae: `Skymap::DeepSkyObject` takes it as a round object, with a
+`minor_axis` equal to its `major_axis`. Both are `nil` when the size is unknown
+(M40, M73).
 
 OpenNGC identifies M102 as a duplicate of M101 (its identity is controversial
 and it follows the assumption of NED), so M102 is left out and the file has no

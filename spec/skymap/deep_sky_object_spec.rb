@@ -79,6 +79,20 @@ RSpec.describe Skymap::DeepSkyObject do
       expect(objects.map(&:type)).to eq(described_class::TYPES)
     end
 
+    it "takes a major axis as the minor axis of a round object" do
+      major = arcminutes(16.5)
+      object = object(major_axis: major)
+
+      expect(object.minor_axis).to eq(major)
+    end
+
+    it "keeps both axes unknown when the size is unknown" do
+      object = object()
+
+      expect(object.major_axis).to be_nil
+      expect(object.minor_axis).to be_nil
+    end
+
     it "takes an axis as large as the other" do
       object = object(major_axis: arcminutes(28), minor_axis: arcminutes(28))
 
@@ -236,29 +250,6 @@ RSpec.describe Skymap::DeepSkyObject do
         ArgumentError,
         "position_angle must be an Astronoby::Angle or nil"
       )
-    end
-  end
-
-  describe "#axes" do
-    it "gives the major and the minor axis" do
-      major = arcminutes(177.83)
-      minor = arcminutes(69.66)
-      object = object(major_axis: major, minor_axis: minor)
-
-      expect(object.axes).to eq([major, minor])
-    end
-
-    it "gives the major axis twice for a round object without a minor axis" do
-      major = arcminutes(16.5)
-      object = object(major_axis: major)
-
-      expect(object.axes).to eq([major, major])
-    end
-
-    it "gives nothing when the size is unknown" do
-      object = object()
-
-      expect(object.axes).to be_nil
     end
   end
 end
