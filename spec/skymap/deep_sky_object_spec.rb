@@ -86,6 +86,14 @@ RSpec.describe Skymap::DeepSkyObject do
       expect(object.minor_axis).to eq(major)
     end
 
+    it "keeps a round object round when its major axis changes" do
+      round = object(major_axis: arcminutes(10))
+
+      larger = round.with(major_axis: arcminutes(20))
+
+      expect(larger.minor_axis).to eq(arcminutes(20))
+    end
+
     it "keeps both axes unknown when the size is unknown" do
       object = object()
 

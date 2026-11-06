@@ -79,9 +79,9 @@ module Skymap
     end
 
     def rotation_at(coordinates, position_angle:)
-      center = project_equatorial(coordinates)
-      toward = project_equatorial(
-        step_toward(coordinates, position_angle)
+      center = project_horizontal(horizontal_coordinates(coordinates))
+      toward = project_horizontal(
+        convert(step_toward(coordinates, position_angle))
       )
 
       Astronoby::Angle.from_radians(
@@ -132,9 +132,7 @@ module Skymap
 
     private
 
-    def project_equatorial(coordinates)
-      horizontal = horizontal_coordinates(coordinates)
-
+    def project_horizontal(horizontal)
       project(altitude: horizontal.altitude, azimuth: horizontal.azimuth)
     end
 

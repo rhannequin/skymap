@@ -884,6 +884,18 @@ RSpec.describe Skymap::Context do
       expect(difference(first.degrees, second.degrees)).to be < 1e-6
     end
 
+    it "does not remember the point it steps toward" do
+      context = rotation_context(nil)
+      context.horizontal_coordinates(object_position)
+
+      2.times do
+        context.rotation_at(object_position, position_angle: position_angle(40))
+      end
+
+      remembered = context.instance_variable_get(:@horizontal)
+      expect(remembered.size).to eq(1)
+    end
+
     it "works next to the celestial pole" do
       pole = equatorial(right_ascension: 2.5, declination: 89.9)
       context = rotation_context(nil)
