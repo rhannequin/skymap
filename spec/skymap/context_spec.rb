@@ -719,4 +719,178 @@ RSpec.describe Skymap::Context do
       expect(pole.y).to be > 200
     end
   end
+
+  describe "#rotation_at" do
+    def rotation_context(view)
+      context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 800, padding: 24),
+        view: view
+      )
+    end
+
+    def rotation_view(center, field_of_view, **options)
+      Skymap::View.new(
+        center: center,
+        field_of_view: Astronoby::Angle.from_degrees(field_of_view),
+        **options
+      )
+    end
+
+    def position_angle(degrees)
+      Astronoby::Angle.from_degrees(degrees)
+    end
+
+    def brute_force_rotation(context, coordinates, degrees)
+      step = 1e-6
+      angle = Math::PI * degrees / 180
+      declination = coordinates.declination.radians
+      nearby = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_radians(
+          coordinates.right_ascension.radians +
+            step * Math.sin(angle) / Math.cos(declination)
+        ),
+        declination: Astronoby::Angle.from_radians(
+          declination + step * Math.cos(angle)
+        ),
+        epoch: coordinates.epoch
+      )
+      from, to = [coordinates, nearby].map do |point|
+        horizontal = context.horizontal_coordinates(point)
+        context.project(
+          altitude: horizontal.altitude, azimuth: horizontal.azimuth
+        )
+      end
+
+      Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math::PI
+    end
+
+    def difference(first, second)
+      (((first - second) + 180) % 360 - 180).abs
+    end
+
+    def object_position
+      equatorial(right_ascension: 21.0, declination: 31.5)
+    end
+
+    {
+      "the whole sky" => nil,
+      "a zenith-up view" => [3, {}],
+      "a wide zenith-up view" => [60, {}],
+      "an equatorial view" => [5, {orientation: :equatorial}],
+      "a mirrored equatorial view" => [
+        5, {orientation: :equatorial, mirrored: true}
+      ],
+      "a turned and mirrored view" => [
+        10, {rotation: Astronoby::Angle.from_degrees(40), mirrored: true}
+      ],
+      "a turned equatorial view" => [
+        25, {orientation: :equatorial, rotation: Astronoby::Angle.from_degrees(-70)}
+      ]
+    }.each do |name, settings|
+      [0, 35, 90, 140, 180, 250, 330].each do |degrees|
+        it "matches a brute-force step at #{degrees} degrees in #{name}" do
+          view = settings && rotation_view(
+            equatorial(right_ascension: 21.05, declination: 30.8),
+            settings[0],
+            **settings[1]
+          )
+          context = rotation_context(view)
+
+          rotation = context.rotation_at(
+            object_position,
+            position_angle: position_angle(degrees)
+          )
+
+          expect(difference(
+            rotation.degrees,
+            brute_force_rotation(context, object_position, degrees)
+          )).to be < 0.01
+        end
+      end
+    end
+
+    it "puts the north at the top and the east on the left of an equatorial view" do
+      view = rotation_view(object_position, 5, orientation: :equatorial)
+      context = rotation_context(view)
+
+      north = context.rotation_at(
+        object_position, position_angle: position_angle(0)
+      )
+      east = context.rotation_at(
+        object_position, position_angle: position_angle(90)
+      )
+
+      expect(difference(north.degrees, -90)).to be < 0.5
+      expect(difference(east.degrees, 180)).to be < 0.5
+    end
+
+    it "puts the east on the right of a mirrored equatorial view" do
+      view = rotation_view(
+        object_position, 5, orientation: :equatorial, mirrored: true
+      )
+      context = rotation_context(view)
+
+      east = context.rotation_at(
+        object_position, position_angle: position_angle(90)
+      )
+
+      expect(difference(east.degrees, 0)).to be < 0.5
+    end
+
+    it "turns with the rotation of the view" do
+      upright = rotation_context(
+        rotation_view(object_position, 5, orientation: :equatorial)
+      )
+      turned = rotation_context(
+        rotation_view(
+          object_position,
+          5,
+          orientation: :equatorial,
+          rotation: position_angle(30)
+        )
+      )
+
+      from = upright.rotation_at(
+        object_position, position_angle: position_angle(20)
+      )
+      to = turned.rotation_at(
+        object_position, position_angle: position_angle(20)
+      )
+
+      expect(difference(to.degrees - from.degrees, 30)).to be < 0.1
+    end
+
+    it "gives an Astronoby::Angle" do
+      context = rotation_context(nil)
+
+      rotation = context.rotation_at(
+        object_position, position_angle: position_angle(10)
+      )
+
+      expect(rotation).to be_a(Astronoby::Angle)
+    end
+
+    it "gives the same rotation for a position angle turned a full circle" do
+      context = rotation_context(nil)
+
+      first = context.rotation_at(
+        object_position, position_angle: position_angle(40)
+      )
+      second = context.rotation_at(
+        object_position, position_angle: position_angle(400)
+      )
+
+      expect(difference(first.degrees, second.degrees)).to be < 1e-6
+    end
+
+    it "works next to the celestial pole" do
+      pole = equatorial(right_ascension: 2.5, declination: 89.9)
+      context = rotation_context(nil)
+
+      rotation = context.rotation_at(pole, position_angle: position_angle(120))
+
+      expect(rotation.degrees).to be_finite
+    end
+  end
 end
