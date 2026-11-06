@@ -67,13 +67,9 @@ module Skymap
         raise ArgumentError, "position_angle must be an Astronoby::Angle or nil"
       end
 
+      minor_axis ||= major_axis
+
       super
-    end
-
-    def axes
-      return if major_axis.nil?
-
-      [major_axis, minor_axis || major_axis]
     end
 
     private

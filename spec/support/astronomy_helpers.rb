@@ -50,6 +50,31 @@ module AstronomyHelpers
     )
   end
 
+  def deep_sky_object(
+    right_ascension: 21.0,
+    declination: 31.5,
+    designation: "M99",
+    type: :galaxy,
+    major: nil,
+    minor: nil,
+    position_angle: nil,
+    **attributes
+  )
+    Skymap::DeepSkyObject.new(
+      designation: designation,
+      type: type,
+      equatorial_coordinates: equatorial(
+        right_ascension: right_ascension,
+        declination: declination
+      ),
+      major_axis: major && Astronoby::Angle.from_degrees(major),
+      minor_axis: minor && Astronoby::Angle.from_degrees(minor),
+      position_angle: position_angle &&
+        Astronoby::Angle.from_degrees(position_angle),
+      **attributes
+    )
+  end
+
   def motion(proper_motion_ra:, proper_motion_dec:, parallax: nil,
     radial_velocity: nil)
     {

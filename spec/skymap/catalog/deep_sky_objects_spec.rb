@@ -42,7 +42,7 @@ RSpec.describe Skymap::Catalog::DeepSkyObjects do
     expect(m13.name).to eq("Hercules Globular Cluster")
     expect(m13.type).to eq(:globular_cluster)
     expect(m13.major_axis.degrees * 60).to be_within(1e-9).of(16.5)
-    expect(m13.minor_axis).to be_nil
+    expect(m13.minor_axis).to eq(m13.major_axis)
     expect(m13.position_angle).to be_nil
   end
 
@@ -64,7 +64,8 @@ RSpec.describe Skymap::Catalog::DeepSkyObjects do
     expect(m40.type).to eq(:double_star)
     expect(m40.name).to be_nil
     expect(m40.magnitude).to eq(8.0)
-    expect(m40.axes).to be_nil
+    expect(m40.major_axis).to be_nil
+    expect(m40.minor_axis).to be_nil
   end
 
   it "reads the Pleiades, from the addendum, as an open cluster" do

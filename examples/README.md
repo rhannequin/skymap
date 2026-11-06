@@ -131,4 +131,21 @@ each side, so the chart is 190 mm wide on paper at any print scale of 100%. [Cod
 
 <img src="finder_chart.svg" width="480" alt="The Pleiades in a field of 4 degrees, with the stars, the coordinate grid and a scale bar of 30 arc-minutes">
 
+## The galaxies of Virgo
+
+A view of 10 degrees on the Virgo Cluster, with the Messier galaxies and their
+designations. Each galaxy is an ellipse turned the way it lies in the sky, in a
+map with the north at the top. [Code](deep_sky.rb)
+
+<img src="deep_sky.svg" width="480" alt="The Messier galaxies of the Virgo Cluster drawn as ellipses with their designations">
+
+## The Messier objects of Sagittarius
+
+The deep-sky objects of the center of the Milky Way, from Paris on a summer
+evening: the globular clusters are circles with a cross, the open clusters
+dashed circles, the nebulae dashed squares, and M24, a star cloud, a dotted
+ellipse. [Code](messier_sagittarius.rb)
+
+<img src="messier_sagittarius.svg" width="480" alt="The Messier objects of Sagittarius with a symbol for each type and their designations">
+
 [astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md

@@ -9,12 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Skymap::Layers::DeepSkyObjects` draws deep-sky objects, such as the ones of
+  `Skymap::Catalog::DeepSkyObjects`, with a symbol for each type, at their real
+  size and with their position angle when they are larger than the symbol, and
+  with their designation as a label with `labels: true`. Objects of magnitude 11
+  or brighter are drawn by default
+- `deep_sky`, an optional color of `Skymap::Theme` for the symbols and the
+  labels of the deep-sky objects, that falls back to `constellation_name`
+- `Skymap::Context#rotation_at` turns a position angle at equatorial
+  coordinates into the rotation of the map, as an `Astronoby::Angle`
 - `data/deep_sky_objects.csv`, `Skymap::Catalog::DeepSkyObjects` and
   `Skymap::DeepSkyObject` give the 109 Messier objects (galaxies, clusters,
   nebulae and more) with their coordinates, type, magnitude, size and position
-  angle, from OpenNGC. The data file is released under CC BY-SA 4.0, with its
-  license in `data/LICENSE-deep_sky_objects.txt`; the code stays under the MIT
-  license
+  angle, from OpenNGC. An object with a `major_axis` and no `minor_axis` is
+  round: its `minor_axis` is its `major_axis`. The data file is released under
+  CC BY-SA 4.0, with its license in `data/LICENSE-deep_sky_objects.txt`; the
+  code stays under the MIT license
 - `data/stars.csv` and `Skymap::Catalog::Stars` give the proper motion, the
   parallax and the radial velocity of the stars, from the Yale Bright Star
   Catalogue, and `Skymap::Star` takes the optional `proper_motion_ra:`,

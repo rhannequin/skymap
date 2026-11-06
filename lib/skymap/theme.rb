@@ -23,7 +23,8 @@ module Skymap
   optional_colors = {
     grid: :boundary,
     scale: :star_name,
-    field_circle: :planet
+    field_circle: :planet,
+    deep_sky: :constellation_name
   }.freeze
 
   Theme = Data.define(*required_colors, *optional_colors.keys) do

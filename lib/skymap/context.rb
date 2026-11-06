@@ -9,9 +9,10 @@ module Skymap
     ASTRONOMICAL_UNIT = 149_597_870_700.0
     SPEED_OF_LIGHT = 299_792_458.0
     PROPER_MOTION_ROUNDING = 1e-15
+    POSITION_ANGLE_STEP = 1e-4
     private_constant :STAR_POSITION_TOLERANCE, :SHIFT_SLACK,
       :SECONDS_PER_JULIAN_YEAR, :ASTRONOMICAL_UNIT, :SPEED_OF_LIGHT,
-      :PROPER_MOTION_ROUNDING
+      :PROPER_MOTION_ROUNDING, :POSITION_ANGLE_STEP
 
     attr_reader :observer, :instant, :canvas, :view
 
@@ -77,6 +78,17 @@ module Skymap
         angle.radians
     end
 
+    def rotation_at(coordinates, position_angle:)
+      center = project_equatorial(coordinates)
+      toward = project_equatorial(
+        step_toward(coordinates, position_angle)
+      )
+
+      Astronoby::Angle.from_radians(
+        Math.atan2(toward.y - center.y, toward.x - center.x)
+      )
+    end
+
     def scale_at_point(point, radius: @canvas.radius)
       projection(radius).scale_at_point(point)
     end
@@ -119,6 +131,45 @@ module Skymap
     end
 
     private
+
+    def project_equatorial(coordinates)
+      horizontal = horizontal_coordinates(coordinates)
+
+      project(altitude: horizontal.altitude, azimuth: horizontal.azimuth)
+    end
+
+    def step_toward(coordinates, position_angle)
+      right_ascension = coordinates.right_ascension
+      declination = coordinates.declination
+      east = [-right_ascension.sin, right_ascension.cos, 0.0]
+      north = [
+        -declination.sin * right_ascension.cos,
+        -declination.sin * right_ascension.sin,
+        declination.cos
+      ]
+      point = [
+        declination.cos * right_ascension.cos,
+        declination.cos * right_ascension.sin,
+        declination.sin
+      ]
+      nearby = Geometry.normalize(
+        point.each_index.map do |axis|
+          point[axis] + POSITION_ANGLE_STEP * (
+            position_angle.sin * east[axis] + position_angle.cos * north[axis]
+          )
+        end
+      )
+
+      Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_radians(
+          Math.atan2(nearby[1], nearby[0]) % (2 * Math::PI)
+        ),
+        declination: Astronoby::Angle.from_radians(
+          Math.asin(nearby[2].clamp(-1, 1))
+        ),
+        epoch: coordinates.epoch
+      )
+    end
 
     def star_horizontal(star)
       catalog = catalog_horizontal(star)
