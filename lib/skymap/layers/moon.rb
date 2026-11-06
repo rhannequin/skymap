@@ -80,12 +80,10 @@ module Skymap
       end
 
       def away_from(reference, moon)
-        along = reference.zip(moon).sum { |r, m| r * m }
-        away = reference.zip(moon).map { |r, m| r - along * m }
-        length = Math.sqrt(away.sum { |component| component * component })
-        return if length < 1e-9
+        away = Geometry.away_from(reference, moon)
+        return if Geometry.dot(away, away) < 1e-18
 
-        away.map { |component| component / length }
+        Geometry.normalize(away)
       end
     end
   end

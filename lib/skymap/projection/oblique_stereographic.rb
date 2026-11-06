@@ -21,7 +21,7 @@ module Skymap
         @center = center
         @forward = vector(altitude, azimuth)
         up = up_from(@forward, field_of_view, orientation, pole)
-        right = cross(up, @forward)
+        right = Geometry.cross(up, @forward)
         right = right.map(&:-@) if mirrored
         @right, @up = turned(right, up, rotation)
         quarter = Astronoby::Angle.from_radians(field_of_view.radians / 4.0)
@@ -30,18 +30,18 @@ module Skymap
 
       def project(altitude:, azimuth:)
         point = vector(altitude, azimuth)
-        factor = 2 / [1 + dot(point, @forward), MIN_DENOMINATOR].max
+        factor = 2 / [1 + Geometry.dot(point, @forward), MIN_DENOMINATOR].max
 
         Point.new(
-          x: @center.x + @scale * factor * dot(point, @right),
-          y: @center.y - @scale * factor * dot(point, @up)
+          x: @center.x + @scale * factor * Geometry.dot(point, @right),
+          y: @center.y - @scale * factor * Geometry.dot(point, @up)
         )
       end
 
       def scale_at(altitude:, azimuth:)
         point = vector(altitude, azimuth)
 
-        @scale * 2 / [1 + dot(point, @forward), MIN_DENOMINATOR].max
+        @scale * 2 / [1 + Geometry.dot(point, @forward), MIN_DENOMINATOR].max
       end
 
       def scale_at_point(point)
@@ -71,9 +71,8 @@ module Skymap
         end
 
         references.each do |reference|
-          up = away_from(reference, forward)
-          length = Math.sqrt(dot(up, up))
-          return up.map { |component| component / length } if length > 1e-9
+          up = Geometry.away_from(reference, forward)
+          return Geometry.normalize(up) if Geometry.dot(up, up) > 1e-18
         end
       end
 
@@ -81,24 +80,6 @@ module Skymap
         [
           right.zip(up).map { |r, u| rotation.cos * r + rotation.sin * u },
           up.zip(right).map { |u, r| rotation.cos * u - rotation.sin * r }
-        ]
-      end
-
-      def away_from(reference, forward)
-        along = dot(reference, forward)
-
-        reference.zip(forward).map { |r, f| r - along * f }
-      end
-
-      def dot(a, b)
-        a.zip(b).sum { |x, y| x * y }
-      end
-
-      def cross(a, b)
-        [
-          a[1] * b[2] - a[2] * b[1],
-          a[2] * b[0] - a[0] * b[2],
-          a[0] * b[1] - a[1] * b[0]
         ]
       end
     end
