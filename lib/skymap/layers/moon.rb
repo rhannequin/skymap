@@ -4,9 +4,6 @@ module Skymap
   module Layers
     class Moon
       MOON_RADIUS_RATIO = 0.03
-      LIT_SIDE_STEP = 1e-3
-      NORTH = [1.0, 0.0, 0.0].freeze
-      ZENITH = [0.0, 0.0, 1.0].freeze
 
       def initialize(ephem:)
         @ephem = ephem
@@ -14,7 +11,8 @@ module Skymap
 
       def elements(context)
         moon = Astronoby::Moon.at(context.instant, ephem: @ephem)
-        horizontal = moon.observed_by(context.observer).horizontal
+        equatorial = moon.observed_by(context.observer).equatorial
+        horizontal = context.horizontal_coordinates(equatorial)
         return [] if horizontal.altitude.negative?
 
         center = context.project(
@@ -34,56 +32,18 @@ module Skymap
             center: center,
             radius: radius,
             illuminated_fraction: moon.illuminated_fraction,
-            rotation: rotation(moon, horizontal, center, context)
+            rotation: rotation(moon, equatorial, context)
           )
         ]
       end
 
       private
 
-      def rotation(moon, horizontal, center, context)
-        from_zenith = Astronoby::Angle.from_radians(
-          moon.bright_limb_position_angle.radians -
-            moon.parallactic_angle(observer: context.observer).radians
-        )
-        lit_side = toward_lit_side(horizontal, from_zenith)
-        lit_point = context.project(
-          altitude: Astronoby::Angle.from_radians(
-            Math.asin(lit_side[2].clamp(-1, 1))
-          ),
-          azimuth: Astronoby::Angle.from_radians(
-            Math.atan2(lit_side[1], lit_side[0])
-          )
-        )
-
-        Math.atan2(lit_point.y - center.y, lit_point.x - center.x) *
-          180 / Math::PI
-      end
-
-      def toward_lit_side(horizontal, from_zenith)
-        altitude = horizontal.altitude
-        azimuth = horizontal.azimuth
-        moon = [
-          altitude.cos * azimuth.cos,
-          altitude.cos * azimuth.sin,
-          altitude.sin
-        ]
-        up = away_from(ZENITH, moon) || away_from(NORTH, moon)
-        east = [azimuth.sin, -azimuth.cos, 0.0]
-        sideways = away_from(east, moon)
-
-        moon.each_index.map do |axis|
-          moon[axis] + LIT_SIDE_STEP * (
-            from_zenith.cos * up[axis] + from_zenith.sin * sideways[axis]
-          )
-        end
-      end
-
-      def away_from(reference, moon)
-        away = Geometry.away_from(reference, moon)
-        return if Geometry.dot(away, away) < 1e-18
-
-        Geometry.normalize(away)
+      def rotation(moon, equatorial, context)
+        context.rotation_at(
+          equatorial,
+          position_angle: moon.bright_limb_position_angle
+        ).degrees
       end
     end
   end

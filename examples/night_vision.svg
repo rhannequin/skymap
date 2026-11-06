@@ -817,7 +817,7 @@ Fomalhaut
 <text x="234.34" y="490.04" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#ff9a7a">
 Saturn
 </text>
-<g transform="rotate(2.47 556.63 636.15)">
+<g transform="rotate(2.49 556.63 636.15)">
 <circle cx="556.63" cy="636.15" r="11.28" fill="#2a0a0a" fill-opacity="0.6"/>
 <path d="M 556.63,624.87 A 11.28,11.28 0 0 1 556.63,647.43 A 1.14,11.28 0 0 0 556.63,624.87 Z" fill="#ffb3a0"/>
 </g>
