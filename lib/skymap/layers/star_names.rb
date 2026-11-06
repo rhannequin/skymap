@@ -29,6 +29,8 @@ module Skymap
         )
 
         candidates.filter_map do |star|
+          next unless star.hr
+
           name = @names[star.hr]
           next unless name
 

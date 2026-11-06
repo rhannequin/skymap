@@ -21,25 +21,32 @@ module Skymap
           cone: context.cone
         )
 
-        faintest_first(candidates).filter_map do |star|
-          radius = star_size.radius(star.magnitude)
-          next unless context.possibly_visible?(star, radius)
-
-          next if context.horizontal(star).altitude.negative?
-
-          center = context.position(star)
-          next unless context.in_view?(center, radius)
-
-          Renderer::Dot.new(center: center, radius: radius)
+        dots = candidates.filter_map do |star|
+          dot = dot_for(star, context, star_size)
+          [star.magnitude, dot] if dot
         end
+
+        faintest_first(dots)
       end
 
       private
 
-      def faintest_first(stars)
-        stars.each_with_index
-          .sort_by { |star, index| [-star.magnitude, index] }
-          .map(&:first)
+      def dot_for(star, context, star_size)
+        radius = star_size.radius(star.magnitude)
+        return unless context.possibly_visible?(star, radius)
+
+        return if context.horizontal(star).altitude.negative?
+
+        center = context.position(star)
+        return unless context.in_view?(center, radius)
+
+        Renderer::Dot.new(center: center, radius: radius)
+      end
+
+      def faintest_first(dots)
+        dots.each_with_index
+          .sort_by { |(magnitude, _), index| [-magnitude, index] }
+          .map { |(_, dot), _| dot }
       end
     end
   end

@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "csv"
+require "digest"
 require "fileutils"
 require "net/http"
 require "tmpdir"
@@ -24,6 +25,8 @@ module StarBuilder
   MATCH_PROPER_MOTION_YEARS = 5
   MATCH_MAGNITUDE_DIFFERENCE = 0.5
   GRID_STEP = 0.25
+  CACHE_DIGEST_SIZE = 8
+  NO_STARS = [].freeze
   SOURCES = {
     "tycho2.csv" => <<~ADQL,
       SELECT id, hip, ra_deg, de_deg, ra_mdeg, de_mdeg, pm_ra, pm_de,
@@ -80,21 +83,40 @@ module StarBuilder
   private_class_method :finished?
 
   def self.get(uri)
-    Net::HTTP.start(uri.host, uri.port, use_ssl: true,
+    response = Net::HTTP.start(uri.host, uri.port, use_ssl: true,
       read_timeout: 600) do |http|
-      http.get(uri.path).body
+      http.get(uri.request_uri)
     end
+    unless response.is_a?(Net::HTTPSuccess)
+      raise "The request failed: #{uri} gave #{response.code}"
+    end
+
+    response.body
   end
   private_class_method :get
 
   def self.sources(directory)
     FileUtils.mkdir_p(directory)
     SOURCES.to_h do |name, adql|
-      path = File.join(directory, name)
-      File.write(path, query(adql)) unless File.exist?(path)
-      [name.delete_suffix(".csv"), CSV.read(path, headers: true)]
+      path = cached_path(directory, name, adql)
+      download(path, adql) unless File.exist?(path)
+      [File.basename(name, ".csv"), CSV.read(path, headers: true)]
     end
   end
+
+  def self.cached_path(directory, name, adql)
+    digest = Digest::SHA256.hexdigest(adql)[0, CACHE_DIGEST_SIZE]
+
+    File.join(directory, "#{File.basename(name, ".csv")}-#{digest}.csv")
+  end
+  private_class_method :cached_path
+
+  def self.download(path, adql)
+    partial = "#{path}.partial"
+    File.write(partial, query(adql))
+    File.rename(partial, path)
+  end
+  private_class_method :download
 
   def self.bright_stars(path = BRIGHT_STARS)
     CSV.read(path, headers: true).map do |row|
@@ -214,35 +236,50 @@ module StarBuilder
 
   class Index
     def initialize(stars)
-      @cells = Hash.new { |hash, key| hash[key] = [] }
-      stars.each { |star|
-        @cells[cell(star.right_ascension, star.declination)] << star
-      }
+      @cells = {}
+      stars.each do |star|
+        (@cells[cell(star.right_ascension, star.declination)] ||= []) << star
+      end
     end
 
     def near?(right_ascension, declination, pm_ra, pm_dec, magnitude)
-      column, row = cell(right_ascension, declination)
       radius = MATCH_RADIUS_ARCSECONDS + MATCH_PROPER_MOTION_YEARS *
         Math.hypot(pm_ra.to_f, pm_dec.to_f) / 1000
-      [-1, 0, 1].product([-1, 0, 1]).any? do |dx, dy|
-        @cells[[(column + dx) % columns, row + dy]].any? do |star|
-          (star.magnitude - magnitude).abs < MATCH_MAGNITUDE_DIFFERENCE &&
-            separation(star, right_ascension, declination) < radius
+      row = row(declination)
+
+      (row - 1..row + 1).any? do |neighbor|
+        column = column(right_ascension, neighbor)
+        [-1, 0, 1].any? do |step|
+          key = [neighbor, (column + step) % columns(neighbor)]
+          @cells.fetch(key, NO_STARS).any? do |star|
+            (star.magnitude - magnitude).abs < MATCH_MAGNITUDE_DIFFERENCE &&
+              separation(star, right_ascension, declination) < radius
+          end
         end
       end
     end
 
     private
 
-    def columns
-      (360 / GRID_STEP).to_i
+    def cell(right_ascension, declination)
+      row = row(declination)
+
+      [row, column(right_ascension, row)]
     end
 
-    def cell(right_ascension, declination)
-      [
-        (right_ascension / GRID_STEP).floor % columns,
-        (declination / GRID_STEP).floor
-      ]
+    def row(declination)
+      (declination / GRID_STEP).floor
+    end
+
+    def column(right_ascension, row)
+      (right_ascension / 360.0 * columns(row)).floor % columns(row)
+    end
+
+    def columns(row)
+      widest = [row.abs, row.abs + 1].max * GRID_STEP
+      narrowest = Math.cos(widest * Math::PI / 180)
+
+      [(360 * narrowest / GRID_STEP).floor, 1].max
     end
 
     def separation(star, right_ascension, declination)

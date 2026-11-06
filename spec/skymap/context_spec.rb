@@ -907,24 +907,6 @@ RSpec.describe Skymap::Context do
   end
 
   describe "#cone" do
-    def separation(from, to)
-      a = unit_vector(from)
-      b = unit_vector(to)
-
-      Math.acos(a.zip(b).sum { |x, y| x * y }.clamp(-1, 1)) * 180 / Math::PI
-    end
-
-    def unit_vector(coordinates)
-      right_ascension = coordinates.right_ascension
-      declination = coordinates.declination
-
-      [
-        declination.cos * right_ascension.cos,
-        declination.cos * right_ascension.sin,
-        declination.sin
-      ]
-    end
-
     it "has none on the whole sky" do
       context = context_at(
         latitude: 48.8575,
@@ -994,7 +976,8 @@ RSpec.describe Skymap::Context do
 
       cone = zoomed.cone
 
-      expect(separation(cone.center, vega.equatorial_coordinates)).to be < 0.5
+      expect(separation_in_degrees(cone.center,
+        vega.equatorial_coordinates)).to be < 0.5
     end
 
     it "reaches farther for an instant far from J2000" do

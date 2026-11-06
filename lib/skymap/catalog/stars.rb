@@ -15,39 +15,47 @@ module Skymap
       def each
         return enum_for(:each) unless block_given?
 
-        self.class.send(:records).each { |record| yield star_from(record) }
+        records.each { |record| yield star_from(record) }
       end
 
       def search(magnitude_limit: nil, cone: nil)
         return whole_sky(magnitude_limit) unless cone
 
-        read(magnitude_limit, cone)
+        records.each(
+          magnitude_limit: magnitude_limit,
+          center: [
+            cone.center.right_ascension.degrees,
+            cone.center.declination.degrees
+          ],
+          radius: cone.radius.degrees
+        ).map { |record| star_from(record) }
       end
 
       def by_hr
         @by_hr ||= Star.by_hr(
-          self.class.send(:records).each_with_hr.map { |record|
-            star_from(record)
-          }
+          records.each_with_hr.map { |record| star_from(record) }
         )
       end
 
       private
 
-      def whole_sky(magnitude_limit)
-        @whole_sky ||= {}
-        @whole_sky[magnitude_limit] ||= read(magnitude_limit, nil).freeze
+      def records
+        self.class.send(:records)
       end
 
-      def read(magnitude_limit, cone)
-        self.class.send(:records).each(
-          magnitude_limit: magnitude_limit,
-          center: cone && [
-            cone.center.right_ascension.degrees,
-            cone.center.declination.degrees
-          ],
-          radius: cone&.radius&.degrees
-        ).map { |record| star_from(record) }
+      def whole_sky(magnitude_limit)
+        stars = StarRecords.bands_within(magnitude_limit).flat_map do |band|
+          band_stars(band)
+        end
+        return stars unless magnitude_limit
+
+        stars.select { |star| star.magnitude <= magnitude_limit }
+      end
+
+      def band_stars(band)
+        @band_stars ||= {}
+        @band_stars[band] ||= records.each_in_band(band)
+          .map { |record| star_from(record) }.freeze
       end
 
       def star_from(record)

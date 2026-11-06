@@ -110,7 +110,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::Catalog::Stars` gives the stars down to magnitude 9 instead of the
   9,096 of the Bright Star Catalogue, so give the layers the catalog itself
   instead of `to_a`: the layers of stars, star names and constellations read
-  only what they draw, which keeps a zoomed chart at about 10 ms. A star has no
+  only what they draw, which takes about 2 ms for a 1 degree view and 24 ms for
+  a 10 degree view at magnitude 9. A star has no
   `hr` outside the Bright Star Catalogue, and `Skymap::Star.by_hr` leaves it out
 - `Skymap::Layers::Stars` draws the faintest stars first, so that the brighter
   ones are never covered by a fainter one, whatever the order of the stars

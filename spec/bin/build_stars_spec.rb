@@ -229,6 +229,110 @@ RSpec.describe StarBuilder do
     end
   end
 
+  describe ".stars near the celestial poles" do
+    it "matches a star next to a star of the Bright Star Catalogue" do
+      bright = bright_star(
+        right_ascension: 10.0,
+        declination: 89.99,
+        magnitude: 8.4
+      )
+      offset = 2.0 / 3600 / Math.cos(89.99 * Math::PI / 180)
+      neighbor = tycho(
+        ra_mdeg: (10.0 + offset).to_s,
+        de_mdeg: "89.99",
+        pm_ra: "0",
+        pm_de: "0"
+      )
+
+      stars = described_class.stars([bright], [neighbor], [], [])
+
+      expect(stars).to eq([bright])
+    end
+
+    it "keeps a star a degree away" do
+      bright = bright_star(
+        right_ascension: 10.0,
+        declination: 89.99,
+        magnitude: 8.4
+      )
+      far = tycho(ra_mdeg: "190.0", de_mdeg: "89.99")
+
+      stars = described_class.stars([bright], [far], [], [])
+
+      expect(stars.size).to eq(2)
+    end
+  end
+
+  describe ".sources" do
+    def csv(*names)
+      "id,hip\n#{names.join("\n")}\n"
+    end
+
+    it "downloads each source once and reads it again from the directory" do
+      directory = Dir.mktmpdir
+      allow(described_class).to receive(:query).and_return(csv("1,2"))
+
+      described_class.sources(directory)
+      described_class.sources(directory)
+
+      expect(described_class).to have_received(:query).exactly(3).times
+    end
+
+    it "downloads a source again when its query changes" do
+      directory = Dir.mktmpdir
+      allow(described_class).to receive(:query).and_return(csv("1,2"))
+      described_class.sources(directory)
+      stub_const(
+        "StarBuilder::SOURCES",
+        described_class::SOURCES.transform_values { |adql| "#{adql} " }
+      )
+
+      described_class.sources(directory)
+
+      expect(described_class).to have_received(:query).exactly(6).times
+    end
+
+    it "keeps no file for a download that failed" do
+      directory = Dir.mktmpdir
+      allow(described_class).to receive(:query).and_raise("The request failed")
+
+      expect { described_class.sources(directory) }.to raise_error(/failed/)
+
+      expect(Dir.children(directory)).to be_empty
+    end
+
+    it "reads the sources by name" do
+      directory = Dir.mktmpdir
+      allow(described_class).to receive(:query).and_return(csv("1,2"))
+
+      sources = described_class.sources(directory)
+
+      expect(sources.keys).to eq(%w[tycho2 gaia hipparcos])
+      expect(sources["tycho2"].first["id"]).to eq("1")
+    end
+  end
+
+  describe ".get" do
+    it "raises when the archive does not answer with a success" do
+      response = Net::HTTPServiceUnavailable.new("1.1", "503", "Busy")
+      allow(Net::HTTP).to receive(:start).and_return(response)
+
+      expect {
+        described_class.send(:get, URI("https://example.test/tap/phase"))
+      }.to raise_error(/503/)
+    end
+
+    it "gives the body of a success" do
+      response = Net::HTTPOK.new("1.1", "200", "OK")
+      allow(response).to receive(:body).and_return("COMPLETED")
+      allow(Net::HTTP).to receive(:start).and_return(response)
+
+      body = described_class.send(:get, URI("https://example.test/tap/phase"))
+
+      expect(body).to eq("COMPLETED")
+    end
+  end
+
   describe ".bright_stars" do
     it "reads the stars of the Bright Star Catalogue" do
       stars = described_class.bright_stars

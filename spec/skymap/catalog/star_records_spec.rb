@@ -188,4 +188,86 @@ RSpec.describe Skymap::Catalog::StarRecords do
       "data is not a star catalog"
     )
   end
+
+  it "reads a star whose magnitude is rounded to its stored hundredths" do
+    records = catalog(record(magnitude: 4.004), record(magnitude: 4.5))
+
+    magnitudes = records.each(magnitude_limit: 4).map(&:magnitude)
+
+    expect(magnitudes).to eq([4.0])
+  end
+
+  it "reads the stars of one band" do
+    records = catalog(
+      record(magnitude: 2.0),
+      record(magnitude: 4.0),
+      record(magnitude: 5.0),
+      record(magnitude: 5.5),
+      record(magnitude: 7.0)
+    )
+
+    magnitudes = records.each_in_band(6).map(&:magnitude)
+
+    expect(magnitudes).to eq([5.5])
+  end
+
+  it "reads the stars of the bands within a magnitude limit" do
+    bands = described_class.bands_within(6.5)
+
+    expect(bands).to eq([4, 5, 6, 7])
+  end
+
+  it "reads every band without a magnitude limit" do
+    bands = described_class.bands_within(nil)
+
+    expect(bands).to eq([4, 5, 6, 7, 8, 9])
+  end
+
+  it "does not read a catalog built with another format version" do
+    data = described_class.encode([record]).b
+    data[4, 4] = [described_class::VERSION + 1].pack("L<")
+
+    expect { described_class.new(data) }.to raise_error(
+      ArgumentError,
+      "star catalog was built with other settings"
+    )
+  end
+
+  it "does not read a catalog built with other bands" do
+    data = described_class.encode([record]).b
+    data[12, 4] = [described_class::FAINTEST_BAND + 1].pack("L<")
+
+    expect { described_class.new(data) }.to raise_error(
+      ArgumentError,
+      "star catalog was built with other settings"
+    )
+  end
+
+  it "does not read a truncated catalog" do
+    data = described_class.encode([record, record(magnitude: 6)])
+
+    expect { described_class.new(data.byteslice(0, data.bytesize - 5)) }
+      .to raise_error(ArgumentError, "star catalog has the wrong size")
+  end
+
+  it "does not read a header cut short" do
+    data = described_class.encode([record]).byteslice(0, 10)
+
+    expect { described_class.new(data) }.to raise_error(
+      ArgumentError,
+      "data is not a star catalog"
+    )
+  end
+
+  it "writes the same file whatever the order of the stars" do
+    pair = [
+      record(right_ascension: 50, declination: 10, magnitude: 6.2),
+      record(right_ascension: 50, declination: 10, magnitude: 6.1)
+    ]
+
+    forward = described_class.encode(pair)
+    backward = described_class.encode(pair.reverse)
+
+    expect(backward).to eq(forward)
+  end
 end

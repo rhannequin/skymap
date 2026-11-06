@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require_relative "../geometry"
+
 module Skymap
   module Catalog
     class StarRecords
       MAGIC = "SKYS"
+      VERSION = 1
       FORMAT = "L<l<s<s<s<S<s<S<"
       RECORD_SIZE = 20
       BRIGHTEST_BAND = 4
@@ -13,6 +16,10 @@ module Skymap
       ZONES = 180 / ZONE_HEIGHT
       OFFSETS_COUNT = BANDS.size * ZONES + 1
       UNIT_SIZE = 4
+      SETTINGS = [
+        VERSION, BRIGHTEST_BAND, FAINTEST_BAND, ZONE_HEIGHT, RECORD_SIZE
+      ].freeze
+      HEADER_SIZE = MAGIC.bytesize + (SETTINGS.size + 2) * UNIT_SIZE
       NO_RECORD = 2**32 - 1
       RIGHT_ASCENSION_STEPS = 2**32
       DECLINATION_STEPS = 2**31
@@ -30,7 +37,16 @@ module Skymap
       )
 
       def self.band(magnitude)
-        magnitude.ceil.clamp(BRIGHTEST_BAND, FAINTEST_BAND)
+        hundredths = (magnitude * 100).round
+
+        (-(-hundredths).div(100)).clamp(BRIGHTEST_BAND, FAINTEST_BAND)
+      end
+
+      def self.bands_within(magnitude_limit)
+        BANDS.select do |band|
+          magnitude_limit.nil? || band == BRIGHTEST_BAND ||
+            band - 1 < magnitude_limit
+        end
       end
 
       def self.zone(declination)
@@ -39,7 +55,10 @@ module Skymap
 
       def self.encode(stars)
         ordered = stars.sort_by do |star|
-          [band(star.magnitude), zone(star.declination), star.right_ascension]
+          [
+            band(star.magnitude), zone(star.declination), star.right_ascension,
+            star.declination, star.magnitude, star.hr || 0
+          ]
         end
         counts = Hash.new(0)
         ordered.each do |star|
@@ -62,7 +81,9 @@ module Skymap
         }
         by_hr = by_hr.map { |index| index || NO_RECORD }
 
-        [MAGIC, ordered.size, by_hr.size, *offsets, *by_hr].pack("a4L<*") +
+        header = [MAGIC, *SETTINGS, ordered.size, by_hr.size]
+
+        [*header, *offsets, *by_hr].pack("a4L<*") +
           ordered.map { |star| pack(star) }.join
       end
 
@@ -84,17 +105,23 @@ module Skymap
       attr_reader :count
 
       def initialize(data)
-        unless data.byteslice(0, MAGIC.bytesize) == MAGIC
+        unless data.bytesize >= HEADER_SIZE &&
+            data.byteslice(0, MAGIC.bytesize) == MAGIC
           raise ArgumentError, "data is not a star catalog"
         end
 
         @data = data
-        @count, hr_count = data.unpack("L<2", offset: MAGIC.bytesize)
-        offsets_at = MAGIC.bytesize + 2 * UNIT_SIZE
-        @offsets = data.unpack("L<#{OFFSETS_COUNT}", offset: offsets_at)
-        by_hr_at = offsets_at + OFFSETS_COUNT * UNIT_SIZE
-        @by_hr = data.unpack("L<#{hr_count}", offset: by_hr_at)
-        @records_at = by_hr_at + hr_count * UNIT_SIZE
+        settings = data.unpack("L<#{SETTINGS.size}", offset: MAGIC.bytesize)
+        unless settings == SETTINGS
+          raise ArgumentError, "star catalog was built with other settings"
+        end
+
+        counts_at = MAGIC.bytesize + SETTINGS.size * UNIT_SIZE
+        @count, hr_count = data.unpack("L<2", offset: counts_at)
+        read_tables(hr_count)
+        unless @records_at + @count * RECORD_SIZE == data.bytesize
+          raise ArgumentError, "star catalog has the wrong size"
+        end
       end
 
       def each_with_hr
@@ -107,6 +134,14 @@ module Skymap
         end
       end
 
+      def each_in_band(band)
+        return enum_for(:each_in_band, band) unless block_given?
+
+        ZONES.times do |zone|
+          each_in_cell(band, zone, nil) { |record| yield record }
+        end
+      end
+
       def each(magnitude_limit: nil, center: nil, radius: nil)
         unless block_given?
           return enum_for(:each, magnitude_limit:, center:,
@@ -114,7 +149,7 @@ module Skymap
         end
 
         search = center && Search.new(center, radius)
-        bands(magnitude_limit).each do |band|
+        self.class.bands_within(magnitude_limit).each do |band|
           zones(search).each do |zone|
             each_in_cell(band, zone, search) do |record|
               next if magnitude_limit && record.magnitude > magnitude_limit
@@ -127,11 +162,11 @@ module Skymap
 
       private
 
-      def bands(magnitude_limit)
-        BANDS.select do |band|
-          magnitude_limit.nil? || band == BRIGHTEST_BAND ||
-            band - 1 < magnitude_limit
-        end
+      def read_tables(hr_count)
+        @offsets = @data.unpack("L<#{OFFSETS_COUNT}", offset: HEADER_SIZE)
+        by_hr_at = HEADER_SIZE + OFFSETS_COUNT * UNIT_SIZE
+        @by_hr = @data.unpack("L<#{hr_count}", offset: by_hr_at)
+        @records_at = by_hr_at + hr_count * UNIT_SIZE
       end
 
       def zones(search)
@@ -234,9 +269,8 @@ module Skymap
 
         def include?(record)
           point = vector(record.right_ascension, record.declination)
-          dot = @center_vector.zip(point).sum { |a, b| a * b }
 
-          dot >= @cosine
+          Geometry.dot(@center_vector, point) >= @cosine
         end
 
         private
@@ -256,11 +290,10 @@ module Skymap
         end
 
         def vector(right_ascension, declination)
-          ra = right_ascension * Math::PI / 180
-          dec = declination * Math::PI / 180
-
-          [Math.cos(dec) * Math.cos(ra), Math.cos(dec) * Math.sin(ra),
-            Math.sin(dec)]
+          Geometry.direction(
+            right_ascension * Math::PI / 180,
+            declination * Math::PI / 180
+          )
         end
       end
       private_constant :Search

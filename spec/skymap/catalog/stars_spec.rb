@@ -12,24 +12,6 @@ RSpec.describe Skymap::Catalog::Stars do
     )
   end
 
-  def separation(from, to)
-    a = unit_vector(from)
-    b = unit_vector(to)
-
-    Math.acos(a.zip(b).sum { |x, y| x * y }.clamp(-1, 1)) * 180 / Math::PI
-  end
-
-  def unit_vector(coordinates)
-    right_ascension = coordinates.right_ascension
-    declination = coordinates.declination
-
-    [
-      declination.cos * right_ascension.cos,
-      declination.cos * right_ascension.sin,
-      declination.sin
-    ]
-  end
-
   it "loads every star of the catalog" do
     catalog = described_class.new
 
@@ -144,7 +126,7 @@ RSpec.describe Skymap::Catalog::Stars do
       found = catalog.search(magnitude_limit: 8, cone: cone)
       expected = catalog.select do |star|
         star.magnitude <= 8 &&
-          separation(star.equatorial_coordinates, cone.center) <=
+          separation_in_degrees(star.equatorial_coordinates, cone.center) <=
             cone.radius.degrees
       end
 
@@ -164,7 +146,18 @@ RSpec.describe Skymap::Catalog::Stars do
       first = catalog.search(magnitude_limit: 5)
       second = catalog.search(magnitude_limit: 5)
 
-      expect(second).to be(first)
+      expect(second.map(&:object_id)).to eq(first.map(&:object_id))
+    end
+
+    it "builds a star once for the magnitude limits that include it" do
+      catalog = described_class.new
+
+      five = catalog.search(magnitude_limit: 5)
+      six = catalog.search(magnitude_limit: 6)
+        .to_h { |star| [star.object_id, star] }
+
+      expect(five.size).to be > 1000
+      expect(five.map(&:object_id)).to all(satisfy { |id| six.key?(id) })
     end
 
     it "does not remember the stars of a cone" do
