@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `data/stars.csv` and `Skymap::Catalog::Stars` give the proper motion, the
+  parallax and the radial velocity of the stars, from the Yale Bright Star
+  Catalogue, and `Skymap::Star` takes the optional `proper_motion_ra:`,
+  `proper_motion_dec:` (`Astronoby::AngularVelocity`), `parallax:`
+  (`Astronoby::Angle`) and `radial_velocity:` (`Astronoby::Velocity`)
 - `Skymap::View` zooms the map on an area of the sky, given by the equatorial
   or horizontal coordinates of its center and a field of view as an
   `Astronoby::Angle`, with `view:` on `Skymap::Chart`, with the horizon drawn as

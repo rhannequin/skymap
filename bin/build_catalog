@@ -5,20 +5,34 @@ require "csv"
 require "net/http"
 require "zlib"
 
-SOURCE = URI("https://cdsarc.cds.unistra.fr/ftp/V/50/catalog.gz")
-OUTPUT = File.expand_path("../data/stars.csv", __dir__)
+module CatalogBuilder
+  SOURCE = URI("https://cdsarc.cds.unistra.fr/ftp/V/50/catalog.gz")
+  OUTPUT = File.expand_path("../data/stars.csv", __dir__)
+  HEADERS = %w[
+    hr
+    right_ascension
+    declination
+    magnitude
+    proper_motion_ra
+    proper_motion_dec
+    parallax
+    radial_velocity
+  ].freeze
 
-def field(line, first_byte, last_byte)
-  line[(first_byte - 1)..(last_byte - 1)].to_s.strip
-end
+  def self.field(line, first_byte, last_byte)
+    line[(first_byte - 1)..(last_byte - 1)].to_s.strip
+  end
 
-records = Zlib.gunzip(Net::HTTP.get(SOURCE)).lines
+  def self.records(path = nil)
+    return Zlib.gunzip(Net::HTTP.get(SOURCE)).lines unless path
 
-CSV.open(OUTPUT, "w") do |csv|
-  csv << %w[hr right_ascension declination magnitude]
+    content = File.binread(path)
+    content = Zlib.gunzip(content) if path.end_with?(".gz")
+    content.lines
+  end
 
-  records.each do |line|
-    next if field(line, 76, 77).empty? || field(line, 103, 107).empty?
+  def self.row(line)
+    return if field(line, 76, 77).empty? || field(line, 103, 107).empty?
 
     right_ascension =
       field(line, 76, 77).to_i +
@@ -32,11 +46,58 @@ CSV.open(OUTPUT, "w") do |csv|
       field(line, 89, 90).to_i / 3600.0
     )
 
-    csv << [
+    [
       field(line, 1, 4).to_i,
       right_ascension.round(6),
       declination.round(6),
-      field(line, 103, 107).to_f
+      field(line, 103, 107).to_f,
+      *proper_motion(line),
+      parallax(line),
+      radial_velocity(line)
     ]
   end
+
+  def self.proper_motion(line)
+    right_ascension = field(line, 149, 154)
+    declination = field(line, 155, 160)
+    return [nil, nil] if right_ascension.empty? || declination.empty?
+
+    [right_ascension, declination].map { |value| milli(value) }
+  end
+
+  def self.parallax(line)
+    value = field(line, 162, 166)
+    return if value.empty?
+
+    milliarcseconds = milli(value)
+    milliarcseconds if milliarcseconds.positive?
+  end
+
+  def self.radial_velocity(line)
+    value = field(line, 167, 170)
+    value.to_i unless value.empty?
+  end
+
+  def self.milli(arcseconds)
+    (arcseconds.to_f * 1000).round
+  end
+
+  def self.rows(records)
+    records.filter_map { |line| row(line) }
+  end
+
+  def self.write(rows, path = OUTPUT)
+    CSV.open(path, "w") do |csv|
+      csv << HEADERS
+      rows.each { |row| csv << row }
+    end
+  end
+end
+
+if $PROGRAM_NAME == __FILE__
+  input, output = ARGV
+  CatalogBuilder.write(
+    CatalogBuilder.rows(CatalogBuilder.records(input)),
+    output || CatalogBuilder::OUTPUT
+  )
 end
