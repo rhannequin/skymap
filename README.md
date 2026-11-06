@@ -48,7 +48,7 @@ observer = Astronoby::Observer.new(
 )
 instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 23, 20))
 canvas = Skymap::Canvas.new(size: 800, padding: 24)
-stars = Skymap::Catalog::Stars.new.to_a
+stars = Skymap::Catalog::Stars.new
 lines = Skymap::Catalog::ConstellationLines.new.to_a
 
 chart = Skymap::Chart.new(observer: observer, instant: instant, canvas: canvas)
@@ -151,8 +151,9 @@ the observer of the chart. The layers draw what is in the view only. The
 horizon is drawn as a line when it is in the view, and the edge of the map is a
 thin outline. It is no longer the horizon, so the cardinal directions are not
 drawn. The Sun and the Moon are drawn at their size in the sky once it is
-larger than their usual size on the map. The stars are limited by the catalog:
-a field of view of 10 degrees or more shows enough of them.
+larger than their usual size on the map. The stars come from a catalog that
+goes down to magnitude 9: draw them with `magnitude_limit: 9` in a zoomed view
+to fill it.
 
 #### Orientation
 
@@ -205,9 +206,10 @@ the first step, as `Astronoby::Coordinates::Equatorial` at J2000. A star without
 a proper motion stays where it is, at any epoch; with a proper motion, its
 coordinates must be at J2000, or `Skymap::Star` raises an `ArgumentError`. For a
 star that has a proper motion but no parallax or no radial velocity, which is
-the case of most of the catalog for the parallax, a parallax of 1 milliarcsecond
-and a radial velocity of 0 are assumed: the position changes by less than 0.1
-arcsecond. To keep the charts fast, the proper motion is left out of a star that
+the case of a third of the stars for the parallax in the Bright Star Catalogue
+and of a fifth of the others for the radial velocity, a parallax of 1
+milliarcsecond and a radial velocity of 0 are assumed: the position changes by
+less than 0.1 arcsecond. To keep the charts fast, the proper motion is left out of a star that
 it moves by less than 0.005 pixel on the chart, so a star is drawn within 0.005
 pixel of where the full propagation puts it.
 
@@ -296,9 +298,12 @@ cardinal directions stay where they are.
 #### Stars
 
 `Skymap::Layers::Stars` draws stars, bigger the brighter they are.
-`Skymap::Catalog::Stars` gives the 9,096 stars of the Yale Bright Star
-Catalogue (see [Data sources](#data-sources)), but the layer accepts any list
-of `Skymap::Star`.
+`Skymap::Catalog::Stars` gives the 130,556 stars down to magnitude 9 (see
+[Data sources](#data-sources)), but the layer accepts any list of
+`Skymap::Star`. Pass the catalog itself rather than `to_a`: it builds only the
+stars the layer asks for, the ones brighter than `magnitude_limit:` and, in a
+zoomed view, near the view. Building the 130,556 of them takes seconds and
+hundreds of megabytes.
 
 Stars are drawn at their position at the date of the chart, with their proper
 motion applied (see [Accuracy](#accuracy)).
@@ -751,30 +756,70 @@ want to draw.
 
 ### Stars
 
-`data/stars.csv` is extracted from the [Yale Bright Star Catalogue, 5th
-Revised Edition][bsc5] (VizieR V/50): the 9,096 stars of the catalog with
-their Harvard Revised number (`hr`), J2000 coordinates (`right_ascension` in
-hours, `declination` in degrees) and visual magnitude (`magnitude`). The 14
-non-stellar entries kept only for numbering are left out.
+`data/stars.bin` is the star catalog of `Skymap::Catalog::Stars`: 130,556
+stars down to magnitude 9, in a binary file of 2.6 MB that the catalog reads
+by magnitude and by area of the sky, so that a view of a few degrees reads a few
+hundred stars out of the file. Each star has its J2000 coordinates, its visual
+magnitude and its astrometry, blank when unknown: the proper motion in right
+ascension (`proper_motion_ra`, which includes the cosine of the declination) and
+in declination (`proper_motion_dec`) in mas/yr, the `parallax` in mas and the
+`radial_velocity` in km/s. `Skymap::Catalog::Stars` loads them as an
+`Astronoby::AngularVelocity`, an `Astronoby::Angle` and an
+`Astronoby::Velocity` on `Skymap::Star`. They are all optional, so a list of
+your own stars can leave them out: the proper motions are given together, and
+the parallax and the radial velocity are `nil` when unknown.
 
-The catalog also gives the astrometry of each star, blank when unknown: the
-proper motion in right ascension (`proper_motion_ra`, which includes the cosine
-of the declination) and in declination (`proper_motion_dec`) in mas/yr for
-every star, the `parallax` in mas for the 3,100 stars that have a positive one
-(387 of them are dynamical parallaxes, not trigonometric ones), and the
-`radial_velocity` in km/s for 9,090 stars.
+The file merges the stars of two sources:
 
-`Skymap::Catalog::Stars` loads them as an `Astronoby::AngularVelocity`, an
-`Astronoby::Angle` and an `Astronoby::Velocity` on `Skymap::Star`. They are all
-optional, so a list of your own stars can leave them out: the proper motions are
-given together, and the parallax and the radial velocity are `nil` when
-unknown.
+- the 9,096 stars of the [Yale Bright Star Catalogue, 5th Revised Edition][bsc5]
+  (VizieR V/50), with their Harvard Revised number (`hr`), extracted in
+  `data/stars.csv`. They keep their values: a proper motion for each of them, a
+  parallax for 3,100 (387 of them are dynamical parallaxes, not trigonometric
+  ones) and a radial velocity for 9,090. The 14 non-stellar entries kept only
+  for numbering are left out
+- the 121,460 other stars of [Tycho-2][tycho2] down to magnitude 9, with no
+  Harvard Revised number. The visual magnitude is computed from the Tycho
+  magnitudes with V = VT - 0.090 (BT - VT), which gives the magnitude of the
+  Bright Star Catalogue to 0.001 at the median. The proper motion is the one of
+  Tycho-2, and the parallax and the radial velocity are the ones of [Gaia
+  DR3][gaia], or the parallax of the new reduction of [Hipparcos][hipparcos]
+  when Gaia has none: 100% of the stars have a proper motion, 97% a parallax
+  and 79% a radial velocity. The position of the few hundred stars for which
+  Tycho-2 only gives the position observed around 1991 comes from Gaia or
+  Hipparcos, brought to J2000 with their proper motion. A star of Tycho-2 is left out when it is
+  already in the Bright Star Catalogue: within 5 arcseconds, plus 5 years of
+  its proper motion, and 0.5 magnitude
+
+The file is generated with `bin/build_stars`, which reads `data/stars.csv` and
+queries the [ESA Gaia archive][esa-archive], where ESA also serves Tycho-2 and
+Hipparcos. `bin/build_catalog` generates `data/stars.csv` from the Bright Star
+Catalogue, which it downloads from CDS. `data/stars.csv` is not part of the
+gem: the gem has `data/stars.bin` only.
+
+The data of Gaia, Hipparcos and Tycho come from ESA, which distributes them
+under [CC BY-NC 3.0 IGO][cc-by-nc-igo]: the file is released under the same
+license, with the credits "Credit: ESA, Gaia DPAC" and "Credit: ESA", and ESA
+asks to be contacted before any use that generates a financial gain. The
+license and the terms are in `data/LICENSE-stars.txt`, shipped with the gem. The
+code stays under the MIT license.
 
 > Hoffleit, D., Warren Jr., W. H., 1991, _The Bright Star Catalogue, 5th
 > Revised Ed. (Preliminary Version)_, Astronomical Data Center, NSSDC/ADC.
 
-The file is generated with `bin/build_catalog`, which downloads the catalog
-from CDS.
+> Høg, E. et al., 2000, _The Tycho-2 catalogue of the 2.5 million brightest
+> stars_, A&A 355, L27.
+
+> van Leeuwen, F., 2007, _Validation of the new Hipparcos reduction_, A&A 474,
+> 653.
+
+> Gaia Collaboration, 2016, _The Gaia mission_, A&A 595, A1; Gaia
+> Collaboration, 2023, _Gaia Data Release 3: Summary of the content and survey
+> properties_, A&A 674, A1.
+
+This work has made use of data from the European Space Agency (ESA) mission
+Gaia (<https://www.cosmos.esa.int/gaia>), processed by the Gaia Data Processing
+and Analysis Consortium (DPAC,
+<https://www.cosmos.esa.int/web/gaia/dpac/consortium>).
 
 This research has made use of the VizieR catalogue access tool, CDS,
 Strasbourg, France ([DOI: 10.26093/cds/vizier][vizier-doi]). The original
@@ -962,7 +1007,11 @@ the [code of conduct](CODE_OF_CONDUCT.md).
 
 The gem is available as open source under the terms of the [MIT License]. The
 data file `data/deep_sky_objects.csv` is adapted from OpenNGC and released under
-[CC BY-SA 4.0][cc-by-sa-4] (see [Data sources](#deep-sky-objects)).
+[CC BY-SA 4.0][cc-by-sa-4] (see [Data sources](#deep-sky-objects)). The data
+file `data/stars.bin` merges data of ESA missions and is released under
+[CC BY-NC 3.0 IGO][cc-by-nc-igo]: it is free to use with credit, and a use that
+generates a financial gain needs the authorization of ESA (see [Data
+sources](#stars-1)).
 
 ## Code of Conduct
 
@@ -976,6 +1025,10 @@ rooms and mailing lists is expected to follow the
 [trusted publishing]: https://guides.rubygems.org/trusted-publishing/
 [MIT License]: https://opensource.org/licenses/MIT
 [bsc5]: https://cdsarc.cds.unistra.fr/viz-bin/cat/V/50
+[tycho2]: https://cdsarc.cds.unistra.fr/viz-bin/cat/I/259
+[hipparcos]: https://cdsarc.cds.unistra.fr/viz-bin/cat/I/311
+[gaia]: https://www.cosmos.esa.int/web/gaia/dr3
+[esa-archive]: https://gea.esac.esa.int/archive/
 [vizier-doi]: https://doi.org/10.26093/cds/vizier
 [themes-reference]: https://github.com/rhannequin/skymap/blob/main/docs/themes.md
 [astronoby-ephem]: https://github.com/rhannequin/astronoby/blob/main/docs/ephem.md
@@ -985,5 +1038,6 @@ rooms and mailing lists is expected to follow the
 [naif]: https://naif.jpl.nasa.gov/naif/rules.html
 [cc-by-4]: https://creativecommons.org/licenses/by/4.0/
 [cc-by-sa-4]: https://creativecommons.org/licenses/by-sa/4.0/
+[cc-by-nc-igo]: https://creativecommons.org/licenses/by-nc/3.0/igo/
 [openngc]: https://github.com/mattiaverga/OpenNGC
 [iau-csn]: https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt

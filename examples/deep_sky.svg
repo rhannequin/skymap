@@ -7,15 +7,55 @@
 </clipPath>
 </defs>
 <g clip-path="url(#sky-400_0-400_0-376_0)">
-<circle cx="651.02" cy="581.83" r="1.65" fill="#ffffff"/>
-<circle cx="599.86" cy="233.66" r="2.05" fill="#ffffff"/>
-<circle cx="568.09" cy="215.56" r="1.42" fill="#ffffff"/>
+<circle cx="371.07" cy="443.76" r="0.94" fill="#ffffff"/>
+<circle cx="408.15" cy="761.41" r="0.94" fill="#ffffff"/>
+<circle cx="144.21" cy="197.05" r="0.94" fill="#ffffff"/>
+<circle cx="33.37" cy="327.33" r="0.95" fill="#ffffff"/>
+<circle cx="529.4" cy="90.7" r="0.95" fill="#ffffff"/>
+<circle cx="148.3" cy="397.11" r="0.95" fill="#ffffff"/>
+<circle cx="659.8" cy="598.82" r="0.95" fill="#ffffff"/>
+<circle cx="254.77" cy="539.54" r="0.95" fill="#ffffff"/>
+<circle cx="377.07" cy="465.62" r="0.95" fill="#ffffff"/>
+<circle cx="156.59" cy="129.05" r="0.95" fill="#ffffff"/>
+<circle cx="722.96" cy="237.06" r="0.96" fill="#ffffff"/>
+<circle cx="358.04" cy="52.43" r="0.97" fill="#ffffff"/>
+<circle cx="754.65" cy="335.3" r="0.98" fill="#ffffff"/>
+<circle cx="192.5" cy="235.43" r="0.99" fill="#ffffff"/>
+<circle cx="64.12" cy="271.73" r="0.99" fill="#ffffff"/>
+<circle cx="527.13" cy="610.69" r="1.0" fill="#ffffff"/>
+<circle cx="653.48" cy="487.43" r="1.0" fill="#ffffff"/>
+<circle cx="280.44" cy="757.18" r="1.0" fill="#ffffff"/>
+<circle cx="264.64" cy="533.25" r="1.0" fill="#ffffff"/>
+<circle cx="180.9" cy="114.3" r="1.0" fill="#ffffff"/>
+<circle cx="203.35" cy="558.05" r="1.0" fill="#ffffff"/>
+<circle cx="654.41" cy="540.03" r="1.01" fill="#ffffff"/>
+<circle cx="249.4" cy="485.99" r="1.01" fill="#ffffff"/>
+<circle cx="644.52" cy="679.02" r="1.01" fill="#ffffff"/>
+<circle cx="633.13" cy="693.49" r="1.02" fill="#ffffff"/>
+<circle cx="326.06" cy="105.56" r="1.02" fill="#ffffff"/>
+<circle cx="98.83" cy="593.2" r="1.03" fill="#ffffff"/>
+<circle cx="650.03" cy="598.6" r="1.04" fill="#ffffff"/>
+<circle cx="349.51" cy="253.33" r="1.07" fill="#ffffff"/>
+<circle cx="188.61" cy="315.65" r="1.1" fill="#ffffff"/>
+<circle cx="64.31" cy="270.95" r="1.11" fill="#ffffff"/>
+<circle cx="763.04" cy="375.19" r="1.14" fill="#ffffff"/>
+<circle cx="542.48" cy="110.19" r="1.15" fill="#ffffff"/>
+<circle cx="526.3" cy="312.8" r="1.17" fill="#ffffff"/>
+<circle cx="125.67" cy="609.69" r="1.18" fill="#ffffff"/>
+<circle cx="417.17" cy="162.15" r="1.26" fill="#ffffff"/>
+<circle cx="489.57" cy="95.7" r="1.29" fill="#ffffff"/>
+<circle cx="211.67" cy="692.61" r="1.31" fill="#ffffff"/>
+<circle cx="539.46" cy="261.1" r="1.34" fill="#ffffff"/>
+<circle cx="512.17" cy="186.11" r="1.37" fill="#ffffff"/>
 <circle cx="386.85" cy="707.48" r="1.41" fill="#ffffff"/>
+<circle cx="568.09" cy="215.56" r="1.42" fill="#ffffff"/>
 <circle cx="288.11" cy="580.4" r="1.46" fill="#ffffff"/>
-<circle cx="220.76" cy="68.92" r="1.73" fill="#ffffff"/>
 <circle cx="130.54" cy="569.09" r="1.49" fill="#ffffff"/>
-<circle cx="124.48" cy="583.43" r="2.18" fill="#ffffff"/>
 <circle cx="27.96" cy="452.15" r="1.54" fill="#ffffff"/>
+<circle cx="651.02" cy="581.83" r="1.65" fill="#ffffff"/>
+<circle cx="220.76" cy="68.92" r="1.73" fill="#ffffff"/>
+<circle cx="599.86" cy="233.66" r="2.05" fill="#ffffff"/>
+<circle cx="124.48" cy="583.43" r="2.18" fill="#ffffff"/>
 <g transform="rotate(114.14 348.1 753.31)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
 <ellipse cx="348.1" cy="753.31" rx="6.41" ry="5.26"/>
 </g>

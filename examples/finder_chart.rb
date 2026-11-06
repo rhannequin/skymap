@@ -12,7 +12,7 @@ canvas = Skymap::Canvas.new(
   padding: 24,
   print_size: Skymap::PrintSize.paper(:a4)
 )
-stars = Skymap::Catalog::Stars.new.to_a
+stars = Skymap::Catalog::Stars.new
 view = Skymap::View.new(
   center: Astronoby::Coordinates::Equatorial.new(
     right_ascension: Astronoby::Angle.from_hours(3.79),

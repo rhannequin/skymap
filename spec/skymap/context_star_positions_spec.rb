@@ -32,7 +32,11 @@ RSpec.describe Skymap::Context do
       magnitude_limit: magnitude_limit
     )
 
-    stars.filter_map do |star|
+    faintest_first = stars.each_with_index.sort_by { |star, index|
+      [-star.magnitude, index]
+    }.map(&:first)
+
+    faintest_first.filter_map do |star|
       next if star.magnitude > magnitude_limit
 
       horizontal = context.horizontal_coordinates(

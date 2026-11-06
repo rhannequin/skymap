@@ -19,7 +19,7 @@ observer = Astronoby::Observer.new(
 )
 instant = Astronoby::Instant.from_time(Time.utc(2027, 8, 15, 21))
 canvas = Skymap::Canvas.new(size: 800, padding: 24)
-stars = Skymap::Catalog::Stars.new.to_a
+stars = Skymap::Catalog::Stars.new
 lines = Skymap::Catalog::ConstellationLines.new.to_a
 boundaries = Skymap::Catalog::ConstellationBoundaries.new
 ephem = Astronoby::Ephem.load(EPHEMERIS)
@@ -68,6 +68,18 @@ BENCHMARKS = {
   "1° view, stars magnitude 7" => [
     zoomed.call(1),
     [Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 7)]
+  ],
+  "1° view, stars magnitude 9" => [
+    zoomed.call(1),
+    [Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 9)]
+  ],
+  "10° view, stars magnitude 9" => [
+    zoomed.call(10),
+    [Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 9)]
+  ],
+  "Whole sky, stars magnitude 9" => [
+    nil,
+    [Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 9)]
   ],
   "4° view, grid step 1°" => [
     zoomed.call(4),

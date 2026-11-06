@@ -1,0 +1,270 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "csv"
+require "fileutils"
+require "net/http"
+require "tmpdir"
+require "uri"
+require_relative "../lib/skymap/catalog/star_records"
+
+module StarBuilder
+  TAP = URI("https://gea.esac.esa.int/tap-server/tap/async")
+  BRIGHT_STARS = File.expand_path("../data/stars.csv", __dir__)
+  OUTPUT = File.expand_path("../data/stars.bin", __dir__)
+  MAGNITUDE_LIMIT = Skymap::Catalog::StarRecords::FAINTEST_BAND
+  VT_MARGIN_FOR_REDDEST_STARS = 0.3
+  TYCHO_VT_LIMIT = MAGNITUDE_LIMIT + VT_MARGIN_FOR_REDDEST_STARS
+  VT_TO_V = 0.090
+  GAIA_EPOCH = 2016.0
+  HIPPARCOS_EPOCH = 1991.25
+  J2000_EPOCH = 2000.0
+  MILLIARCSECONDS_PER_DEGREE = 3_600_000.0
+  MATCH_RADIUS_ARCSECONDS = 5
+  MATCH_PROPER_MOTION_YEARS = 5
+  MATCH_MAGNITUDE_DIFFERENCE = 0.5
+  GRID_STEP = 0.25
+  SOURCES = {
+    "tycho2.csv" => <<~ADQL,
+      SELECT id, hip, ra_deg, de_deg, ra_mdeg, de_mdeg, pm_ra, pm_de,
+        bt_mag, vt_mag
+      FROM public.tycho2
+      WHERE vt_mag <= #{TYCHO_VT_LIMIT}
+    ADQL
+    "gaia.csv" => <<~ADQL,
+      SELECT t.id, g.ra, g.dec, g.pmra, g.pmdec, g.parallax,
+        g.radial_velocity, bn.number_of_neighbours
+      FROM public.tycho2 AS t
+      JOIN gaiadr3.tycho2tdsc_merge_best_neighbour AS bn
+        ON bn.original_ext_source_id = t.id
+      JOIN gaiadr3.gaia_source AS g ON g.source_id = bn.source_id
+      WHERE t.vt_mag <= #{TYCHO_VT_LIMIT}
+    ADQL
+    "hipparcos.csv" => <<~ADQL
+      SELECT hip, ra, dec, pm_ra, pm_de, plx
+      FROM public.hipparcos_newreduction
+    ADQL
+  }.freeze
+
+  def self.query(adql)
+    job = start(adql)
+    sleep 5 until finished?(job)
+    get(URI("#{job}/results/result"))
+  end
+
+  def self.start(adql)
+    response = Net::HTTP.post_form(
+      TAP,
+      "REQUEST" => "doQuery",
+      "LANG" => "ADQL",
+      "FORMAT" => "csv",
+      "PHASE" => "RUN",
+      "MAXREC" => "-1",
+      "QUERY" => adql
+    )
+    location = response["location"]
+    raise "The query was refused: #{response.code}" unless location
+
+    URI(location)
+  end
+  private_class_method :start
+
+  def self.finished?(job)
+    case get(URI("#{job}/phase")).strip
+    when "COMPLETED" then true
+    when "ERROR", "ABORTED"
+      raise "The query failed: #{get(URI("#{job}/error"))}"
+    else false
+    end
+  end
+  private_class_method :finished?
+
+  def self.get(uri)
+    Net::HTTP.start(uri.host, uri.port, use_ssl: true,
+      read_timeout: 600) do |http|
+      http.get(uri.path).body
+    end
+  end
+  private_class_method :get
+
+  def self.sources(directory)
+    FileUtils.mkdir_p(directory)
+    SOURCES.to_h do |name, adql|
+      path = File.join(directory, name)
+      File.write(path, query(adql)) unless File.exist?(path)
+      [name.delete_suffix(".csv"), CSV.read(path, headers: true)]
+    end
+  end
+
+  def self.bright_stars(path = BRIGHT_STARS)
+    CSV.read(path, headers: true).map do |row|
+      Skymap::Catalog::StarRecords::Record.new(
+        right_ascension: row["right_ascension"].to_f * 15,
+        declination: row["declination"].to_f,
+        magnitude: row["magnitude"].to_f,
+        proper_motion_ra: integer(row["proper_motion_ra"]),
+        proper_motion_dec: integer(row["proper_motion_dec"]),
+        parallax: integer(row["parallax"]),
+        radial_velocity: integer(row["radial_velocity"]),
+        hr: row["hr"].to_i
+      )
+    end
+  end
+
+  def self.integer(value)
+    value&.to_i
+  end
+
+  def self.hip_number(row)
+    row["hip"]&.to_i
+  end
+
+  def self.magnitude(row)
+    visual = row["vt_mag"].to_f
+    blue = row["bt_mag"]
+    return visual if blue.nil?
+
+    visual - VT_TO_V * (blue.to_f - visual)
+  end
+
+  def self.stars(bright_stars, tycho, gaia, hipparcos)
+    gaia = gaia.to_h { |row| [row["id"], row] }
+    hipparcos = hipparcos.to_h { |row| [hip_number(row), row] }
+    index = Index.new(bright_stars)
+
+    added = tycho.filter_map do |row|
+      v = magnitude(row)
+      next if v > MAGNITUDE_LIMIT
+
+      gaia_row = reliable(gaia[row["id"]])
+      hipparcos_row = hipparcos[hip_number(row)]
+      position = position(row, gaia_row, hipparcos_row)
+      next if index.near?(*position, v)
+
+      star(row, v, position, gaia_row, hipparcos_row)
+    end
+
+    bright_stars + added
+  end
+
+  def self.reliable(gaia)
+    gaia if gaia && gaia["number_of_neighbours"].to_i == 1
+  end
+  private_class_method :reliable
+
+  def self.position(row, gaia, hipparcos)
+    if row["ra_mdeg"]
+      return [row["ra_mdeg"].to_f, row["de_mdeg"].to_f, row["pm_ra"]&.to_f,
+        row["pm_de"]&.to_f]
+    end
+
+    if gaia && gaia["pmra"]
+      return propagate(gaia["ra"], gaia["dec"], gaia["pmra"], gaia["pmdec"],
+        J2000_EPOCH - GAIA_EPOCH)
+    end
+
+    if hipparcos
+      return propagate(hipparcos["ra"], hipparcos["dec"], hipparcos["pm_ra"],
+        hipparcos["pm_de"], J2000_EPOCH - HIPPARCOS_EPOCH)
+    end
+
+    [row["ra_deg"].to_f, row["de_deg"].to_f, nil, nil]
+  end
+  private_class_method :position
+
+  def self.propagate(right_ascension, declination, pm_ra, pm_dec, years)
+    declination = declination.to_f
+    pm_ra = pm_ra.to_f
+    pm_dec = pm_dec.to_f
+    [
+      right_ascension.to_f + pm_ra * years / MILLIARCSECONDS_PER_DEGREE /
+        Math.cos(declination * Math::PI / 180),
+      declination + pm_dec * years / MILLIARCSECONDS_PER_DEGREE,
+      pm_ra,
+      pm_dec
+    ]
+  end
+  private_class_method :propagate
+
+  def self.star(row, v, position, gaia, hipparcos)
+    right_ascension, declination, pm_ra, pm_dec = position
+
+    Skymap::Catalog::StarRecords::Record.new(
+      right_ascension: right_ascension % 360,
+      declination: declination,
+      magnitude: v.round(2),
+      proper_motion_ra: pm_ra&.round,
+      proper_motion_dec: pm_dec&.round,
+      parallax: parallax(gaia, hipparcos),
+      radial_velocity: gaia&.fetch("radial_velocity")&.to_f&.round,
+      hr: nil
+    )
+  end
+  private_class_method :star
+
+  def self.parallax(gaia, hipparcos)
+    [gaia&.fetch("parallax"), hipparcos&.fetch("plx")]
+      .compact.map(&:to_f).find(&:positive?)&.round(1)
+  end
+  private_class_method :parallax
+
+  def self.write(stars, path = OUTPUT)
+    File.binwrite(path, Skymap::Catalog::StarRecords.encode(stars))
+  end
+
+  class Index
+    def initialize(stars)
+      @cells = Hash.new { |hash, key| hash[key] = [] }
+      stars.each { |star|
+        @cells[cell(star.right_ascension, star.declination)] << star
+      }
+    end
+
+    def near?(right_ascension, declination, pm_ra, pm_dec, magnitude)
+      column, row = cell(right_ascension, declination)
+      radius = MATCH_RADIUS_ARCSECONDS + MATCH_PROPER_MOTION_YEARS *
+        Math.hypot(pm_ra.to_f, pm_dec.to_f) / 1000
+      [-1, 0, 1].product([-1, 0, 1]).any? do |dx, dy|
+        @cells[[(column + dx) % columns, row + dy]].any? do |star|
+          (star.magnitude - magnitude).abs < MATCH_MAGNITUDE_DIFFERENCE &&
+            separation(star, right_ascension, declination) < radius
+        end
+      end
+    end
+
+    private
+
+    def columns
+      (360 / GRID_STEP).to_i
+    end
+
+    def cell(right_ascension, declination)
+      [
+        (right_ascension / GRID_STEP).floor % columns,
+        (declination / GRID_STEP).floor
+      ]
+    end
+
+    def separation(star, right_ascension, declination)
+      east = ((right_ascension - star.right_ascension + 180) % 360 - 180) *
+        Math.cos(declination * Math::PI / 180)
+
+      Math.hypot(east, declination - star.declination) * 3600
+    end
+  end
+end
+
+if $PROGRAM_NAME == __FILE__
+  directory, output = ARGV
+  sources = StarBuilder.sources(directory || File.join(Dir.tmpdir,
+    "skymap_star_sources"))
+  StarBuilder.write(
+    StarBuilder.stars(
+      StarBuilder.bright_stars,
+      sources.fetch("tycho2"),
+      sources.fetch("gaia"),
+      sources.fetch("hipparcos")
+    ),
+    output || StarBuilder::OUTPUT
+  )
+end

@@ -905,4 +905,138 @@ RSpec.describe Skymap::Context do
       expect(rotation.degrees).to be_finite
     end
   end
+
+  describe "#cone" do
+    def separation(from, to)
+      a = unit_vector(from)
+      b = unit_vector(to)
+
+      Math.acos(a.zip(b).sum { |x, y| x * y }.clamp(-1, 1)) * 180 / Math::PI
+    end
+
+    def unit_vector(coordinates)
+      right_ascension = coordinates.right_ascension
+      declination = coordinates.declination
+
+      [
+        declination.cos * right_ascension.cos,
+        declination.cos * right_ascension.sin,
+        declination.sin
+      ]
+    end
+
+    it "has none on the whole sky" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+
+      cone = context.cone
+
+      expect(cone).to be_nil
+    end
+
+    it "is centered on the equatorial center of a view" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 12.5, declination: 12.4),
+        field_of_view: Astronoby::Angle.from_degrees(10)
+      )
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+
+      cone = context.cone
+
+      expect(cone.center.right_ascension.hours).to be_within(1e-9).of(12.5)
+      expect(cone.center.declination.degrees).to be_within(1e-9).of(12.4)
+      expect(cone.center.epoch).to eq(Astronoby::JulianDate::J2000)
+    end
+
+    it "reaches past the field of view of the view" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 12.5, declination: 12.4),
+        field_of_view: Astronoby::Angle.from_degrees(10)
+      )
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+
+      cone = context.cone
+
+      expect(cone.radius.degrees).to be > 5
+      expect(cone.radius.degrees).to be < 6
+    end
+
+    it "is centered next to the star at the horizontal center of a view" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      vega = star(right_ascension: 18.6156, declination: 38.7837, magnitude: 0)
+      horizontal = context.horizontal(vega)
+      view = Skymap::View.new(
+        center: Astronoby::Coordinates::Horizontal.new(
+          altitude: horizontal.altitude,
+          azimuth: horizontal.azimuth,
+          observer: observer_at(latitude: 48.8575)
+        ),
+        field_of_view: Astronoby::Angle.from_degrees(10)
+      )
+      zoomed = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+
+      cone = zoomed.cone
+
+      expect(separation(cone.center, vega.equatorial_coordinates)).to be < 0.5
+    end
+
+    it "reaches farther for an instant far from J2000" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 12.5, declination: 12.4),
+        field_of_view: Astronoby::Angle.from_degrees(10)
+      )
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      near = Skymap::Context.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22)),
+        canvas: canvas,
+        view: view
+      )
+      far = Skymap::Context.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(1900, 6, 1, 22)),
+        canvas: canvas,
+        view: view
+      )
+
+      narrow = near.cone.radius.degrees
+      wide = far.cone.radius.degrees
+
+      expect(wide).to be > narrow
+    end
+
+    it "gives the same cone each time" do
+      view = Skymap::View.new(
+        center: equatorial(right_ascension: 12.5, declination: 12.4),
+        field_of_view: Astronoby::Angle.from_degrees(10)
+      )
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view
+      )
+
+      first = context.cone
+      second = context.cone
+
+      expect(second).to be(first)
+    end
+  end
 end

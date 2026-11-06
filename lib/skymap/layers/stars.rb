@@ -16,9 +16,12 @@ module Skymap
           magnitude_limit: @magnitude_limit
         )
 
-        @stars.filter_map do |star|
-          next if star.magnitude > @magnitude_limit
+        candidates = StarList.wrap(@stars).search(
+          magnitude_limit: @magnitude_limit,
+          cone: context.cone
+        )
 
+        faintest_first(candidates).filter_map do |star|
           radius = star_size.radius(star.magnitude)
           next unless context.possibly_visible?(star, radius)
 
@@ -29,6 +32,14 @@ module Skymap
 
           Renderer::Dot.new(center: center, radius: radius)
         end
+      end
+
+      private
+
+      def faintest_first(stars)
+        stars.each_with_index
+          .sort_by { |star, index| [-star.magnitude, index] }
+          .map(&:first)
       end
     end
   end

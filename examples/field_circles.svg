@@ -7,25 +7,36 @@
 </clipPath>
 </defs>
 <g clip-path="url(#sky-400_0-400_0-376_0)">
-<circle cx="704.14" cy="335.66" r="1.02" fill="#ffffff"/>
-<circle cx="687.06" cy="294.72" r="1.14" fill="#ffffff"/>
-<circle cx="609.75" cy="492.47" r="1.59" fill="#ffffff"/>
-<circle cx="473.3" cy="206.54" r="1.71" fill="#ffffff"/>
-<circle cx="519.36" cy="343.22" r="1.03" fill="#ffffff"/>
-<circle cx="603.44" cy="630.89" r="1.13" fill="#ffffff"/>
-<circle cx="545.77" cy="676.61" r="2.03" fill="#ffffff"/>
-<circle cx="537.4" cy="669.21" r="1.28" fill="#ffffff"/>
-<circle cx="399.97" cy="400.04" r="3.0" fill="#ffffff"/>
-<circle cx="399.16" cy="399.78" r="1.63" fill="#ffffff"/>
-<circle cx="430.12" cy="523.24" r="1.26" fill="#ffffff"/>
-<circle cx="272.45" cy="295.49" r="1.49" fill="#ffffff"/>
-<circle cx="231.87" cy="322.54" r="1.05" fill="#ffffff"/>
-<circle cx="163.98" cy="264.35" r="1.87" fill="#ffffff"/>
-<circle cx="122.02" cy="359.98" r="1.04" fill="#ffffff"/>
-<circle cx="75.58" cy="241.94" r="1.19" fill="#ffffff"/>
-<circle cx="209.96" cy="683.49" r="1.43" fill="#ffffff"/>
-<circle cx="165.27" cy="563.22" r="1.1" fill="#ffffff"/>
+<circle cx="309.27" cy="68.41" r="0.94" fill="#ffffff"/>
+<circle cx="705.36" cy="284.01" r="0.95" fill="#ffffff"/>
+<circle cx="448.07" cy="618.73" r="0.95" fill="#ffffff"/>
+<circle cx="62.85" cy="523.88" r="0.95" fill="#ffffff"/>
+<circle cx="100.12" cy="220.89" r="0.96" fill="#ffffff"/>
+<circle cx="649.67" cy="376.6" r="0.96" fill="#ffffff"/>
 <circle cx="85.25" cy="378.8" r="0.96" fill="#ffffff"/>
+<circle cx="339.52" cy="494.8" r="0.98" fill="#ffffff"/>
+<circle cx="253.87" cy="125.28" r="0.98" fill="#ffffff"/>
+<circle cx="198.65" cy="527.65" r="0.99" fill="#ffffff"/>
+<circle cx="256.77" cy="396.91" r="0.99" fill="#ffffff"/>
+<circle cx="400.29" cy="250.88" r="1.01" fill="#ffffff"/>
+<circle cx="704.14" cy="335.66" r="1.02" fill="#ffffff"/>
+<circle cx="519.36" cy="343.22" r="1.03" fill="#ffffff"/>
+<circle cx="122.02" cy="359.98" r="1.04" fill="#ffffff"/>
+<circle cx="231.87" cy="322.54" r="1.05" fill="#ffffff"/>
+<circle cx="165.27" cy="563.22" r="1.1" fill="#ffffff"/>
+<circle cx="603.44" cy="630.89" r="1.13" fill="#ffffff"/>
+<circle cx="687.06" cy="294.72" r="1.14" fill="#ffffff"/>
+<circle cx="75.58" cy="241.94" r="1.19" fill="#ffffff"/>
+<circle cx="430.12" cy="523.24" r="1.26" fill="#ffffff"/>
+<circle cx="537.4" cy="669.21" r="1.28" fill="#ffffff"/>
+<circle cx="209.96" cy="683.49" r="1.43" fill="#ffffff"/>
+<circle cx="272.45" cy="295.49" r="1.49" fill="#ffffff"/>
+<circle cx="609.75" cy="492.47" r="1.59" fill="#ffffff"/>
+<circle cx="399.16" cy="399.78" r="1.63" fill="#ffffff"/>
+<circle cx="473.3" cy="206.54" r="1.71" fill="#ffffff"/>
+<circle cx="163.98" cy="264.35" r="1.87" fill="#ffffff"/>
+<circle cx="545.77" cy="676.61" r="2.03" fill="#ffffff"/>
+<circle cx="399.97" cy="400.04" r="3.0" fill="#ffffff"/>
 <text x="399.97" y="386.51" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Albireo
 </text>
