@@ -72,5 +72,14 @@ RSpec.describe Skymap::Renderer::DeepSkySymbol do
 
       expect(midpoints.min).to be >= 199.5
     end
+
+    it "stays close to the ellipse of a symbol far larger than the map" do
+      outline = symbol(semi_major: 20_000.0, semi_minor: 20_000.0).outline
+      midpoints = outline.zip(outline.rotate).map do |from, to|
+        Math.hypot((from.x + to.x) / 2 - 100, (from.y + to.y) / 2 - 200)
+      end
+
+      expect(midpoints.min).to be >= 19_999.5
+    end
   end
 end

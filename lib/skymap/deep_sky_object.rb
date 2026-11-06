@@ -58,8 +58,6 @@ module Skymap
         raise ArgumentError, "magnitude_band must come with a magnitude"
       end
 
-      magnitude_band ||= :visual unless magnitude.nil?
-
       unless axis?(major_axis)
         raise ArgumentError,
           "major_axis must be an Astronoby::Angle above 0 or nil"
@@ -94,6 +92,13 @@ module Skymap
 
     def minor_axis
       given_minor_axis || major_axis
+    end
+
+    alias_method :given_magnitude_band, :magnitude_band
+    private :given_magnitude_band
+
+    def magnitude_band
+      given_magnitude_band || (:visual unless magnitude.nil?)
     end
 
     private

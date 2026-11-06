@@ -102,6 +102,23 @@ RSpec.describe Skymap::DeepSkyObject do
       expect(blue.magnitude_band).to eq(:blue)
     end
 
+    it "can lose its magnitude with its default band" do
+      visual = object(magnitude: 8.4)
+
+      without = visual.with(magnitude: nil)
+
+      expect(without.magnitude).to be_nil
+      expect(without.magnitude_band).to be_nil
+    end
+
+    it "gets the default band of a magnitude it is given later" do
+      without = object
+
+      with = without.with(magnitude: 9.1)
+
+      expect(with.magnitude_band).to eq(:visual)
+    end
+
     it "has no magnitude band without a magnitude" do
       expect(object.magnitude_band).to be_nil
     end

@@ -24,10 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with their coordinates, type, magnitude, size and position angle, from
   OpenNGC. The `magnitude_band` (`:visual`, or `:blue` for the 65 objects that
   have no visual magnitude) says what the magnitude is, and `messier?` tells
-  the Messier objects from the others. An object with a `major_axis` and no `minor_axis` is
-  round: its `minor_axis` is its `major_axis`. The data file is released under
-  CC BY-SA 4.0, with its license in `data/LICENSE-deep_sky_objects.txt`; the
-  code stays under the MIT license
+  the Messier objects from the others. An object with a `major_axis` and no
+  `minor_axis` is round: its `minor_axis` is its `major_axis`. The data file is
+  released under CC BY-SA 4.0, with its license in
+  `data/LICENSE-deep_sky_objects.txt`; the code stays under the MIT license
 - `data/stars.csv` and `Skymap::Catalog::Stars` give the proper motion, the
   parallax and the radial velocity of the stars, from the Yale Bright Star
   Catalogue, and `Skymap::Star` takes the optional `proper_motion_ra:`,

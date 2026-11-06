@@ -266,6 +266,25 @@ RSpec.describe Skymap::LabelPlacement do
       expect(on_symbols).to eq(0)
     end
 
+    it "stays quick and exact with a symbol far larger than the map" do
+      canvas = Skymap::Canvas.new(size: 800, padding: 0)
+      on_edge = caption_at(400, 100, "M31", canvas: canvas, kind: :deep_sky)
+      huge = symbol_at(
+        400, on_edge.position.y + 900, :galaxy,
+        semi_major: 3_000, semi_minor: 900
+      )
+      inside = caption_at(400, 400, "M32", canvas: canvas, kind: :deep_sky)
+      started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+      arranged = described_class.new(canvas: canvas)
+        .arrange([huge, on_edge, inside])
+
+      elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started
+      expect(elapsed).to be < 0.5
+      expect(arranged.last).to eq(inside)
+      expect(arranged[1].position).not_to eq(on_edge.position)
+    end
+
     it "gives nothing for no elements" do
       canvas = Skymap::Canvas.new(size: 400, padding: 0)
 

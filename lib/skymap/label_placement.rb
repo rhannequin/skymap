@@ -72,29 +72,27 @@ module Skymap
       end
     end
 
-    Outline = Data.define(:points, :bounds) do
-      def self.around(points)
-        xs = points.map(&:x)
-        ys = points.map(&:y)
-
+    Segment = Data.define(:from, :to, :bounds) do
+      def self.between(from, to)
         new(
-          points: points,
+          from: from,
+          to: to,
           bounds: Box.new(
-            left: xs.min, top: ys.min, right: xs.max, bottom: ys.max
+            left: [from.x, to.x].min, top: [from.y, to.y].min,
+            right: [from.x, to.x].max, bottom: [from.y, to.y].max
           )
         )
       end
 
       def blocks?(box)
-        bounds.intersects?(box) &&
-          points.zip(points.rotate).any? { |from, to|
-            box.crossed_by?(from, to)
-          }
+        bounds.intersects?(box) && box.crossed_by?(from, to)
       end
     end
+
     class Index
-      def initialize(cell)
+      def initialize(cell, limit)
         @cell = cell
+        @last = (limit / cell).floor
         @cells = {}
       end
 
@@ -114,14 +112,18 @@ module Skymap
       private
 
       def cells_of(box)
-        ((box.left / @cell).floor..(box.right / @cell).floor).each do |column|
-          ((box.top / @cell).floor..(box.bottom / @cell).floor).each do |row|
-            yield [column, row]
-          end
+        rows = span(box.top, box.bottom)
+
+        span(box.left, box.right).each do |column|
+          rows.each { |row| yield [column, row] }
         end
       end
+
+      def span(from, to)
+        [(from / @cell).floor, 0].max..[(to / @cell).floor, @last].min
+      end
     end
-    private_constant :Box, :Disc, :Outline, :Index
+    private_constant :Box, :Disc, :Segment, :Index
 
     def initialize(canvas:)
       @canvas = canvas
@@ -132,7 +134,7 @@ module Skymap
       return elements if captions.empty?
 
       text_size = captions.map(&:size).min
-      index = Index.new(CELL_RATIO * text_size)
+      index = Index.new(CELL_RATIO * text_size, @canvas.size)
       fixed_boxes(elements).each { |box| index.add(box) }
       obstacles(elements, text_size).each { |obstacle| index.add(obstacle) }
       placed = {}.compare_by_identity
@@ -181,23 +183,29 @@ module Skymap
     def obstacles(elements, text_size)
       bright = DOT_RATIO * text_size
 
-      elements.filter_map do |element|
+      elements.flat_map do |element|
         case element
         when Renderer::DeepSkySymbol then symbol(element)
         when Renderer::Planet, Renderer::Moon, Renderer::Sun
-          Disc.new(center: element.center, radius: element.radius)
+          [Disc.new(center: element.center, radius: element.radius)]
         when Renderer::Dot
-          next if element.radius < bright
+          next [] if element.radius < bright
 
-          Disc.new(center: element.center, radius: element.radius)
+          [Disc.new(center: element.center, radius: element.radius)]
+        else
+          []
         end
       end
     end
 
     def symbol(symbol)
-      return Outline.around(symbol.outline) if symbol.hollow?
+      unless symbol.hollow?
+        return [Disc.new(center: symbol.center, radius: symbol.semi_major)]
+      end
 
-      Disc.new(center: symbol.center, radius: symbol.semi_major)
+      points = symbol.outline
+
+      points.zip(points.rotate).map { |from, to| Segment.between(from, to) }
     end
 
     def free_position(caption, index)

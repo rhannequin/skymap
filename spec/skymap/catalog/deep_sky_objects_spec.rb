@@ -97,4 +97,19 @@ RSpec.describe Skymap::Catalog::DeepSkyObjects do
   it "leaves out M102" do
     expect(find("M102")).to be_nil
   end
+
+  it "fails on a magnitude band it does not know" do
+    file = Tempfile.new(["deep_sky_objects", ".csv"])
+    file.write(
+      "designation,name,type,right_ascension,declination,magnitude," \
+      "magnitude_band,major_axis,minor_axis,position_angle\n" \
+      "NGC 1,,galaxy,0.1,27.7,13.0,R,1.5,1.0,\n"
+    )
+    file.close
+    stub_const("#{described_class}::PATH", file.path)
+
+    expect { described_class.new.to_a }.to raise_error(KeyError)
+  ensure
+    file&.unlink
+  end
 end

@@ -62,6 +62,6 @@ module Skymap
     ].freeze
     DeepSkySymbol::OUTLINE_TOLERANCE = 0.5
     DeepSkySymbol::MIN_OUTLINE_STEPS = 8
-    DeepSkySymbol::MAX_OUTLINE_STEPS = 64
+    DeepSkySymbol::MAX_OUTLINE_STEPS = 720
   end
 end
