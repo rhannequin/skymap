@@ -23,26 +23,80 @@ module Skymap
 
         dx * dx + dy * dy < radius * radius
       end
+
+      def crossed_by?(from, to)
+        dx = to.x - from.x
+        dy = to.y - from.y
+        entering = 0.0
+        leaving = 1.0
+
+        [
+          [-dx, from.x - left], [dx, right - from.x],
+          [-dy, from.y - top], [dy, bottom - from.y]
+        ].each do |direction, distance|
+          if direction.zero?
+            return false if distance.negative?
+          else
+            ratio = distance / direction
+            if direction.negative?
+              entering = ratio if ratio > entering
+            elsif ratio < leaving
+              leaving = ratio
+            end
+          end
+        end
+
+        entering <= leaving
+      end
     end
-    private_constant :Box
+
+    Disc = Data.define(:center, :radius) do
+      def blocks?(box)
+        box.reaches?(center.x, center.y, radius)
+      end
+    end
+
+    Outline = Data.define(:points, :bounds) do
+      def self.around(points)
+        xs = points.map(&:x)
+        ys = points.map(&:y)
+
+        new(
+          points: points,
+          bounds: Box.new(
+            left: xs.min, top: ys.min, right: xs.max, bottom: ys.max
+          )
+        )
+      end
+
+      def blocks?(box)
+        bounds.intersects?(box) &&
+          points.zip(points.rotate).any? { |from, to|
+            box.crossed_by?(from, to)
+          }
+      end
+    end
+    private_constant :Box, :Disc, :Outline
 
     def initialize(canvas:)
       @canvas = canvas
     end
 
     def arrange(elements)
+      captions = elements.select { |element| anchored?(element) }
+      return elements if captions.empty?
+
       boxes = fixed_boxes(elements)
-      circles = circles(elements)
+      obstacles = obstacles(elements, captions.map(&:size).min)
       placed = {}.compare_by_identity
 
-      by_priority(elements.select { |element| anchored?(element) })
-        .each do |caption|
-          position = free_position(caption, boxes, circles)
-          next unless position
+      by_priority(captions).each do |caption|
+        position = free_position(caption, boxes, obstacles)
+        next unless position
 
-          boxes << box(caption, position)
-          placed[caption] = caption.with(position: position)
-        end
+        boxes << box(caption, position)
+        placed[caption] = caption.with(position: position)
+      end
 
       elements.filter_map do |element|
         anchored?(element) ? placed[element] : element
@@ -77,24 +131,31 @@ module Skymap
       element.is_a?(Renderer::Caption) || element.is_a?(Renderer::Label)
     end
 
-    def circles(elements)
-      bright = DOT_RATIO * Renderer::Caption.size_for(@canvas)
+    def obstacles(elements, text_size)
+      bright = DOT_RATIO * text_size
 
       elements.filter_map do |element|
         case element
-        when Renderer::DeepSkySymbol
-          [element.center, element.semi_major]
+        when Renderer::DeepSkySymbol then symbol(element)
         when Renderer::Planet, Renderer::Moon, Renderer::Sun
-          [element.center, element.radius]
+          Disc.new(center: element.center, radius: element.radius)
         when Renderer::Dot
-          [element.center, element.radius] if element.radius >= bright
+          next if element.radius < bright
+
+          Disc.new(center: element.center, radius: element.radius)
         end
       end
     end
 
-    def free_position(caption, boxes, circles)
+    def symbol(symbol)
+      return Outline.around(symbol.outline) if symbol.hollow?
+
+      Disc.new(center: symbol.center, radius: symbol.semi_major)
+    end
+
+    def free_position(caption, boxes, obstacles)
       candidates(caption).find do |position, check_sky|
-        free?(box(caption, position), boxes, circles) &&
+        free?(box(caption, position), boxes, obstacles) &&
           (!check_sky || inside_sky?(caption, position))
       end&.first
     end
@@ -114,20 +175,18 @@ module Skymap
       gap = GAP_RATIO * size
 
       Point.new(
-        x: anchor.x + ux * (reach_x + gap + width(caption) / 2),
+        x: anchor.x + ux * (reach_x + gap + caption.width / 2),
         y: anchor.y + uy * (reach_y + size)
       )
     end
 
-    def free?(candidate, boxes, circles)
+    def free?(candidate, boxes, obstacles)
       boxes.none? { |other| candidate.intersects?(other) } &&
-        circles.none? do |center, radius|
-          candidate.reaches?(center.x, center.y, radius)
-        end
+        obstacles.none? { |obstacle| obstacle.blocks?(candidate) }
     end
 
     def inside_sky?(caption, position)
-      half_width = width(caption) / 2
+      half_width = caption.width / 2
       half_height = caption.size / 2
 
       [-1, 1].product([-1, 1]).all? do |sx, sy|
@@ -140,7 +199,7 @@ module Skymap
 
     def box(text, position)
       margin = MARGIN_RATIO * text.size
-      half_width = width(text) / 2 + margin
+      half_width = text.width / 2 + margin
       half_height = text.size / 2 + margin
 
       Box.new(
@@ -149,10 +208,6 @@ module Skymap
         right: position.x + half_width,
         bottom: position.y + half_height
       )
-    end
-
-    def width(text)
-      text.text.length * text.size * Renderer::CAPTION_CHARACTER_WIDTH_RATIO
     end
   end
 end

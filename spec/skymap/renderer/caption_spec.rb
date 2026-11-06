@@ -1,7 +1,50 @@
 # frozen_string_literal: true
 
 RSpec.describe Skymap::Renderer::Caption do
+  describe ".new" do
+    it "is not attached to an object by default" do
+      caption = described_class.new(
+        position: Skymap::Point.new(x: 10, y: 20),
+        text: "Lyra",
+        size: 11,
+        kind: :constellation
+      )
+
+      expect(caption.anchor).to be_nil
+      expect(caption.clearance).to eq(0.0)
+    end
+  end
+
+  describe "#width" do
+    it "grows with the text and the size" do
+      caption = described_class.new(
+        position: Skymap::Point.new(x: 10, y: 20),
+        text: "Vega",
+        size: 10,
+        kind: :star
+      )
+
+      expect(caption.width).to be_within(1e-9).of(4 * 10 * 0.55)
+    end
+  end
+
   describe ".beside" do
+    it "attaches the caption to the body" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 0)
+      center = Skymap::Point.new(x: 200, y: 100)
+
+      caption = described_class.beside(
+        center: center,
+        radius: 3,
+        canvas: canvas,
+        text: "Vega",
+        kind: :star
+      )
+
+      expect(caption.anchor).to eq(center)
+      expect(caption.clearance).to eq(3)
+    end
+
     it "puts the caption under a body in the upper half of the map" do
       canvas = Skymap::Canvas.new(size: 400, padding: 0)
 

@@ -390,6 +390,8 @@ RSpec.describe Skymap::Layers::DeepSkyObjects do
       expect(caption).to be_a(Skymap::Renderer::Caption)
       expect(caption.text).to eq("M99")
       expect(caption.kind).to eq(:deep_sky)
+      expect(caption.anchor).to eq(symbol.center)
+      expect(caption.clearance).to eq(symbol.semi_major)
       expect(caption.position.x).to be_within(1).of(symbol.center.x)
       expect((caption.position.y - symbol.center.y).abs)
         .to be > symbol.semi_major

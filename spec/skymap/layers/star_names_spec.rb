@@ -19,6 +19,8 @@ RSpec.describe Skymap::Layers::StarNames do
       expect(caption.text).to eq("Polaris")
       expect(caption.kind).to eq(:star)
       expect(caption.size).to be_within(0.001).of(5.6)
+      expect(caption.anchor).to eq(context.position(polaris))
+      expect(caption.clearance).to eq(radius)
       expect(caption.position.x).to eq(context.position(polaris).x)
       expect(caption.position.y).to be_within(0.001).of(
         context.position(polaris).y + radius + caption.size

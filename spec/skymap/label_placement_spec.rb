@@ -141,6 +141,71 @@ RSpec.describe Skymap::LabelPlacement do
       expect(arranged.last.position).not_to eq(star.position)
     end
 
+    it "writes a label inside a large symbol that is only an outline" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 0)
+      caption = caption_at(200, 200, "M32", canvas: canvas, kind: :deep_sky)
+      galaxy = symbol_at(150, 200, :galaxy, semi_major: 120, semi_minor: 40)
+
+      arranged = described_class.new(canvas: canvas)
+        .arrange([galaxy, caption])
+
+      expect(arranged.last).to eq(caption)
+    end
+
+    it "avoids the outline of a large symbol, turned as it is drawn" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 0)
+      caption = caption_at(200, 200, "M32", canvas: canvas, kind: :deep_sky)
+      on_the_edge = symbol_at(
+        caption.position.x, caption.position.y + 40, :galaxy,
+        semi_major: 120, semi_minor: 40, rotation: 0
+      )
+      turned = symbol_at(
+        caption.position.x, caption.position.y + 40, :galaxy,
+        semi_major: 120, semi_minor: 40, rotation: 90
+      )
+
+      flat = described_class.new(canvas: canvas).arrange([on_the_edge, caption])
+      upright = described_class.new(canvas: canvas).arrange([turned, caption])
+
+      expect(flat.last.position).not_to eq(caption.position)
+      expect(upright.last).to eq(caption)
+    end
+
+    it "leaves out a label that would sit inside a symbol with marks" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 0)
+      caption = caption_at(200, 200, "M22", canvas: canvas, kind: :deep_sky)
+      cluster = symbol_at(
+        caption.position.x, caption.position.y, :globular_cluster,
+        semi_major: 30, semi_minor: 30
+      )
+
+      arranged = described_class.new(canvas: canvas)
+        .arrange([cluster, caption])
+
+      expect(arranged).to eq([cluster])
+    end
+
+    it "decides what a bright star is from the size of the labels" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 0)
+      caption = Skymap::Renderer::Caption.beside(
+        center: Skymap::Point.new(x: 100, y: 150),
+        radius: 3,
+        canvas: canvas,
+        text: "Vega",
+        kind: :star
+      ).with(size: 20.0)
+      small = Skymap::Renderer::Dot.new(center: caption.position, radius: 4)
+      large = Skymap::Renderer::Dot.new(center: caption.position, radius: 6)
+
+      among_small = described_class.new(canvas: canvas)
+        .arrange([small, caption])
+      among_large = described_class.new(canvas: canvas)
+        .arrange([large, caption])
+
+      expect(among_small.last).to eq(caption)
+      expect(among_large.last.position).not_to eq(caption.position)
+    end
+
     it "avoids a bright star but not a faint one" do
       canvas = Skymap::Canvas.new(size: 400, padding: 0)
       caption = caption_at(100, 150, "Vega", canvas: canvas)
@@ -187,9 +252,19 @@ RSpec.describe Skymap::LabelPlacement do
     )
   end
 
+  def symbol_at(x, y, kind, semi_major:, semi_minor:, rotation: 0.0)
+    Skymap::Renderer::DeepSkySymbol.new(
+      center: Skymap::Point.new(x: x, y: y),
+      kind: kind,
+      semi_major: semi_major,
+      semi_minor: semi_minor,
+      rotation: rotation,
+      width: 1
+    )
+  end
+
   def box_of(text)
-    width = text.text.length * text.size *
-      Skymap::Renderer::CAPTION_CHARACTER_WIDTH_RATIO
+    width = text.width
 
     [
       text.position.x - width / 2, text.position.y - text.size / 2,

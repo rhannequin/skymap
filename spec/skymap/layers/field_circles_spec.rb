@@ -303,6 +303,22 @@ RSpec.describe Skymap::Layers::FieldCircles do
       )
     end
 
+    it "anchors the label to its circle" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5),
+        view: view_towards(altitude: 40, azimuth: 180, field_of_view: 10)
+      )
+      layer = described_class.new(fields: fields_of(2), labels: true)
+
+      circle, caption = layer.elements(context)
+      left, right, top, bottom = extent(circle.points)
+
+      expect(caption.anchor.x).to be_within(1e-6).of((left + right) / 2)
+      expect(caption.anchor.y).to be_within(1e-6).of((top + bottom) / 2)
+      expect(caption.clearance).to be_within(1e-6).of((bottom - top) / 2)
+    end
+
     it "leaves out the label of a circle that does not reach the view" do
       context = context_at(
         latitude: 48.8575,
