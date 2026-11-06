@@ -1,0 +1,107 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require "skymap"
+
+RUNS = Integer(ENV.fetch("RUNS", 5))
+EPHEMERIS = File.expand_path(
+  "../spec/fixtures/de440s_2025_2030_excerpt.bsp", __dir__
+)
+
+def degrees(value)
+  Astronoby::Angle.from_degrees(value)
+end
+
+observer = Astronoby::Observer.new(
+  latitude: degrees(48.8575),
+  longitude: degrees(2.3514)
+)
+instant = Astronoby::Instant.from_time(Time.utc(2027, 8, 15, 21))
+canvas = Skymap::Canvas.new(size: 800, padding: 24)
+stars = Skymap::Catalog::Stars.new.to_a
+lines = Skymap::Catalog::ConstellationLines.new.to_a
+boundaries = Skymap::Catalog::ConstellationBoundaries.new
+ephem = Astronoby::Ephem.load(EPHEMERIS)
+
+albireo = Astronoby::Coordinates::Equatorial.new(
+  right_ascension: Astronoby::Angle.from_hours(19.512),
+  declination: degrees(27.96),
+  epoch: Astronoby::JulianDate::J2000
+)
+zoomed = ->(field_of_view) {
+  Skymap::View.new(center: albireo, field_of_view: degrees(field_of_view))
+}
+fields = [
+  Skymap::Field.new(true_field: degrees(5), label: "Finder 5°"),
+  Skymap::Setup.new(
+    telescope: Skymap::Telescope.new(focal_length_mm: 1200, aperture_mm: 200),
+    eyepiece: Skymap::Eyepiece.new(
+      focal_length_mm: 25,
+      apparent_field_of_view: degrees(52)
+    )
+  )
+]
+
+BENCHMARKS = {
+  "Whole sky, stars magnitude 5" => [
+    nil,
+    [Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 5)]
+  ],
+  "Whole sky, stars magnitude 7" => [
+    nil,
+    [Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 7)]
+  ],
+  "Whole sky, all layers" => [
+    nil,
+    [
+      Skymap::Layers::ConstellationBoundaries.new(boundaries: boundaries),
+      Skymap::Layers::Ecliptic.new,
+      Skymap::Layers::ConstellationLines.new(lines: lines, stars: stars),
+      Skymap::Layers::Stars.new(stars: stars),
+      Skymap::Layers::ConstellationNames.new(lines: lines, stars: stars),
+      Skymap::Layers::Planets.new(ephem: ephem, labels: true),
+      Skymap::Layers::Moon.new(ephem: ephem),
+      Skymap::Layers::CardinalDirections.new
+    ]
+  ],
+  "1° view, stars magnitude 7" => [
+    zoomed.call(1),
+    [Skymap::Layers::Stars.new(stars: stars, magnitude_limit: 7)]
+  ],
+  "4° view, grid step 1°" => [
+    zoomed.call(4),
+    [Skymap::Layers::Grid.new(step: degrees(1))]
+  ],
+  "4° view, grid step 1° of date" => [
+    zoomed.call(4),
+    [Skymap::Layers::Grid.new(step: degrees(1), epoch: :of_date)]
+  ],
+  "8° view, field circles" => [
+    zoomed.call(8),
+    [Skymap::Layers::FieldCircles.new(fields: fields, labels: true)]
+  ]
+}
+
+def now
+  Process.clock_gettime(Process::CLOCK_MONOTONIC)
+end
+
+width = BENCHMARKS.keys.map(&:length).max
+
+puts "Best of #{RUNS} runs, in milliseconds"
+BENCHMARKS.each do |name, (view, layers)|
+  chart = Skymap::Chart.new(
+    observer: observer,
+    instant: instant,
+    canvas: canvas,
+    view: view
+  )
+  times = Array.new(RUNS) {
+    started = now
+    chart.render(*layers)
+    (now - started) * 1000
+  }
+
+  puts format("%-#{width}s  %8.1f", name, times.min)
+end
