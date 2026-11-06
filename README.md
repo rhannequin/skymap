@@ -411,6 +411,62 @@ Skymap::Layers::ConstellationNames.new(
 )
 ```
 
+#### Deep-sky objects
+
+`Skymap::Layers::DeepSkyObjects` draws galaxies, clusters, nebulae and other
+deep-sky objects. `Skymap::Catalog::DeepSkyObjects` gives the 109 Messier
+objects (see [Data sources](#data-sources)), but the layer accepts any list of
+`Skymap::DeepSkyObject`, such as the objects you pick from the catalog:
+
+```ruby
+objects = Skymap::Catalog::DeepSkyObjects.new
+
+Skymap::Layers::DeepSkyObjects.new(objects: objects)
+```
+
+Each type of object has its own symbol, drawn as an outline in the `deep_sky`
+color of the [theme](#themes), as in most atlases:
+
+| `type`              | Symbol                                    |
+| ------------------- | ----------------------------------------- |
+| `galaxy`            | an ellipse                                |
+| `globular_cluster`  | a circle with a cross                     |
+| `open_cluster`      | a dashed circle                           |
+| `planetary_nebula`  | a circle with four ticks around it        |
+| `nebula`            | a dashed square with rounded corners      |
+| `supernova_remnant` | a dashed circle with a dot at its center  |
+| `asterism`          | a dotted circle                           |
+| `double_star`       | a small circle with a bar through it      |
+| `other`             | a small cross                             |
+
+By default, objects of magnitude 11 or brighter are drawn, which keeps every
+Messier object, and an object without a magnitude is always drawn. Use
+`magnitude_limit:` to draw fewer objects, or select the objects you want:
+
+```ruby
+galaxies = objects.select { |object| object.type == :galaxy }
+
+Skymap::Layers::DeepSkyObjects.new(objects: galaxies, magnitude_limit: 9.5)
+```
+
+An object has the size of the symbol on the map, which is small, until its
+size in the sky is larger: it is then drawn at its real size, which you see
+when you zoom in with a [view](#view). A small object keeps its proportions in
+the symbol, and an object with no known size, such as M40, is drawn with the
+smallest symbol. A round object is a circle. An elongated object is an ellipse
+turned the way the object is, as `position_angle` gives it, from the north
+through the east: the layer follows the [orientation](#orientation) of the
+view, its rotation and its mirror, and the whole sky. An elongated object
+without a position angle (M1, M8, M16, M42 and M43) is not turned, as nothing
+says which way: it is drawn as a circle with the same area as the ellipse,
+whose diameter is the square root of the product of its axes.
+
+With `labels: true`, the designation of each object (such as `M31`) is written
+next to its symbol, in the `deep_sky` color too. Labels are not moved, so those
+of objects that are close to each other can overlap on a wide field. Objects
+below the horizon or outside the view are left out. Give the layer after the
+stars to draw its symbols over them.
+
 #### Moon
 
 `Skymap::Layers::Moon` draws the Moon where it is in the sky, with its phase.
@@ -680,7 +736,7 @@ The [examples](https://github.com/rhannequin/skymap/tree/main/examples)
 folder has scripts and the maps they draw, for
 different combinations of layers, themes and observers: the naked-eye sky, a
 printable map of the constellations, the planets, a night vision map for
-outdoors, the southern sky and more. Start from the one closest to what you
+outdoors, the southern sky, the galaxies of Virgo and more. Start from the one closest to what you
 want to draw.
 
 ## Data sources
