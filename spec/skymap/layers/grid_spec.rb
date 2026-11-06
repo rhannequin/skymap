@@ -201,6 +201,51 @@ RSpec.describe Skymap::Layers::Grid do
     end
   end
 
+  describe "#elements in a zoomed view" do
+    views = {
+      "near the celestial pole" => [[22, 89], 4, [15, 1], {}],
+      "on the celestial equator" => [[22, 0], 10, [15, 1], {}],
+      "across right ascension 0h" => [[0, 20], 30, [15, 1], {}],
+      "in the equatorial orientation, rotated" => [
+        [1, 30], 12, [15, 1], {orientation: :equatorial, rotation: 30}
+      ],
+      "of half a degree" => [[0, 0], 0.5, [15, 1], {on_the_grid_epoch: true}],
+      "of 90 degrees" => [[22, 40], 90, [15], {}],
+      "of 180 degrees" => [[22, 40], 180, [15], {}]
+    }
+
+    views.each do |name, (center, field_of_view, steps, options)|
+      %i[j2000 of_date].product(steps).each do |epoch, step|
+        it "keeps every line that reaches a view #{name} " \
+          "(#{epoch}, every #{step} degrees)" do
+          instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22))
+          view = view_on(
+            center,
+            field_of_view,
+            epoch: (options[:on_the_grid_epoch] && epoch == :of_date) ?
+              instant.tt : Astronoby::JulianDate::J2000,
+            **options.slice(:orientation, :rotation)
+          )
+          context = context_at(
+            latitude: 48.8575,
+            canvas: Skymap::Canvas.new(size: 800, padding: 24),
+            view: view
+          )
+          layer = described_class.new(step: degrees(step), epoch: epoch)
+
+          grids = layer.elements(context)
+          drawn = grids.flat_map(&:points)
+          reaching = lines_in_view(context, step, epoch)
+          dropped = reaching.select { |points| (points - drawn).any? }
+
+          expect(grids).not_to be_empty
+          expect(reaching).not_to be_empty
+          expect(dropped).to be_empty
+        end
+      end
+    end
+  end
+
   describe ".new" do
     it "rejects an unknown epoch" do
       expect { described_class.new(epoch: :b1950) }
@@ -245,6 +290,61 @@ RSpec.describe Skymap::Layers::Grid do
 
   def degrees(value)
     Astronoby::Angle.from_degrees(value)
+  end
+
+  def view_on(
+    center,
+    field_of_view,
+    epoch:,
+    rotation: 0,
+    orientation: :zenith_up
+  )
+    Skymap::View.new(
+      center: Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(center[0]),
+        declination: degrees(center[1]),
+        epoch: epoch
+      ),
+      field_of_view: degrees(field_of_view),
+      orientation: orientation,
+      rotation: degrees(rotation)
+    )
+  end
+
+  def lines_in_view(context, step, epoch)
+    j2000 = Astronoby::JulianDate::J2000
+    frame = (epoch == :j2000) ? j2000 : context.instant.tt
+    parallels = (-89..89).select { |declination| (declination % step).zero? }
+      .map { |declination|
+        (0...360).map { |right_ascension| [right_ascension, declination] }
+      }
+    meridians = (0...360).step(step).map { |right_ascension|
+      (-90..90).map { |declination| [right_ascension, declination] }
+    }
+
+    (parallels + meridians).filter_map do |samples|
+      points = samples.filter_map { |right_ascension, declination|
+        projected_in_view(context, right_ascension, declination, frame)
+      }
+      points unless points.empty?
+    end
+  end
+
+  def projected_in_view(context, right_ascension, declination, epoch)
+    horizontal = context.horizontal_coordinates(
+      Astronoby::Coordinates::Equatorial.new(
+        right_ascension: degrees(right_ascension),
+        declination: degrees(declination),
+        epoch: epoch
+      )
+    )
+    return if horizontal.altitude.negative?
+
+    point = context.project(
+      altitude: horizontal.altitude,
+      azimuth: horizontal.azimuth
+    )
+    point if context.in_view?(point)
   end
 
   def context_on(time, canvas)

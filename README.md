@@ -777,6 +777,8 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run
 - Tests: `bundle exec rspec`
 - Linter ([Standard Ruby] through RuboCop): `bundle exec rubocop`
   (`bundle exec rubocop -a` to autocorrect)
+- Render times of representative charts: `bin/benchmark` (`RUNS=10` to change
+  the number of runs it keeps the best of)
 - Everything CI checks: `bin/ci`
 
 ### Releasing
