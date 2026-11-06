@@ -39,6 +39,22 @@ RSpec.describe Skymap::Layers::Moon do
       expect((moon.rotation % 360).round).to eq(23)
     end
 
+    it "turns the lit side along the bright limb of the Moon" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      moon = Astronoby::Moon.at(context.instant, ephem: ephemeris)
+      expected = context.rotation_at(
+        moon.observed_by(context.observer).equatorial,
+        position_angle: moon.bright_limb_position_angle
+      )
+
+      drawn, = described_class.new(ephem: ephemeris).elements(context)
+
+      expect(drawn.rotation).to eq(expected.degrees)
+    end
+
     it "turns the lit side with the position of the Moon in the sky" do
       observer = Astronoby::Observer.new(
         latitude: Astronoby::Angle.from_degrees(48.8575),

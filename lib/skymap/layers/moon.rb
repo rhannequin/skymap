@@ -11,7 +11,8 @@ module Skymap
 
       def elements(context)
         moon = Astronoby::Moon.at(context.instant, ephem: @ephem)
-        horizontal = moon.observed_by(context.observer).horizontal
+        equatorial = moon.observed_by(context.observer).equatorial
+        horizontal = context.horizontal_coordinates(equatorial)
         return [] if horizontal.altitude.negative?
 
         center = context.project(
@@ -31,16 +32,16 @@ module Skymap
             center: center,
             radius: radius,
             illuminated_fraction: moon.illuminated_fraction,
-            rotation: rotation(moon, context)
+            rotation: rotation(moon, equatorial, context)
           )
         ]
       end
 
       private
 
-      def rotation(moon, context)
+      def rotation(moon, equatorial, context)
         context.rotation_at(
-          moon.observed_by(context.observer).equatorial,
+          equatorial,
           position_angle: moon.bright_limb_position_angle
         ).degrees
       end
