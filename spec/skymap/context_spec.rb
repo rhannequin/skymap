@@ -21,6 +21,157 @@ RSpec.describe Skymap::Context do
     end
   end
 
+  describe "#horizontal with proper motion" do
+    {
+      "Arcturus" => [14.261028, 19.1825, -0.04, -1093, -1998, 90, -5],
+      "Sirius" => [6.752472, -16.716111, -1.46, -553, -1205, 375, -8],
+      "61 Cygni A" => [21.115167, 38.745833, 5.21, 4136, 3203, 292, -64],
+      "Groombridge 1830" => [11.883, 37.718611, 6.45, 4003, -5813, 116, -98]
+    }.each do |name, (ra, dec, magnitude, pm_ra, pm_dec, parallax, velocity)|
+      it "puts #{name} where the Astronoby pipeline puts it" do
+        context = context_at(
+          latitude: 48.8575,
+          canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+        )
+        moving = star(
+          right_ascension: ra,
+          declination: dec,
+          magnitude: magnitude,
+          **motion(
+            proper_motion_ra: pm_ra,
+            proper_motion_dec: pm_dec,
+            parallax: parallax,
+            radial_velocity: velocity
+          )
+        )
+        expected = Astronoby::DeepSkyObject.new(
+          equatorial_coordinates: moving.equatorial_coordinates,
+          proper_motion_ra: moving.proper_motion_ra,
+          proper_motion_dec: moving.proper_motion_dec,
+          parallax: moving.parallax,
+          radial_velocity: moving.radial_velocity
+        ).at(context.instant).observed_by(context.observer).horizontal
+
+        horizontal = context.horizontal(moving)
+
+        expect((horizontal.altitude.degrees - expected.altitude.degrees) * 3600)
+          .to be_within(0.01).of(0)
+        expect(
+          (horizontal.azimuth.degrees - expected.azimuth.degrees) * 3600 *
+            horizontal.altitude.cos
+        ).to be_within(0.01).of(0)
+      end
+    end
+
+    it "moves a star without a parallax or a radial velocity" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      still = star(right_ascension: 14.261028, declination: 19.1825,
+        magnitude: -0.04)
+      moving = star(
+        right_ascension: 14.261028,
+        declination: 19.1825,
+        magnitude: -0.04,
+        **motion(proper_motion_ra: -1093, proper_motion_dec: -1998)
+      )
+
+      shift = angular_distance(context.horizontal(still),
+        context.horizontal(moving))
+
+      expect(shift.degrees * 3600).to be_within(0.2).of(
+        Math.hypot(1.093, 1.998) * years_since_j2000(context.instant)
+      )
+    end
+
+    it "leaves a star without proper motion at its catalog position" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      still = star(right_ascension: 14.261028, declination: 19.1825,
+        magnitude: -0.04)
+
+      horizontal = context.horizontal(still)
+
+      expect(horizontal).to eq(
+        context.horizontal_coordinates(still.equatorial_coordinates)
+      )
+    end
+
+    it "propagates a star once" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+      moving = star(
+        right_ascension: 14.261028,
+        declination: 19.1825,
+        magnitude: -0.04,
+        **motion(
+          proper_motion_ra: -1093,
+          proper_motion_dec: -1998,
+          parallax: 90,
+          radial_velocity: -5
+        )
+      )
+      allow(Astronoby::StellarPropagation)
+        .to receive(:equatorial_coordinates_for).and_call_original
+
+      context.horizontal(moving)
+      context.position(moving)
+      context.horizontal(moving)
+
+      expect(Astronoby::StellarPropagation)
+        .to have_received(:equatorial_coordinates_for).once
+    end
+
+    it "puts a star with a high proper motion where it is on a zoomed chart" do
+      moving = star(
+        right_ascension: 21.115167,
+        declination: 38.745833,
+        magnitude: 5.21,
+        **motion(
+          proper_motion_ra: 4136,
+          proper_motion_dec: 3203,
+          parallax: 292,
+          radial_velocity: -64
+        )
+      )
+      canvas = Skymap::Canvas.new(size: 400, padding: 1.5)
+      context = context_at(
+        latitude: 48.8575,
+        canvas: canvas,
+        view: Skymap::View.new(
+          center: moving.equatorial_coordinates,
+          field_of_view: Astronoby::Angle.from_degrees(0.5)
+        )
+      )
+      layer = Skymap::Layers::Stars.new(stars: [moving], magnitude_limit: 6)
+
+      dot = layer.elements(context).first
+
+      distance = sky_angle_between(
+        canvas.center,
+        dot.center,
+        canvas: canvas,
+        field_of_view: 0.5
+      )
+      expected = Math.hypot(4.136, 3.203) *
+        years_since_j2000(context.instant) / 3600
+      expect(distance).to be_within(0.0002).of(expected)
+    end
+  end
+
+  def angular_distance(first, second)
+    Astronoby::Angle.acos(
+      first.altitude.sin * second.altitude.sin +
+        first.altitude.cos * second.altitude.cos *
+        (first.azimuth - second.azimuth).cos
+    )
+  end
+
   describe "#horizontal_coordinates" do
     it "gives the position of coordinates of the sky" do
       context = context_at(

@@ -16,11 +16,13 @@ module Skymap
         instant: instant
       )
       @horizontal = {}
+      @star_horizontals = {}.compare_by_identity
       @projections = {}
     end
 
     def horizontal(star)
-      horizontal_coordinates(star.equatorial_coordinates)
+      @star_horizontals[star] ||=
+        horizontal_coordinates(star.coordinates_at(@instant))
     end
 
     def horizontal_coordinates(coordinates)

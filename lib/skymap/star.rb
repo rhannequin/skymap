@@ -51,6 +51,29 @@ module Skymap
       super
     end
 
+    def coordinates_at(instant)
+      unless instant.is_a?(Astronoby::Instant)
+        raise ArgumentError, "instant must be an Astronoby::Instant"
+      end
+
+      return equatorial_coordinates if proper_motion_ra.nil?
+
+      propagated = Astronoby::StellarPropagation.equatorial_coordinates_for(
+        instant: instant,
+        equatorial_coordinates: equatorial_coordinates,
+        proper_motion_ra: proper_motion_ra,
+        proper_motion_dec: proper_motion_dec,
+        parallax: parallax || Star::PLACEHOLDER_PARALLAX,
+        radial_velocity: radial_velocity || Star::PLACEHOLDER_RADIAL_VELOCITY
+      )
+
+      Astronoby::Coordinates::Equatorial.new(
+        right_ascension: propagated.right_ascension,
+        declination: propagated.declination,
+        epoch: Astronoby::JulianDate::J2000
+      )
+    end
+
     private
 
     def proper_motion?(value)
@@ -71,4 +94,8 @@ module Skymap
           value.meters_per_second.finite?)
     end
   end
+
+  Star::PLACEHOLDER_PARALLAX = Astronoby::Angle.from_degree_arcseconds(0.001)
+  Star::PLACEHOLDER_RADIAL_VELOCITY =
+    Astronoby::Velocity.from_kilometers_per_second(0)
 end

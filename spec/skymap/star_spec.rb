@@ -146,6 +146,136 @@ RSpec.describe Skymap::Star do
     end
   end
 
+  describe "#coordinates_at" do
+    it "moves a star in right ascension by its proper motion" do
+      arcturus = arcturus_star
+      instant = Astronoby::Instant.from_time(Time.utc(2027, 8, 15, 21))
+      years = years_since_j2000(instant)
+
+      coordinates = arcturus.coordinates_at(instant)
+
+      shift = (coordinates.right_ascension.degrees -
+        arcturus.equatorial_coordinates.right_ascension.degrees) * 3600 *
+        arcturus.equatorial_coordinates.declination.cos
+      expect(shift).to be_within(0.1).of(-1.093 * years)
+    end
+
+    it "moves a star in declination by its proper motion" do
+      arcturus = arcturus_star
+      instant = Astronoby::Instant.from_time(Time.utc(2027, 8, 15, 21))
+      years = years_since_j2000(instant)
+
+      coordinates = arcturus.coordinates_at(instant)
+
+      shift = (coordinates.declination.degrees -
+        arcturus.equatorial_coordinates.declination.degrees) * 3600
+      expect(shift).to be_within(0.1).of(-1.998 * years)
+    end
+
+    it "gives coordinates at J2000, as the catalog does" do
+      instant = Astronoby::Instant.from_time(Time.utc(2027, 8, 15, 21))
+
+      coordinates = arcturus_star.coordinates_at(instant)
+
+      expect(coordinates.epoch).to eq(Astronoby::JulianDate::J2000)
+    end
+
+    it "leaves a star without proper motion where the catalog puts it" do
+      instant = Astronoby::Instant.from_time(Time.utc(2027, 8, 15, 21))
+      fixed = star(
+        right_ascension: 6.75,
+        declination: -16.7,
+        magnitude: -1.46,
+        parallax: Astronoby::Angle.from_degree_arcseconds(0.379),
+        radial_velocity: Astronoby::Velocity.from_kilometers_per_second(-5.5)
+      )
+
+      coordinates = fixed.coordinates_at(instant)
+
+      expect(coordinates).to eq(fixed.equatorial_coordinates)
+    end
+
+    it "gives the J2000 position at the J2000 instant" do
+      j2000 = Astronoby::Instant.from_time(Time.utc(2000, 1, 1, 12))
+
+      arcturus = arcturus_star
+
+      coordinates = arcturus.coordinates_at(j2000)
+
+      expect(
+        separation_in_arcseconds(coordinates, arcturus.equatorial_coordinates)
+      ).to be < 0.001
+    end
+
+    it "assumes a distant star when the parallax is unknown" do
+      instant = Astronoby::Instant.from_time(Time.utc(2027, 8, 15, 21))
+      known = arcturus_star
+      unknown = arcturus_star(parallax: nil)
+
+      with = known.coordinates_at(instant)
+      without = unknown.coordinates_at(instant)
+
+      expect(separation_in_arcseconds(with, without)).to be < 0.1
+      expect(without).not_to eq(unknown.equatorial_coordinates)
+    end
+
+    it "assumes no radial velocity when it is unknown" do
+      instant = Astronoby::Instant.from_time(Time.utc(2027, 8, 15, 21))
+      still = arcturus_star(radial_velocity: 0)
+      unknown = arcturus_star(radial_velocity: nil)
+
+      expected = still.coordinates_at(instant)
+      coordinates = unknown.coordinates_at(instant)
+
+      expect(coordinates.right_ascension.radians)
+        .to be_within(1e-12).of(expected.right_ascension.radians)
+      expect(coordinates.declination.radians)
+        .to be_within(1e-12).of(expected.declination.radians)
+    end
+
+    it "moves a star that has neither a parallax nor a radial velocity" do
+      instant = Astronoby::Instant.from_time(Time.utc(2027, 8, 15, 21))
+      bare = arcturus_star(parallax: nil, radial_velocity: nil)
+      full = arcturus_star
+
+      without = bare.coordinates_at(instant)
+      with = full.coordinates_at(instant)
+
+      expect(separation_in_arcseconds(with, without)).to be < 0.1
+    end
+
+    it "rejects an instant that is not an Astronoby::Instant" do
+      expect { arcturus_star.coordinates_at(Time.utc(2027, 8, 15, 21)) }
+        .to raise_error(
+          ArgumentError,
+          /instant must be an Astronoby::Instant/
+        )
+    end
+  end
+
+  def arcturus_star(parallax: 90, radial_velocity: -5)
+    star(
+      hr: 5340,
+      right_ascension: 14.261028,
+      declination: 19.1825,
+      magnitude: -0.04,
+      **motion(
+        proper_motion_ra: -1093,
+        proper_motion_dec: -1998,
+        parallax: parallax,
+        radial_velocity: radial_velocity
+      )
+    )
+  end
+
+  def separation_in_arcseconds(first, second)
+    Math.hypot(
+      (first.right_ascension.degrees - second.right_ascension.degrees) * 3600 *
+        first.declination.cos,
+      (first.declination.degrees - second.declination.degrees) * 3600
+    )
+  end
+
   def star_with(**astrometry)
     described_class.new(
       hr: 2491,

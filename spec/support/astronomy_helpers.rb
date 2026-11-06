@@ -37,7 +37,7 @@ module AstronomyHelpers
     )
   end
 
-  def star(right_ascension:, declination:, magnitude:, hr: nil)
+  def star(right_ascension:, declination:, magnitude:, hr: nil, **astrometry)
     Skymap::Star.new(
       hr: hr,
       equatorial_coordinates: Astronoby::Coordinates::Equatorial.new(
@@ -45,8 +45,28 @@ module AstronomyHelpers
         declination: Astronoby::Angle.from_degrees(declination),
         epoch: Astronoby::JulianDate::J2000
       ),
-      magnitude: magnitude
+      magnitude: magnitude,
+      **astrometry
     )
+  end
+
+  def motion(proper_motion_ra:, proper_motion_dec:, parallax: nil,
+    radial_velocity: nil)
+    {
+      proper_motion_ra: Astronoby::AngularVelocity
+        .from_milliarcseconds_per_year(proper_motion_ra),
+      proper_motion_dec: Astronoby::AngularVelocity
+        .from_milliarcseconds_per_year(proper_motion_dec),
+      parallax: parallax && Astronoby::Angle.from_degree_arcseconds(
+        parallax / 1000.0
+      ),
+      radial_velocity: radial_velocity &&
+        Astronoby::Velocity.from_kilometers_per_second(radial_velocity)
+    }
+  end
+
+  def years_since_j2000(instant)
+    (instant.tt - Astronoby::JulianDate::J2000) / 365.25
   end
 
   def equatorial(right_ascension:, declination:)

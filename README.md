@@ -195,6 +195,30 @@ Skymap::View.new(
 The north is the one of the celestial pole of the date, in both hemispheres.
 The lit side of the Moon follows the orientation too.
 
+### Accuracy
+
+Stars are drawn where they are at the date of the chart, not at their catalog
+position: their proper motion is applied from J2000 to the instant of the chart,
+then the position is precessed and nutated to the true equator and equinox of
+date, and seen from the observer. `Skymap::Star#coordinates_at(instant)` gives
+the first step, as `Astronoby::Coordinates::Equatorial` at J2000. A star without
+a proper motion stays where it is. For a star that has a proper motion but no
+parallax or no radial velocity, which is the case of most of the catalog for the
+parallax, a parallax of 1 milliarcsecond and a radial velocity of 0 are assumed:
+the position changes by less than 0.1 arcsecond.
+
+These are not applied:
+
+- the annual aberration of light, up to about 20 arcseconds
+- the annual parallax, under 1 arcsecond
+- the atmospheric refraction, which lifts a star near the horizon by up to half
+  a degree
+- the rounding of the positions of the Bright Star Catalogue, about 1 arcsecond
+
+The proper motion is visible in charts with a field of view under a degree:
+Arcturus moves by 1 arcminute in 27 years. In a larger field, it is smaller
+than a pixel for most stars.
+
 ### Themes
 
 A theme gives the colors of the map. `Chart` draws the dark theme by default,
@@ -262,6 +286,9 @@ in order: each layer is drawn over the previous ones. Without layers,
 `Skymap::Catalog::Stars` gives the 9,096 stars of the Yale Bright Star
 Catalogue (see [Data sources](#data-sources)), but the layer accepts any list
 of `Skymap::Star`.
+
+Stars are drawn at their position at the date of the chart, with their proper
+motion applied (see [Accuracy](#accuracy)).
 
 By default, only stars of magnitude 5 or brighter are drawn, which is about
 what you can see from a suburban sky. Use `magnitude_limit:` to draw more or
