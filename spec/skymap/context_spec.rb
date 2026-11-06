@@ -810,7 +810,7 @@ RSpec.describe Skymap::Context do
       end
     end
 
-    it "puts the north at the top and the east on the left of an equatorial view" do
+    it "puts the north on top and the east on the left in an equatorial view" do
       view = rotation_view(object_position, 5, orientation: :equatorial)
       context = rotation_context(view)
 
