@@ -7,6 +7,7 @@ module Skymap
     :type,
     :equatorial_coordinates,
     :magnitude,
+    :magnitude_band,
     :major_axis,
     :minor_axis,
     :position_angle
@@ -17,6 +18,7 @@ module Skymap
       equatorial_coordinates:,
       name: nil,
       magnitude: nil,
+      magnitude_band: nil,
       major_axis: nil,
       minor_axis: nil,
       position_angle: nil
@@ -45,6 +47,17 @@ module Skymap
         raise ArgumentError, "magnitude must be a finite Numeric or nil"
       end
 
+      unless DeepSkyObject::MAGNITUDE_BANDS.include?(magnitude_band) ||
+          magnitude_band.nil?
+        raise ArgumentError,
+          "magnitude_band must be one of " \
+          "#{DeepSkyObject::MAGNITUDE_BANDS.join(", ")} or nil"
+      end
+
+      if magnitude_band && magnitude.nil?
+        raise ArgumentError, "magnitude_band must come with a magnitude"
+      end
+
       unless axis?(major_axis)
         raise ArgumentError,
           "major_axis must be an Astronoby::Angle above 0 or nil"
@@ -70,11 +83,22 @@ module Skymap
       super
     end
 
+    def messier?
+      designation.match?(/\AM\d+\z/)
+    end
+
     alias_method :given_minor_axis, :minor_axis
     private :given_minor_axis
 
     def minor_axis
       given_minor_axis || major_axis
+    end
+
+    alias_method :given_magnitude_band, :magnitude_band
+    private :given_magnitude_band
+
+    def magnitude_band
+      given_magnitude_band || (:visual unless magnitude.nil?)
     end
 
     private
@@ -99,6 +123,8 @@ module Skymap
           value.radians.finite? && value.positive?)
     end
   end
+
+  DeepSkyObject::MAGNITUDE_BANDS = %i[visual blue].freeze
 
   DeepSkyObject::TYPES = %i[
     galaxy

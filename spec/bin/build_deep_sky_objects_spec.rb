@@ -78,8 +78,52 @@ RSpec.describe DeepSkyObjectBuilder do
       expect(described_class.selected?(record)).to be(true)
     end
 
-    it "leaves out an object without a Messier number" do
-      expect(described_class.selected?(record(M: nil))).to be(false)
+    it "keeps a faint object with a Messier number" do
+      expect(described_class.selected?(record(V_Mag: "13.5"))).to be(true)
+    end
+
+    it "keeps an NGC object of magnitude 12" do
+      object = record(Name: "NGC0869", M: nil, V_Mag: "12.0")
+
+      expect(described_class.selected?(object)).to be(true)
+    end
+
+    it "keeps an IC object that has only a blue magnitude" do
+      object = record(Name: "IC0434", M: nil, V_Mag: "", B_Mag: "11.0")
+
+      expect(described_class.selected?(object)).to be(true)
+    end
+
+    it "leaves out an NGC object fainter than magnitude 12" do
+      object = record(Name: "NGC0001", M: nil, V_Mag: "12.1")
+
+      expect(described_class.selected?(object)).to be(false)
+    end
+
+    it "leaves out an NGC object without a magnitude" do
+      object = record(Name: "NGC0281", M: nil, V_Mag: "", B_Mag: "")
+
+      expect(described_class.selected?(object)).to be(false)
+    end
+
+    it "leaves out a component of a galaxy, such as NGC 520 NED01" do
+      object = record(Name: "NGC0520 NED01", M: nil, V_Mag: "10")
+
+      expect(described_class.selected?(object)).to be(false)
+    end
+
+    it "leaves out objects of a type that is not an object of the sky" do
+      types = %w[Dup NonEx * Nova DrkN].map do |type|
+        described_class.selected?(record(Name: "NGC0001", M: nil, Type: type))
+      end
+
+      expect(types).to all(be(false))
+    end
+
+    it "leaves out an object of another catalog" do
+      object = record(Name: "C009", M: nil, V_Mag: "5.0")
+
+      expect(described_class.selected?(object)).to be(false)
     end
 
     it "leaves out a duplicate, such as M102" do
@@ -93,7 +137,7 @@ RSpec.describe DeepSkyObjectBuilder do
       row = described_class.row(record)
 
       expect(row).to eq(
-        ["M31", "Andromeda Galaxy", "galaxy", 0.712319, 41.269056, 3.44,
+        ["M31", "Andromeda Galaxy", "galaxy", 0.712319, 41.269056, 3.44, "V",
           177.83, 69.66, 35.0]
       )
     end
@@ -107,7 +151,8 @@ RSpec.describe DeepSkyObjectBuilder do
       )
 
       expect(row).to eq(
-        ["M40", nil, "double_star", 0.712319, 41.269056, 8.0, nil, nil, nil]
+        ["M40", nil, "double_star", 0.712319, 41.269056, 8.0, "V", nil, nil,
+          nil]
       )
     end
 
@@ -115,12 +160,14 @@ RSpec.describe DeepSkyObjectBuilder do
       row = described_class.row(record(V_Mag: "", B_Mag: "4.29"))
 
       expect(row[5]).to eq(4.29)
+      expect(row[6]).to eq("B")
     end
 
     it "leaves the magnitude blank when there is none" do
       row = described_class.row(record(V_Mag: "", B_Mag: ""))
 
       expect(row[5]).to be_nil
+      expect(row[6]).to be_nil
     end
 
     it "keeps the first common name" do
@@ -219,18 +266,20 @@ RSpec.describe DeepSkyObjectBuilder do
   end
 
   describe ".rows" do
-    it "keeps the Messier objects, sorted by number" do
+    it "keeps the Messier objects and the bright NGC and IC objects, sorted" do
       records = [
         record(Name: "NGC0598", M: "033"),
-        record(Name: "NGC0001", M: nil),
+        record(Name: "IC0005", M: nil, V_Mag: "11"),
+        record(Name: "NGC0001", M: nil, V_Mag: "15"),
         record(Name: "M102", Type: "Dup", M: "101"),
         record(Name: "NGC1952", M: "001"),
+        record(Name: "NGC0869", M: nil, V_Mag: "3.7"),
         record(Name: "NGC0224", M: "031")
       ]
 
       rows = described_class.rows(records)
 
-      expect(rows.map(&:first)).to eq(%w[M1 M31 M33])
+      expect(rows.map(&:first)).to eq(["M1", "M31", "M33", "NGC 869", "IC 5"])
     end
   end
 
@@ -260,9 +309,9 @@ RSpec.describe DeepSkyObjectBuilder do
       described_class.write(rows, path)
 
       expect(File.read(path)).to eq(<<~CSV)
-        designation,name,type,right_ascension,declination,magnitude,major_axis,minor_axis,position_angle
-        M31,Andromeda Galaxy,galaxy,0.712319,41.269056,3.44,177.83,69.66,35.0
-        M40,,double_star,0.712319,41.269056,8.0,,,
+        designation,name,type,right_ascension,declination,magnitude,magnitude_band,major_axis,minor_axis,position_angle
+        M31,Andromeda Galaxy,galaxy,0.712319,41.269056,3.44,V,177.83,69.66,35.0
+        M40,,double_star,0.712319,41.269056,8.0,V,,,
       CSV
     end
   end
