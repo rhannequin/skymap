@@ -70,8 +70,8 @@ module Skymap
         equatorial_coordinates: equatorial_coordinates,
         proper_motion_ra: proper_motion_ra,
         proper_motion_dec: proper_motion_dec,
-        parallax: parallax || Star::PLACEHOLDER_PARALLAX,
-        radial_velocity: radial_velocity || Star::PLACEHOLDER_RADIAL_VELOCITY
+        parallax: parallax || placeholder_parallax,
+        radial_velocity: radial_velocity || placeholder_radial_velocity
       )
 
       Astronoby::Coordinates::Equatorial.new(
@@ -80,6 +80,15 @@ module Skymap
         epoch: Astronoby::JulianDate::J2000
       )
     end
+
+    placeholder_parallax = Astronoby::Angle.from_degree_arcseconds(0.001)
+    placeholder_radial_velocity =
+      Astronoby::Velocity.from_kilometers_per_second(0)
+
+    private define_method(:placeholder_parallax) { placeholder_parallax }
+    private define_method(:placeholder_radial_velocity) {
+      placeholder_radial_velocity
+    }
 
     private
 
@@ -101,8 +110,4 @@ module Skymap
           value.meters_per_second.finite?)
     end
   end
-
-  Star::PLACEHOLDER_PARALLAX = Astronoby::Angle.from_degree_arcseconds(0.001)
-  Star::PLACEHOLDER_RADIAL_VELOCITY =
-    Astronoby::Velocity.from_kilometers_per_second(0)
 end
