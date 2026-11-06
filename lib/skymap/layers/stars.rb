@@ -19,10 +19,12 @@ module Skymap
         @stars.filter_map do |star|
           next if star.magnitude > @magnitude_limit
 
+          radius = star_size.radius(star.magnitude)
+          next unless context.possibly_visible?(star, radius)
+
           next if context.horizontal(star).altitude.negative?
 
           center = context.position(star)
-          radius = star_size.radius(star.magnitude)
           next unless context.in_view?(center, radius)
 
           Renderer::Dot.new(center: center, radius: radius)

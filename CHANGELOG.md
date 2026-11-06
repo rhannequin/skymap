@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Astronoby::Instant`, with its proper motion applied, as
   `Astronoby::Coordinates::Equatorial` at J2000. A star with a proper motion
   must have coordinates at J2000, or `Skymap::Star` raises an `ArgumentError`
+- `Skymap::Context#possibly_visible?` tells whether a star can be drawn on the
+  chart, above the horizon and in the view, without applying its proper motion,
+  so that the layers of stars skip the stars far from a zoomed view
 - `Skymap::View` zooms the map on an area of the sky, given by the equatorial
   or horizontal coordinates of its center and a field of view as an
   `Astronoby::Angle`, with `view:` on `Skymap::Chart`, with the horizon drawn as

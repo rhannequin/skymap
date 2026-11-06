@@ -207,7 +207,9 @@ coordinates must be at J2000, or `Skymap::Star` raises an `ArgumentError`. For a
 star that has a proper motion but no parallax or no radial velocity, which is
 the case of most of the catalog for the parallax, a parallax of 1 milliarcsecond
 and a radial velocity of 0 are assumed: the position changes by less than 0.1
-arcsecond.
+arcsecond. To keep the charts fast, the proper motion is left out of a star that
+it moves by less than 0.005 pixel on the chart, so a star is drawn within 0.005
+pixel of where the full propagation puts it.
 
 These are not applied:
 

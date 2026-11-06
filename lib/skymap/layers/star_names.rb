@@ -29,10 +29,12 @@ module Skymap
           name = @names[star.hr]
           next unless name
 
+          radius = star_size.radius(star.magnitude)
+          next unless context.possibly_visible?(star, radius)
+
           next if context.horizontal(star).altitude.negative?
 
           center = context.position(star)
-          radius = star_size.radius(star.magnitude)
           next unless context.in_view?(center, radius)
 
           Renderer::Caption.beside(
