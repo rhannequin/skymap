@@ -21,8 +21,7 @@ module Skymap
     end
 
     def horizontal(star)
-      @star_horizontals[star] ||=
-        horizontal_coordinates(star.coordinates_at(@instant))
+      @star_horizontals[star] ||= convert(star.coordinates_at(@instant))
     end
 
     def horizontal_coordinates(coordinates)

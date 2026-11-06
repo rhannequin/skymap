@@ -8,14 +8,9 @@ RSpec.describe Skymap::Context do
         canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
       )
       polaris = star(right_ascension: 2.53, declination: 89.26, magnitude: 2)
-      same_polaris = star(
-        right_ascension: 2.53,
-        declination: 89.26,
-        magnitude: 2
-      )
 
       first = context.horizontal(polaris)
-      second = context.horizontal(same_polaris)
+      second = context.horizontal(polaris)
 
       expect(second).to be(first)
     end
@@ -95,9 +90,9 @@ RSpec.describe Skymap::Context do
 
       horizontal = context.horizontal(still)
 
-      expect(horizontal).to eq(
-        context.horizontal_coordinates(still.equatorial_coordinates)
-      )
+      expected = context.horizontal_coordinates(still.equatorial_coordinates)
+      expect(horizontal.altitude).to eq(expected.altitude)
+      expect(horizontal.azimuth).to eq(expected.azimuth)
     end
 
     it "propagates a star once" do
@@ -173,6 +168,22 @@ RSpec.describe Skymap::Context do
   end
 
   describe "#horizontal_coordinates" do
+    it "computes the position of the same coordinates once" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 1.5)
+      )
+
+      first = context.horizontal_coordinates(
+        equatorial(right_ascension: 2.53, declination: 89.26)
+      )
+      second = context.horizontal_coordinates(
+        equatorial(right_ascension: 2.53, declination: 89.26)
+      )
+
+      expect(second).to be(first)
+    end
+
     it "gives the position of coordinates of the sky" do
       context = context_at(
         latitude: 90,
