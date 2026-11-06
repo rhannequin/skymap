@@ -1,0 +1,164 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "csv"
+require "net/http"
+
+module DeepSkyObjectBuilder
+  COMMIT = "36cb178a0f69dba8bfc03a99c10512831edf1c6b"
+  SOURCE = "https://raw.githubusercontent.com/mattiaverga/OpenNGC/" \
+    "#{COMMIT}/database_files".freeze
+  FILES = %w[NGC.csv addendum.csv].freeze
+  OUTPUT = File.expand_path("../data/deep_sky_objects.csv", __dir__)
+  HEADERS = %w[
+    designation
+    name
+    type
+    right_ascension
+    declination
+    magnitude
+    major_axis
+    minor_axis
+    position_angle
+  ].freeze
+  REQUIRED_COLUMNS = [
+    "Name", "Type", "RA", "Dec", "MajAx", "MinAx", "PosAng", "B-Mag", "V-Mag",
+    "M", "Common names"
+  ].freeze
+  TYPES = {
+    "G" => "galaxy",
+    "GPair" => "galaxy",
+    "GTrpl" => "galaxy",
+    "GGroup" => "galaxy",
+    "OCl" => "open_cluster",
+    "GCl" => "globular_cluster",
+    "PN" => "planetary_nebula",
+    "Neb" => "nebula",
+    "HII" => "nebula",
+    "EmN" => "nebula",
+    "RfN" => "nebula",
+    "Cl+N" => "nebula",
+    "SNR" => "supernova_remnant",
+    "*Ass" => "asterism",
+    "**" => "double_star",
+    "Other" => "other"
+  }.freeze
+  CATALOGS = %w[M NGC IC].freeze
+
+  def self.fetch(file)
+    response = Net::HTTP.get_response(URI("#{SOURCE}/#{file}"))
+    response.value
+    response.body.force_encoding("UTF-8")
+  end
+
+  def self.parse(content)
+    table = CSV.parse(content, headers: true, col_sep: ";")
+    missing = REQUIRED_COLUMNS - table.headers
+    unless missing.empty?
+      raise ArgumentError, "missing columns: #{missing.join(", ")}"
+    end
+
+    table.map { |row| row }
+  end
+
+  def self.records(directory = nil)
+    FILES.flat_map do |file|
+      content = directory ? File.read(File.join(directory, file)) : fetch(file)
+      parse(content)
+    end
+  end
+
+  def self.selected?(record)
+    !blank?(record["M"]) && record["Type"] != "Dup"
+  end
+
+  def self.designation(record)
+    return "M#{record["M"].to_i}" unless blank?(record["M"])
+
+    match = record["Name"].match(/\A(NGC|IC)0*(\d+)(\D*)\z/)
+    unless match
+      raise ArgumentError, "unknown designation: #{record["Name"].inspect}"
+    end
+
+    "#{match[1]} #{match[2]}#{match[3]}"
+  end
+
+  def self.type(record)
+    TYPES.fetch(record["Type"]) do
+      raise ArgumentError,
+        "unknown type #{record["Type"].inspect} for #{record["Name"]}"
+    end
+  end
+
+  def self.name(record)
+    name = record["Common names"].to_s.split(",").first.to_s.strip
+    name unless name.empty?
+  end
+
+  def self.right_ascension(value)
+    hours, minutes, seconds = value.split(":").map { |part| Float(part) }
+    (hours + minutes / 60.0 + seconds / 3600.0).round(6)
+  end
+
+  def self.declination(value)
+    sign = value.start_with?("-") ? -1 : 1
+    degrees, minutes, seconds = value.delete("+-").split(":").map do |part|
+      Float(part)
+    end
+    (sign * (degrees + minutes / 60.0 + seconds / 3600.0)).round(6)
+  end
+
+  def self.magnitude(record)
+    value = [record["V-Mag"], record["B-Mag"]].find { |mag| !blank?(mag) }
+    Float(value) if value
+  end
+
+  def self.number(value)
+    Float(value) unless blank?(value)
+  end
+
+  def self.row(record)
+    [
+      designation(record),
+      name(record),
+      type(record),
+      right_ascension(record["RA"]),
+      declination(record["Dec"]),
+      magnitude(record),
+      number(record["MajAx"]),
+      number(record["MinAx"]),
+      number(record["PosAng"])
+    ]
+  end
+
+  def self.rows(records)
+    records.select { |record| selected?(record) }
+      .map { |record| row(record) }
+      .sort_by { |row| sort_key(row.first) }
+  end
+
+  def self.sort_key(designation)
+    catalog, number, suffix = designation.match(/\A([A-Z]+) ?(\d+)(.*)\z/)
+      .captures
+    [CATALOGS.index(catalog), number.to_i, suffix]
+  end
+
+  def self.write(rows, path = OUTPUT)
+    CSV.open(path, "w") do |csv|
+      csv << HEADERS
+      rows.each { |row| csv << row }
+    end
+  end
+
+  def self.blank?(value)
+    value.nil? || value.strip.empty?
+  end
+end
+
+if $PROGRAM_NAME == __FILE__
+  input, output = ARGV
+  DeepSkyObjectBuilder.write(
+    DeepSkyObjectBuilder.rows(DeepSkyObjectBuilder.records(input)),
+    output || DeepSkyObjectBuilder::OUTPUT
+  )
+end

@@ -1,0 +1,28 @@
+data/deep_sky_objects.csv
+
+This file is adapted from OpenNGC (https://github.com/mattiaverga/OpenNGC),
+release v20260501, by Mattia Verga, and is licensed under the Creative Commons
+Attribution-ShareAlike 4.0 International license (CC BY-SA 4.0):
+
+  https://creativecommons.org/licenses/by-sa/4.0/
+
+The rest of the Skymap gem is released under the MIT License (LICENSE.txt).
+This license applies to this data file only. If you share this file or data
+adapted from it, you must give credit as above, indicate your changes and
+release your version under CC BY-SA 4.0 or a compatible license.
+
+Changes made to OpenNGC: only the Messier objects are kept (the NGC.csv and
+addendum.csv files, without the duplicate record of M102), the columns are
+renamed and reduced, the right ascensions are in decimal hours, the type codes
+are replaced by Skymap types, and the magnitude is the V magnitude, or the B
+magnitude when there is none.
+
+OpenNGC credits its data sources:
+
+- NASA/IPAC Extragalactic Database (NED), operated by the Jet Propulsion
+  Laboratory, California Institute of Technology, under contract with the
+  National Aeronautics and Space Administration.
+- HyperLEDA database (http://leda.univ-lyon1.fr).
+- SIMBAD astronomical database, operated at CDS, Strasbourg, France.
+- HEASARC, the High Energy Astrophysics Science Archive Research Center.
+- Harold Corwin's NGC/IC Positions and Notes.

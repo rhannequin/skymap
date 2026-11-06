@@ -785,6 +785,74 @@ The file is generated with `bin/build_boundaries`, which downloads the
 catalog from CDS, keeps each shared border once, adds the points along the
 borders and precesses them to J2000 with Astronoby.
 
+### Deep-sky objects
+
+`data/deep_sky_objects.csv` holds the 109 Messier objects, from
+[OpenNGC][openngc] (release v20260501, commit `36cb178`), one row per object:
+
+- `designation`: `M31` for a Messier object. Objects of the NGC and IC
+  catalogs, once added, are named like `NGC 7000`, without zero padding.
+- `name`: the first common name of OpenNGC, blank when it has none.
+- `type`: one of the types below.
+- `right_ascension` (hours) and `declination` (degrees): J2000 coordinates.
+- `magnitude`: the visual (V) magnitude, or the blue (B) one when there is no
+  V magnitude. Every Messier object has a V magnitude.
+- `major_axis` and `minor_axis`: the size in arcminutes, blank when unknown.
+- `position_angle`: the angle of the major axis in degrees, from the north
+  through the east, blank when unknown. OpenNGC only gives it to galaxies, M24
+  and the Pleiades.
+
+The OpenNGC types become these ones:
+
+| OpenNGC                                | `type`              |
+| -------------------------------------- | ------------------- |
+| `G`, `GPair`, `GTrpl`, `GGroup`        | `galaxy`            |
+| `OCl`                                  | `open_cluster`      |
+| `GCl`                                  | `globular_cluster`  |
+| `PN`                                   | `planetary_nebula`  |
+| `Neb`, `HII`, `EmN`, `RfN`, `Cl+N`     | `nebula`            |
+| `SNR`                                  | `supernova_remnant` |
+| `*Ass`                                 | `asterism`          |
+| `**`                                   | `double_star`       |
+| `Other`                                | `other`             |
+
+M42 is the only Messier object of OpenNGC type `Cl+N`, a cluster with
+nebulosity: it is a `nebula`, as its nebulosity is far larger than the
+Trapezium cluster at its center. M24 (a star cloud) is an `asterism`, M73 is
+`other`, and M40 is a `double_star`: OpenNGC lists it with no size. Any other
+OpenNGC type stops the build.
+
+`Skymap::Catalog::DeepSkyObjects` loads them as `Skymap::DeepSkyObject`, with
+the sizes as `Astronoby::Angle`. A `minor_axis` is blank for most clusters and
+some nebulae: `Skymap::DeepSkyObject#axes` gives the major and the minor axis
+of an object, and takes a blank minor axis as a round object, with the same
+diameter as the major axis. It gives `nil` when the size is unknown (M40, M73).
+
+OpenNGC identifies M102 as a duplicate of M101 (its identity is controversial
+and it follows the assumption of NED), so M102 is left out and the file has no
+`M102`. M40 and M45 are not in the NGC and IC catalogs: they come from the
+addendum of OpenNGC, where the Pleiades are listed as Melotte 22.
+
+The file is generated with `bin/build_deep_sky_objects`, which downloads
+`NGC.csv` and `addendum.csv` from the pinned commit of OpenNGC and keeps the
+Messier objects. Pass the path of a local directory holding the two files to
+build from it. The output must not change when you run it again.
+
+OpenNGC is released under the [Creative Commons Attribution-ShareAlike 4.0
+International][cc-by-sa-4] license, and so is `data/deep_sky_objects.csv`: the
+license, with the credits and changes, is in
+`data/LICENSE-deep_sky_objects.txt`, shipped with the gem. If you share this
+file or data adapted from it, you must release your version under the same
+license. The code of Skymap stays under the MIT license.
+
+OpenNGC merges the data of the NASA/IPAC Extragalactic Database (NED),
+HyperLEDA, SIMBAD, the HEASARC archive and Harold Corwin's NGC/IC Positions and
+Notes. This research has made use of the NASA/IPAC Extragalactic Database
+(NED), which is operated by the Jet Propulsion Laboratory, California Institute
+of Technology, under contract with the National Aeronautics and Space
+Administration, of the HyperLEDA database, and of the SIMBAD database, operated
+at CDS, Strasbourg, France.
+
 ### Ephemeris of the tests
 
 The tests of the Sun, the Moon and the planets use
@@ -828,7 +896,9 @@ the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License].
+The gem is available as open source under the terms of the [MIT License]. The
+data file `data/deep_sky_objects.csv` is adapted from OpenNGC and released under
+[CC BY-SA 4.0][cc-by-sa-4] (see [Data sources](#deep-sky-objects)).
 
 ## Code of Conduct
 
@@ -850,4 +920,6 @@ rooms and mailing lists is expected to follow the
 [jpl-ephemerides]: https://ssd.jpl.nasa.gov/planets/eph_export.html
 [naif]: https://naif.jpl.nasa.gov/naif/rules.html
 [cc-by-4]: https://creativecommons.org/licenses/by/4.0/
+[cc-by-sa-4]: https://creativecommons.org/licenses/by-sa/4.0/
+[openngc]: https://github.com/mattiaverga/OpenNGC
 [iau-csn]: https://www.pas.rochester.edu/~emamajek/WGSN/IAU-CSN.txt
