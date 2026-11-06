@@ -222,7 +222,11 @@ RSpec.describe Skymap::Theme do
     end
   end
 
-  {scale: :star_name, field_circle: :planet}.each do |slot, fallback|
+  {
+    scale: :star_name,
+    field_circle: :planet,
+    deep_sky: :constellation_name
+  }.each do |slot, fallback|
     describe "the #{slot} color" do
       it "is the #{fallback} color when it is not set" do
         theme = theme_from_0_4_0
