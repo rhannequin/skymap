@@ -7,47 +7,47 @@
 </clipPath>
 </defs>
 <g clip-path="url(#sky-400_0-400_0-376_0)">
-<circle cx="135.95" cy="630.13" r="1.16" fill="#ffffff"/>
-<circle cx="305.98" cy="432.89" r="1.45" fill="#ffffff"/>
-<circle cx="308.85" cy="399.77" r="2.53" fill="#ffffff"/>
-<circle cx="321.92" cy="536.14" r="1.36" fill="#ffffff"/>
-<circle cx="323.52" cy="466.21" r="2.12" fill="#ffffff"/>
-<circle cx="349.89" cy="447.38" r="2.41" fill="#ffffff"/>
-<circle cx="353.46" cy="482.5" r="1.31" fill="#ffffff"/>
-<circle cx="359.5" cy="477.47" r="1.05" fill="#ffffff"/>
-<circle cx="371.0" cy="368.44" r="2.2" fill="#ffffff"/>
-<circle cx="420.8" cy="397.77" r="3.17" fill="#ffffff"/>
-<circle cx="457.83" cy="269.18" r="1.45" fill="#ffffff"/>
-<circle cx="492.74" cy="388.05" r="2.58" fill="#ffffff"/>
-<circle cx="493.79" cy="403.72" r="1.64" fill="#ffffff"/>
-<circle cx="517.07" cy="323.87" r="1.14" fill="#ffffff"/>
-<circle cx="526.06" cy="48.04" r="1.18" fill="#ffffff"/>
-<circle cx="541.2" cy="675.08" r="1.55" fill="#ffffff"/>
-<text x="305.98" y="420.91" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+<circle cx="135.96" cy="630.1" r="1.16" fill="#ffffff"/>
+<circle cx="306.0" cy="432.82" r="1.45" fill="#ffffff"/>
+<circle cx="308.88" cy="399.7" r="2.53" fill="#ffffff"/>
+<circle cx="321.95" cy="536.07" r="1.36" fill="#ffffff"/>
+<circle cx="323.54" cy="466.14" r="2.12" fill="#ffffff"/>
+<circle cx="349.91" cy="447.31" r="2.41" fill="#ffffff"/>
+<circle cx="353.48" cy="482.45" r="1.31" fill="#ffffff"/>
+<circle cx="359.52" cy="477.4" r="1.05" fill="#ffffff"/>
+<circle cx="371.03" cy="368.38" r="2.2" fill="#ffffff"/>
+<circle cx="420.83" cy="397.7" r="3.17" fill="#ffffff"/>
+<circle cx="457.87" cy="269.1" r="1.45" fill="#ffffff"/>
+<circle cx="492.76" cy="387.99" r="2.58" fill="#ffffff"/>
+<circle cx="493.81" cy="403.64" r="1.64" fill="#ffffff"/>
+<circle cx="517.09" cy="323.8" r="1.14" fill="#ffffff"/>
+<circle cx="526.08" cy="47.99" r="1.18" fill="#ffffff"/>
+<circle cx="541.26" cy="674.92" r="1.55" fill="#ffffff"/>
+<text x="306.0" y="420.85" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Celaeno
 </text>
-<text x="308.85" y="412.82" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+<text x="308.88" y="412.76" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Electra
 </text>
-<text x="323.52" y="453.56" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+<text x="323.54" y="453.49" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Taygeta
 </text>
-<text x="349.89" y="434.44" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+<text x="349.91" y="434.37" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Maia
 </text>
-<text x="353.46" y="470.67" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+<text x="353.48" y="470.61" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Asterope
 </text>
-<text x="371.0" y="381.17" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+<text x="371.03" y="381.1" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Merope
 </text>
-<text x="420.8" y="411.46" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+<text x="420.83" y="411.4" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Alcyone
 </text>
-<text x="492.74" y="401.16" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+<text x="492.76" y="401.1" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Atlas
 </text>
-<text x="493.79" y="391.55" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
+<text x="493.81" y="391.48" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">
 Pleione
 </text>
 </g>

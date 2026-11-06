@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Catalogue, and `Skymap::Star` takes the optional `proper_motion_ra:`,
   `proper_motion_dec:` (`Astronoby::AngularVelocity`), `parallax:`
   (`Astronoby::Angle`) and `radial_velocity:` (`Astronoby::Velocity`)
+- `Skymap::Star#coordinates_at` gives the equatorial coordinates of a star at an
+  `Astronoby::Instant`, with its proper motion applied, as
+  `Astronoby::Coordinates::Equatorial` at J2000. A star with a proper motion
+  must have coordinates at J2000, or `Skymap::Star` raises an `ArgumentError`
 - `Skymap::View` zooms the map on an area of the sky, given by the equatorial
   or horizontal coordinates of its center and a field of view as an
   `Astronoby::Angle`, with `view:` on `Skymap::Chart`, with the horizon drawn as
@@ -55,6 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as the center of a `Skymap::View`, can be at J2000 or at the date of the
   chart, and any other epoch now raises an `ArgumentError` (it was an
   `Astronoby::IncompatibleArgumentsError`)
+- Stars are drawn at their position at the date of the chart, with their proper
+  motion applied from J2000, instead of at their catalog position: the positions
+  of stars in existing charts change, visibly only in charts with a field of
+  view under a degree. A star without a proper motion does not move
 
 ## [0.4.0] - 2026-11-05
 

@@ -38,6 +38,13 @@ module Skymap
           "proper_motion_ra and proper_motion_dec must be given together"
       end
 
+      if proper_motion_ra &&
+          equatorial_coordinates.epoch != Astronoby::JulianDate::J2000
+        raise ArgumentError,
+          "equatorial_coordinates must be at J2000 when a proper motion " \
+          "is given, as it is applied from J2000"
+      end
+
       unless parallax?(parallax)
         raise ArgumentError,
           "parallax must be an Astronoby::Angle above 0 or nil"
@@ -50,6 +57,38 @@ module Skymap
 
       super
     end
+
+    def coordinates_at(instant)
+      unless instant.is_a?(Astronoby::Instant)
+        raise ArgumentError, "instant must be an Astronoby::Instant"
+      end
+
+      return equatorial_coordinates if proper_motion_ra.nil?
+
+      propagated = Astronoby::StellarPropagation.equatorial_coordinates_for(
+        instant: instant,
+        equatorial_coordinates: equatorial_coordinates,
+        proper_motion_ra: proper_motion_ra,
+        proper_motion_dec: proper_motion_dec,
+        parallax: parallax || placeholder_parallax,
+        radial_velocity: radial_velocity || placeholder_radial_velocity
+      )
+
+      Astronoby::Coordinates::Equatorial.new(
+        right_ascension: propagated.right_ascension,
+        declination: propagated.declination,
+        epoch: Astronoby::JulianDate::J2000
+      )
+    end
+
+    placeholder_parallax = Astronoby::Angle.from_degree_arcseconds(0.001)
+    placeholder_radial_velocity =
+      Astronoby::Velocity.from_kilometers_per_second(0)
+
+    private define_method(:placeholder_parallax) { placeholder_parallax }
+    private define_method(:placeholder_radial_velocity) {
+      placeholder_radial_velocity
+    }
 
     private
 
