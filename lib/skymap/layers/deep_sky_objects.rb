@@ -22,7 +22,7 @@ module Skymap
         minimum = MIN_RADIUS_RATIO * radius
         width = LINE_WIDTH_RATIO * radius
 
-        @objects.flat_map do |object|
+        brightest_first.flat_map do |object|
           next [] if too_faint?(object)
 
           draw(context, object, minimum, width)
@@ -30,6 +30,12 @@ module Skymap
       end
 
       private
+
+      def brightest_first
+        @objects.each_with_index
+          .sort_by { |object, index| [object.magnitude || Float::INFINITY, index] }
+          .map(&:first)
+      end
 
       def too_faint?(object)
         object.magnitude && object.magnitude > @magnitude_limit

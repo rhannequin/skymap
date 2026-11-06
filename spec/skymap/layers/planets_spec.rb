@@ -104,6 +104,8 @@ RSpec.describe Skymap::Layers::Planets do
       expect(caption.text).to eq("Saturn")
       expect(caption.kind).to eq(:planet)
       expect(caption.size).to be_within(0.001).of(5.6)
+      expect(caption.anchor).to eq(saturn.center)
+      expect(caption.clearance).to eq(saturn.radius)
       expect(caption.position.x).to eq(saturn.center.x)
       expect(caption.position.y).to be_within(0.001).of(
         saturn.center.y - saturn.radius - caption.size

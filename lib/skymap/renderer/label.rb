@@ -2,6 +2,8 @@
 
 module Skymap
   module Renderer
-    Label = Data.define(:position, :text, :size)
+    Label = Data.define(:position, :text, :size) do
+      include TextWidth
+    end
   end
 end

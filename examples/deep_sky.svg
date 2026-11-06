@@ -22,29 +22,11 @@
 <text x="348.1" y="736.37" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
 M49
 </text>
-<g transform="rotate(-179.41 202.7 465.23)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
-<ellipse cx="202.7" cy="465.23" rx="4.51" ry="3.46"/>
-</g>
-<text x="202.7" y="450.19" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
-M58
-</text>
-<g transform="rotate(105.81 123.16 477.14)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
-<ellipse cx="123.16" cy="477.14" rx="4.51" ry="3.18"/>
-</g>
-<text x="123.16" y="462.1" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
-M59
-</text>
 <g transform="rotate(165.89 93.04 483.79)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
 <ellipse cx="93.04" cy="483.79" rx="4.51" ry="3.63"/>
 </g>
 <text x="93.04" y="468.75" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
 M60
-</text>
-<g transform="rotate(136.91 435.49 385.93)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
-<ellipse cx="435.49" cy="385.93" rx="4.64" ry="4.03"/>
-</g>
-<text x="435.49" y="401.09" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
-M84
 </text>
 <g transform="rotate(141.97 414.73 381.49)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
 <ellipse cx="414.73" cy="381.49" rx="7.22" ry="5.28"/>
@@ -58,17 +40,11 @@ M86
 <text x="329.83" y="408.03" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
 M87
 </text>
-<g transform="rotate(132.31 309.29 270.44)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
-<ellipse cx="309.29" cy="270.44" rx="5.42" ry="2.74"/>
+<g transform="rotate(161.77 473.99 165.19)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
+<ellipse cx="473.99" cy="165.19" rx="4.51" ry="4.16"/>
 </g>
-<text x="309.29" y="286.39" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
-M88
-</text>
-<g transform="rotate(120.49 241.1 410.09)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
-<ellipse cx="241.1" cy="410.09" rx="5.09" ry="5.01"/>
-</g>
-<text x="241.1" y="394.47" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
-M89
+<text x="473.99" y="180.23" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+M100
 </text>
 <g transform="rotate(-111.43 220.15 364.29)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
 <ellipse cx="220.15" cy="364.29" rx="5.71" ry="2.39"/>
@@ -76,17 +52,17 @@ M89
 <text x="220.15" y="380.53" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
 M90
 </text>
-<g transform="rotate(120.51 246.45 264.28)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
-<ellipse cx="246.45" cy="264.28" rx="4.51" ry="3.67"/>
+<g transform="rotate(105.81 123.16 477.14)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
+<ellipse cx="123.16" cy="477.14" rx="4.51" ry="3.18"/>
 </g>
-<text x="246.45" y="279.32" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
-M91
+<text x="123.16" y="462.1" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+M59
 </text>
-<g transform="rotate(117.23 639.77 233.04)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
-<ellipse cx="639.77" cy="233.04" rx="6.92" ry="1.67"/>
+<g transform="rotate(136.91 435.49 385.93)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
+<ellipse cx="435.49" cy="385.93" rx="4.64" ry="4.03"/>
 </g>
-<text x="639.77" y="250.49" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
-M98
+<text x="435.49" y="370.76" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+M84
 </text>
 <g transform="rotate(-113.46 548.81 270.41)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
 <ellipse cx="548.81" cy="270.41" rx="4.51" ry="4.24"/>
@@ -94,11 +70,35 @@ M98
 <text x="548.81" y="285.45" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
 M99
 </text>
-<g transform="rotate(161.77 473.99 165.19)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
-<ellipse cx="473.99" cy="165.19" rx="4.51" ry="4.16"/>
+<g transform="rotate(120.49 241.1 410.09)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
+<ellipse cx="241.1" cy="410.09" rx="5.09" ry="5.01"/>
 </g>
-<text x="473.99" y="180.23" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
-M100
+<text x="241.1" y="425.71" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+M89
+</text>
+<g transform="rotate(-179.41 202.7 465.23)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
+<ellipse cx="202.7" cy="465.23" rx="4.51" ry="3.46"/>
+</g>
+<text x="202.7" y="450.19" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+M58
+</text>
+<g transform="rotate(132.31 309.29 270.44)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
+<ellipse cx="309.29" cy="270.44" rx="5.42" ry="2.74"/>
+</g>
+<text x="309.29" y="286.39" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+M88
+</text>
+<g transform="rotate(117.23 639.77 233.04)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
+<ellipse cx="639.77" cy="233.04" rx="6.92" ry="1.67"/>
+</g>
+<text x="639.77" y="250.49" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+M98
+</text>
+<g transform="rotate(120.51 246.45 264.28)" fill="none" stroke="#6f8fc2" stroke-width="1.13" stroke-linejoin="round">
+<ellipse cx="246.45" cy="264.28" rx="4.51" ry="3.67"/>
+</g>
+<text x="246.45" y="279.32" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#6f8fc2">
+M91
 </text>
 <polyline points="212.0,680.5 212.0,685.76 287.26,685.76 287.26,680.5" fill="none" stroke="#a8b8d0" stroke-width="1.88"/>
 <text x="249.63" y="673.13" font-size="10.53" font-family="sans-serif" text-anchor="middle" dominant-baseline="central" fill="#a8b8d0">

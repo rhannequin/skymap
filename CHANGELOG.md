@@ -71,6 +71,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Labels of stars, planets, deep-sky objects and fields no longer overlap other
+  labels, the symbols of deep-sky objects, planets, the Sun and the Moon, or
+  bright stars. A label that does not fit beside its object moves to another
+  side of it, and one with no room at all is left out.
+  `Skymap::Layers::DeepSkyObjects` gives the brighter objects the room first
 - The lit side of `Skymap::Layers::Moon` faces the Sun on the map, wherever
   the Moon is and in every orientation of the view, instead of being drawn as
   the observer sees it from the ground

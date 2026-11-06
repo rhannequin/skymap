@@ -240,4 +240,42 @@ RSpec.describe Skymap::Chart do
       expect(texts_in(svg)).to be_empty
     end
   end
+
+  describe "#render with labels" do
+    it "moves the labels that would overlap" do
+      first = deep_sky_object(
+        designation: "M84", right_ascension: 12.42, declination: 12.88
+      )
+      second = deep_sky_object(
+        designation: "M86", right_ascension: 12.421, declination: 12.89
+      )
+      chart = described_class.new(
+        observer: observer_at(latitude: 48.8575),
+        instant: Astronoby::Instant.from_time(Time.utc(2026, 4, 15, 22)),
+        canvas: Skymap::Canvas.new(size: 800, padding: 24),
+        view: Skymap::View.new(
+          center: equatorial(right_ascension: 12.42, declination: 13.3),
+          field_of_view: Astronoby::Angle.from_degrees(2)
+        )
+      )
+
+      svg = chart.render(
+        Skymap::Layers::DeepSkyObjects.new(
+          objects: [first, second],
+          labels: true
+        )
+      )
+      texts = REXML::XPath.match(REXML::Document.new(svg), "//text")
+      names = texts.map { |text| text.text.strip }
+      boxes = texts.map do |text|
+        [text["x"].to_f, text["y"].to_f, text["font-size"].to_f]
+      end
+
+      expect(names).to match_array(%w[M84 M86])
+      expect(
+        (boxes[0][0] - boxes[1][0]).abs > 20 ||
+          (boxes[0][1] - boxes[1][1]).abs > boxes[0][2]
+      ).to be(true)
+    end
+  end
 end
