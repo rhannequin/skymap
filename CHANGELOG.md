@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`Astronoby::Angle`) and `radial_velocity:` (`Astronoby::Velocity`)
 - `Skymap::Star#coordinates_at` gives the equatorial coordinates of a star at an
   `Astronoby::Instant`, with its proper motion applied, as
-  `Astronoby::Coordinates::Equatorial` at J2000
+  `Astronoby::Coordinates::Equatorial` at J2000. A star with a proper motion
+  must have coordinates at J2000, or `Skymap::Star` raises an `ArgumentError`
 - `Skymap::View` zooms the map on an area of the sky, given by the equatorial
   or horizontal coordinates of its center and a field of view as an
   `Astronoby::Angle`, with `view:` on `Skymap::Chart`, with the horizon drawn as

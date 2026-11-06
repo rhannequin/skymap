@@ -202,10 +202,12 @@ position: their proper motion is applied from J2000 to the instant of the chart,
 then the position is precessed and nutated to the true equator and equinox of
 date, and seen from the observer. `Skymap::Star#coordinates_at(instant)` gives
 the first step, as `Astronoby::Coordinates::Equatorial` at J2000. A star without
-a proper motion stays where it is. For a star that has a proper motion but no
-parallax or no radial velocity, which is the case of most of the catalog for the
-parallax, a parallax of 1 milliarcsecond and a radial velocity of 0 are assumed:
-the position changes by less than 0.1 arcsecond.
+a proper motion stays where it is, at any epoch; with a proper motion, its
+coordinates must be at J2000, or `Skymap::Star` raises an `ArgumentError`. For a
+star that has a proper motion but no parallax or no radial velocity, which is
+the case of most of the catalog for the parallax, a parallax of 1 milliarcsecond
+and a radial velocity of 0 are assumed: the position changes by less than 0.1
+arcsecond.
 
 These are not applied:
 

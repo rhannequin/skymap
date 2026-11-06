@@ -38,6 +38,13 @@ module Skymap
           "proper_motion_ra and proper_motion_dec must be given together"
       end
 
+      if proper_motion_ra &&
+          equatorial_coordinates.epoch != Astronoby::JulianDate::J2000
+        raise ArgumentError,
+          "equatorial_coordinates must be at J2000 when a proper motion " \
+          "is given, as it is applied from J2000"
+      end
+
       unless parallax?(parallax)
         raise ArgumentError,
           "parallax must be an Astronoby::Angle above 0 or nil"

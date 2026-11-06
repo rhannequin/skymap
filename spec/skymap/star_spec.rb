@@ -42,6 +42,56 @@ RSpec.describe Skymap::Star do
       expect(star.radial_velocity).to eq(radial_velocity)
     end
 
+    it "rejects a proper motion with coordinates at another epoch" do
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22))
+      of_date = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(6.75),
+        declination: Astronoby::Angle.from_degrees(-16.7),
+        epoch: instant.tt
+      )
+
+      expect {
+        described_class.new(
+          hr: 2491,
+          equatorial_coordinates: of_date,
+          magnitude: -1.46,
+          **motion(proper_motion_ra: -553, proper_motion_dec: -1205)
+        )
+      }.to raise_error(
+        ArgumentError,
+        /equatorial_coordinates must be at J2000 when a proper motion/
+      )
+    end
+
+    it "rejects a proper motion added with coordinates at another epoch" do
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22))
+      of_date = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(6.75),
+        declination: Astronoby::Angle.from_degrees(-16.7),
+        epoch: instant.tt
+      )
+      still = star_with.with(equatorial_coordinates: of_date)
+
+      expect {
+        still.with(
+          **motion(proper_motion_ra: -553, proper_motion_dec: -1205)
+        )
+      }.to raise_error(ArgumentError, /must be at J2000/)
+    end
+
+    it "takes coordinates at another epoch without a proper motion" do
+      instant = Astronoby::Instant.from_time(Time.utc(2026, 9, 24, 22))
+      of_date = Astronoby::Coordinates::Equatorial.new(
+        right_ascension: Astronoby::Angle.from_hours(6.75),
+        declination: Astronoby::Angle.from_degrees(-16.7),
+        epoch: instant.tt
+      )
+
+      star = star_with.with(equatorial_coordinates: of_date)
+
+      expect(star.coordinates_at(instant)).to eq(of_date)
+    end
+
     it "rejects a proper motion in right ascension that is not a velocity" do
       expect {
         star_with(
