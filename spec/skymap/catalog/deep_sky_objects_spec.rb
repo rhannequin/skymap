@@ -5,12 +5,13 @@ RSpec.describe Skymap::Catalog::DeepSkyObjects do
     described_class.new.find { |object| object.designation == designation }
   end
 
-  it "loads every Messier object" do
+  it "loads the Messier, NGC and IC objects" do
     catalog = described_class.new
 
     count = catalog.count
 
-    expect(count).to eq(109)
+    expect(count).to eq(1741)
+    expect(catalog.count(&:messier?)).to eq(109)
   end
 
   it "gives an enumerator without a block" do
@@ -74,6 +75,23 @@ RSpec.describe Skymap::Catalog::DeepSkyObjects do
     expect(m45.type).to eq(:open_cluster)
     expect(m45.name).to eq("Pleiades")
     expect(m45.major_axis.degrees).to be_within(1e-9).of(2.5)
+  end
+
+  it "reads an NGC object with its magnitude band" do
+    ngc7000 = find("NGC 7000")
+
+    expect(ngc7000.name).to eq("North America Nebula")
+    expect(ngc7000.type).to eq(:nebula)
+    expect(ngc7000.magnitude).to eq(4.0)
+    expect(ngc7000.magnitude_band).to eq(:blue)
+  end
+
+  it "reads the visual magnitude band of a Messier object" do
+    expect(find("M31").magnitude_band).to eq(:visual)
+  end
+
+  it "reads an IC object" do
+    expect(find("IC 434").type).to eq(:nebula)
   end
 
   it "leaves out M102" do

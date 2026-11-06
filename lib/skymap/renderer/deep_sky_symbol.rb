@@ -17,14 +17,24 @@ module Skymap
       def outline
         return corners if kind == :nebula
 
-        Array.new(DeepSkySymbol::OUTLINE_STEPS) do |step|
-          angle = 2 * Math::PI * step / DeepSkySymbol::OUTLINE_STEPS
+        steps = outline_steps
+
+        Array.new(steps) do |step|
+          angle = 2 * Math::PI * step / steps
 
           at(semi_major * Math.cos(angle), semi_minor * Math.sin(angle))
         end
       end
 
       private
+
+      def outline_steps
+        flatness = [1 - DeepSkySymbol::OUTLINE_TOLERANCE / semi_major, -1].max
+
+        (Math::PI / Math.acos(flatness)).ceil
+          .clamp(DeepSkySymbol::MIN_OUTLINE_STEPS,
+            DeepSkySymbol::MAX_OUTLINE_STEPS)
+      end
 
       def corners
         [[-1, -1], [1, -1], [1, 1], [-1, 1]].map do |sx, sy|
@@ -50,6 +60,8 @@ module Skymap
       planetary_nebula
       nebula
     ].freeze
-    DeepSkySymbol::OUTLINE_STEPS = 48
+    DeepSkySymbol::OUTLINE_TOLERANCE = 0.5
+    DeepSkySymbol::MIN_OUTLINE_STEPS = 8
+    DeepSkySymbol::MAX_OUTLINE_STEPS = 64
   end
 end

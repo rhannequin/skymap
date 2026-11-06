@@ -6,6 +6,7 @@ module Skymap
     MARGIN_RATIO = 0.25
     GAP_RATIO = 0.5
     DOT_RATIO = 0.25
+    CELL_RATIO = 4
     DIAGONAL = Math.sqrt(0.5)
     DIRECTIONS = [
       [0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]
@@ -15,6 +16,14 @@ module Skymap
       def intersects?(other)
         left < other.right && other.left < right &&
           top < other.bottom && other.top < bottom
+      end
+
+      def bounds
+        self
+      end
+
+      def blocks?(other)
+        intersects?(other)
       end
 
       def reaches?(x, y, radius)
@@ -51,6 +60,13 @@ module Skymap
     end
 
     Disc = Data.define(:center, :radius) do
+      def bounds
+        Box.new(
+          left: center.x - radius, top: center.y - radius,
+          right: center.x + radius, bottom: center.y + radius
+        )
+      end
+
       def blocks?(box)
         box.reaches?(center.x, center.y, radius)
       end
@@ -76,7 +92,36 @@ module Skymap
           }
       end
     end
-    private_constant :Box, :Disc, :Outline
+    class Index
+      def initialize(cell)
+        @cell = cell
+        @cells = {}
+      end
+
+      def add(blocker)
+        cells_of(blocker.bounds) { |cell| (@cells[cell] ||= []) << blocker }
+      end
+
+      def blocked?(box)
+        cells_of(box) do |cell|
+          blockers = @cells[cell]
+          return true if blockers&.any? { |blocker| blocker.blocks?(box) }
+        end
+
+        false
+      end
+
+      private
+
+      def cells_of(box)
+        ((box.left / @cell).floor..(box.right / @cell).floor).each do |column|
+          ((box.top / @cell).floor..(box.bottom / @cell).floor).each do |row|
+            yield [column, row]
+          end
+        end
+      end
+    end
+    private_constant :Box, :Disc, :Outline, :Index
 
     def initialize(canvas:)
       @canvas = canvas
@@ -86,15 +131,17 @@ module Skymap
       captions = elements.select { |element| anchored?(element) }
       return elements if captions.empty?
 
-      boxes = fixed_boxes(elements)
-      obstacles = obstacles(elements, captions.map(&:size).min)
+      text_size = captions.map(&:size).min
+      index = Index.new(CELL_RATIO * text_size)
+      fixed_boxes(elements).each { |box| index.add(box) }
+      obstacles(elements, text_size).each { |obstacle| index.add(obstacle) }
       placed = {}.compare_by_identity
 
       by_priority(captions).each do |caption|
-        position = free_position(caption, boxes, obstacles)
+        position = free_position(caption, index)
         next unless position
 
-        boxes << box(caption, position)
+        index.add(box(caption, position))
         placed[caption] = caption.with(position: position)
       end
 
@@ -153,9 +200,9 @@ module Skymap
       Disc.new(center: symbol.center, radius: symbol.semi_major)
     end
 
-    def free_position(caption, boxes, obstacles)
+    def free_position(caption, index)
       candidates(caption).find do |position, check_sky|
-        free?(box(caption, position), boxes, obstacles) &&
+        !index.blocked?(box(caption, position)) &&
           (!check_sky || inside_sky?(caption, position))
       end&.first
     end
@@ -178,11 +225,6 @@ module Skymap
         x: anchor.x + ux * (reach_x + gap + caption.width / 2),
         y: anchor.y + uy * (reach_y + size)
       )
-    end
-
-    def free?(candidate, boxes, obstacles)
-      boxes.none? { |other| candidate.intersects?(other) } &&
-        obstacles.none? { |obstacle| obstacle.blocks?(candidate) }
     end
 
     def inside_sky?(caption, position)

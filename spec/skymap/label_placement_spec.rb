@@ -233,6 +233,39 @@ RSpec.describe Skymap::LabelPlacement do
       expect(inside_sky?(moved, canvas)).to be(true)
     end
 
+    it "keeps a crowd of labels apart and away from the symbols" do
+      canvas = Skymap::Canvas.new(size: 800, padding: 0)
+      random = Random.new(7)
+      symbols = Array.new(150) do
+        symbol_at(
+          random.rand(100..700), random.rand(100..700), :galaxy,
+          semi_major: random.rand(3.0..25.0), semi_minor: 3.0,
+          rotation: random.rand(0.0..180.0)
+        )
+      end
+      captions = symbols.each_with_index.map do |galaxy, index|
+        Skymap::Renderer::Caption.beside(
+          center: galaxy.center,
+          radius: galaxy.semi_major,
+          canvas: canvas,
+          text: "NGC #{1000 + index}",
+          kind: :deep_sky
+        )
+      end
+
+      placed = described_class.new(canvas: canvas)
+        .arrange(symbols + captions)
+        .grep(Skymap::Renderer::Caption)
+      pairs = placed.combination(2).count { |a, b| overlap?(a, b) }
+      on_symbols = placed.count do |text|
+        symbols.any? { |galaxy| covers?(text, galaxy) }
+      end
+
+      expect(placed.size).to be > 40
+      expect(pairs).to eq(0)
+      expect(on_symbols).to eq(0)
+    end
+
     it "gives nothing for no elements" do
       canvas = Skymap::Canvas.new(size: 400, padding: 0)
 
@@ -277,6 +310,18 @@ RSpec.describe Skymap::LabelPlacement do
     b = box_of(second)
 
     a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]
+  end
+
+  def covers?(text, galaxy)
+    left, top, right, bottom = box_of(text)
+
+    galaxy.outline.zip(galaxy.outline.rotate).any? do |from, to|
+      (0..20).any? do |step|
+        x = from.x + (to.x - from.x) * step / 20.0
+        y = from.y + (to.y - from.y) * step / 20.0
+        x.between?(left, right) && y.between?(top, bottom)
+      end
+    end
   end
 
   def inside_sky?(text, canvas)

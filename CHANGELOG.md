@@ -19,9 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Skymap::Context#rotation_at` turns a position angle at equatorial
   coordinates into the rotation of the map, as an `Astronoby::Angle`
 - `data/deep_sky_objects.csv`, `Skymap::Catalog::DeepSkyObjects` and
-  `Skymap::DeepSkyObject` give the 109 Messier objects (galaxies, clusters,
-  nebulae and more) with their coordinates, type, magnitude, size and position
-  angle, from OpenNGC. An object with a `major_axis` and no `minor_axis` is
+  `Skymap::DeepSkyObject` give the 109 Messier objects and the 1,496 NGC and 136
+  IC objects of magnitude 12 or brighter (galaxies, clusters, nebulae and more)
+  with their coordinates, type, magnitude, size and position angle, from
+  OpenNGC. The `magnitude_band` (`:visual`, or `:blue` for the 65 objects that
+  have no visual magnitude) says what the magnitude is, and `messier?` tells
+  the Messier objects from the others. An object with a `major_axis` and no `minor_axis` is
   round: its `minor_axis` is its `major_axis`. The data file is released under
   CC BY-SA 4.0, with its license in `data/LICENSE-deep_sky_objects.txt`; the
   code stays under the MIT license
