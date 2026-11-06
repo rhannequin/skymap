@@ -762,4 +762,198 @@ RSpec.describe Skymap::Renderer::SVG do
       expect(drawn["stroke-width"]).to eq("3")
     end
   end
+
+  describe "#render a deep-sky symbol" do
+    def symbol(kind, **attributes)
+      Skymap::Renderer::DeepSkySymbol.new(
+        center: point(100.0, 120.0),
+        kind: kind,
+        semi_major: 10,
+        semi_minor: 10,
+        rotation: 0,
+        width: 1.5,
+        **attributes
+      )
+    end
+
+    def drawn(kind, theme: Skymap::Theme.dark, **attributes)
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      renderer = described_class.new(canvas: canvas, theme: theme)
+      svg = renderer.render([symbol(kind, **attributes)])
+      group, = groups_in(svg)
+
+      [group, group.elements.to_a.map { |element| [element.name, element] }]
+    end
+
+    def shapes(kind, **attributes)
+      drawn(kind, **attributes).last.map(&:first)
+    end
+
+    it "draws a galaxy as an ellipse turned around its center" do
+      group, children = drawn(
+        :galaxy, semi_major: 12, semi_minor: 4, rotation: 30
+      )
+      _, ellipse = children.first
+
+      expect(children.map(&:first)).to eq(["ellipse"])
+      expect(group["transform"]).to eq("rotate(30 100.0 120.0)")
+      expect(ellipse["cx"]).to eq("100.0")
+      expect(ellipse["cy"]).to eq("120.0")
+      expect(ellipse["rx"]).to eq("12")
+      expect(ellipse["ry"]).to eq("4")
+      expect(ellipse["stroke-dasharray"]).to be_nil
+    end
+
+    it "outlines every symbol without filling it" do
+      group, = drawn(:galaxy)
+
+      expect(group["fill"]).to eq("none")
+      expect(group["stroke-width"]).to eq("1.5")
+    end
+
+    it "draws an open cluster as a dashed circle" do
+      _, children = drawn(:open_cluster)
+      _, circle = children.first
+
+      expect(children.map(&:first)).to eq(["ellipse"])
+      expect(circle["stroke-dasharray"]).to eq("4.5 4.5")
+    end
+
+    it "draws a globular cluster as a circle with a cross" do
+      _, children = drawn(:globular_cluster)
+      lines = children.filter_map { |name, line| line if name == "line" }
+
+      expect(children.map(&:first)).to eq(%w[ellipse line line])
+      expect(lines.map { |line| %w[x1 x2].map { |name| line[name] } })
+        .to eq([%w[90.0 110.0], %w[100.0 100.0]])
+      expect(lines.map { |line| %w[y1 y2].map { |name| line[name] } })
+        .to eq([%w[120.0 120.0], %w[110.0 130.0]])
+    end
+
+    it "draws a planetary nebula as a circle with four ticks outside" do
+      _, children = drawn(:planetary_nebula)
+      ticks = children.filter_map { |name, line| line if name == "line" }
+
+      expect(children.map(&:first)).to eq(%w[ellipse line line line line])
+      expect(ticks.map { |tick| tick["x1"] }).to eq(
+        %w[110.0 90.0 100.0 100.0]
+      )
+      expect(ticks.map { |tick| tick["x2"] }).to eq(
+        %w[116.0 84.0 100.0 100.0]
+      )
+      expect(ticks.map { |tick| tick["y2"] }).to eq(
+        %w[120.0 120.0 136.0 104.0]
+      )
+    end
+
+    it "draws a nebula as a dashed rounded square" do
+      _, children = drawn(:nebula)
+      _, square = children.first
+
+      expect(children.map(&:first)).to eq(["rect"])
+      expect(square["x"]).to eq("90.0")
+      expect(square["y"]).to eq("110.0")
+      expect(square["width"]).to eq("20")
+      expect(square["height"]).to eq("20")
+      expect(square["rx"]).to eq("3.0")
+      expect(square["stroke-dasharray"]).to eq("4.5 4.5")
+    end
+
+    it "draws a supernova remnant as a dashed circle with a dot" do
+      _, children = drawn(:supernova_remnant)
+      _, circle = children.first
+      _, dot = children.last
+
+      expect(children.map(&:first)).to eq(%w[ellipse circle])
+      expect(circle["stroke-dasharray"]).to eq("4.5 4.5")
+      expect(dot["r"]).to eq("1.5")
+      expect(dot["fill"]).to eq("#6f8fc2")
+    end
+
+    it "draws an asterism as a dotted circle" do
+      _, children = drawn(:asterism)
+      _, circle = children.first
+
+      expect(children.map(&:first)).to eq(["ellipse"])
+      expect(circle["stroke-dasharray"]).to eq("0 3.75")
+      expect(circle["stroke-linecap"]).to eq("round")
+    end
+
+    it "draws a double star as a small circle with a bar through it" do
+      _, children = drawn(:double_star)
+      _, bar = children.last
+
+      expect(children.map(&:first)).to eq(%w[ellipse line])
+      expect(bar["x1"]).to eq("82.0")
+      expect(bar["x2"]).to eq("118.0")
+      expect(bar["y1"]).to eq("120.0")
+      expect(bar["y2"]).to eq("120.0")
+    end
+
+    it "draws other objects as a small cross" do
+      _, children = drawn(:other)
+
+      expect(children.map(&:first)).to eq(%w[line line])
+    end
+
+    it "gives every type a different shape" do
+      outlines = Skymap::DeepSkyObject::TYPES.map do |kind|
+        drawn(kind).last.map do |name, element|
+          [name, element["stroke-dasharray"], element["stroke-linecap"]]
+        end
+      end
+
+      expect(outlines.uniq.size).to eq(Skymap::DeepSkyObject::TYPES.size)
+    end
+
+    it "rejects a type it has no symbol for" do
+      expect { shapes(:comet) }
+        .to raise_error(ArgumentError, "unknown deep-sky object type: comet")
+    end
+
+    it "draws with the deep-sky color of the theme" do
+      theme = Skymap::Theme.light.with(deep_sky: "#0a0b0c")
+
+      group, = drawn(:galaxy, theme: theme)
+
+      expect(group["stroke"]).to eq("#0a0b0c")
+    end
+
+    it "draws in the constellation name color without a deep-sky color" do
+      theme = theme_from_0_4_0.with(constellation_name: "#040506")
+
+      group, = drawn(:galaxy, theme: theme)
+
+      expect(group["stroke"]).to eq("#040506")
+    end
+
+    it "writes a deep-sky caption in the deep-sky color" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = Skymap::Theme.dark.with(deep_sky: "#0a0b0c")
+      renderer = described_class.new(canvas: canvas, theme: theme)
+      caption = Skymap::Renderer::Caption.new(
+        position: point(100, 140), text: "M31", size: 11, kind: :deep_sky
+      )
+
+      svg = renderer.render([caption])
+      text, = texts_in(svg)
+
+      expect(text.text.strip).to eq("M31")
+      expect(text["fill"]).to eq("#0a0b0c")
+    end
+
+    it "writes a deep-sky caption in the fallback color" do
+      canvas = Skymap::Canvas.new(size: 400, padding: 20)
+      theme = theme_from_0_4_0.with(constellation_name: "#040506")
+      renderer = described_class.new(canvas: canvas, theme: theme)
+      caption = Skymap::Renderer::Caption.new(
+        position: point(100, 140), text: "M31", size: 11, kind: :deep_sky
+      )
+
+      svg = renderer.render([caption])
+      text, = texts_in(svg)
+
+      expect(text["fill"]).to eq("#040506")
+    end
+  end
 end

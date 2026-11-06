@@ -8,6 +8,11 @@ module Skymap
       HORIZON_WIDTH = 3
       FRAME_WIDTH = 1
       BOUNDARY_DASH_RATIO = 4
+      DEEP_SKY_DASH_RATIO = 3
+      DEEP_SKY_DOT_GAP_RATIO = 2.5
+      DEEP_SKY_TICK_RATIO = 0.6
+      DEEP_SKY_BAR_RATIO = 1.8
+      DEEP_SKY_CORNER_RATIO = 0.3
 
       def initialize(canvas:, theme:, clipped: false)
         @canvas = canvas
@@ -70,6 +75,7 @@ module Skymap
           when Caption then draw_caption(svg, element)
           when Line then draw_line(svg, element)
           when ScaleBar then draw_scale_bar(svg, element)
+          when DeepSkySymbol then draw_deep_sky_symbol(svg, element)
           when Dot then draw_dot(svg, element)
           when Ecliptic then draw_ecliptic(svg, element)
           when FieldCircle then draw_field_circle(svg, element)
@@ -226,6 +232,115 @@ module Skymap
         end
       end
 
+      def draw_deep_sky_symbol(svg, symbol)
+        x = symbol.center.x.round(2)
+        y = symbol.center.y.round(2)
+        width = symbol.width.round(2)
+
+        svg.g(
+          transform: "rotate(#{symbol.rotation.round(2)} #{x} #{y})",
+          fill: "none",
+          stroke: @theme.deep_sky,
+          stroke_width: width,
+          stroke_linejoin: "round"
+        ) do
+          draw_deep_sky_shape(
+            svg,
+            symbol.kind,
+            x: x,
+            y: y,
+            rx: symbol.semi_major.round(2),
+            ry: symbol.semi_minor.round(2),
+            width: width
+          )
+        end
+      end
+
+      def draw_deep_sky_shape(svg, kind, **shape)
+        case kind
+        when :galaxy then draw_deep_sky_ellipse(svg, **shape)
+        when :open_cluster then draw_deep_sky_ellipse(svg, dashed: true,
+**shape)
+        when :asterism then draw_deep_sky_ellipse(svg, dotted: true, **shape)
+        when :supernova_remnant then draw_remnant(svg, **shape)
+        when :globular_cluster then draw_globular_cluster(svg, **shape)
+        when :planetary_nebula then draw_planetary_nebula(svg, **shape)
+        when :nebula then draw_nebula(svg, **shape)
+        when :double_star then draw_double_star(svg, **shape)
+        when :other then draw_cross(svg, **shape)
+        else raise ArgumentError, "unknown deep-sky object type: #{kind}"
+        end
+      end
+
+      def draw_deep_sky_ellipse(svg, x:, y:, rx:, ry:, width:, **style)
+        svg.ellipse(
+          cx: x, cy: y, rx: rx, ry: ry, **deep_sky_dashes(width, **style)
+        )
+      end
+
+      def deep_sky_dashes(width, dashed: false, dotted: false)
+        if dashed
+          dash = (width * DEEP_SKY_DASH_RATIO).round(2)
+          {stroke_dasharray: "#{dash} #{dash}"}
+        elsif dotted
+          gap = (width * DEEP_SKY_DOT_GAP_RATIO).round(2)
+          {stroke_dasharray: "0 #{gap}", stroke_linecap: "round"}
+        else
+          {}
+        end
+      end
+
+      def draw_remnant(svg, x:, y:, rx:, ry:, width:)
+        draw_deep_sky_ellipse(svg, x: x, y: y, rx: rx, ry: ry, width: width,
+          dashed: true)
+        svg.circle(cx: x, cy: y, r: width, fill: @theme.deep_sky,
+          stroke: "none")
+      end
+
+      def draw_globular_cluster(svg, x:, y:, rx:, ry:, width:)
+        draw_deep_sky_ellipse(svg, x: x, y: y, rx: rx, ry: ry, width: width)
+        draw_cross(svg, x: x, y: y, rx: rx, ry: ry, width: width)
+      end
+
+      def draw_planetary_nebula(svg, x:, y:, rx:, ry:, width:)
+        draw_deep_sky_ellipse(svg, x: x, y: y, rx: rx, ry: ry, width: width)
+        tick = (DEEP_SKY_TICK_RATIO * [rx, ry].min).round(2)
+        [[1, 0], [-1, 0], [0, 1], [0, -1]].each do |dx, dy|
+          svg.line(
+            x1: (x + dx * rx).round(2),
+            y1: (y + dy * ry).round(2),
+            x2: (x + dx * (rx + tick)).round(2),
+            y2: (y + dy * (ry + tick)).round(2)
+          )
+        end
+      end
+
+      def draw_nebula(svg, x:, y:, rx:, ry:, width:)
+        dash = (width * DEEP_SKY_DASH_RATIO).round(2)
+        corner = (DEEP_SKY_CORNER_RATIO * [rx, ry].min).round(2)
+
+        svg.rect(
+          x: (x - rx).round(2),
+          y: (y - ry).round(2),
+          width: (2 * rx).round(2),
+          height: (2 * ry).round(2),
+          rx: corner,
+          stroke_dasharray: "#{dash} #{dash}"
+        )
+      end
+
+      def draw_double_star(svg, x:, y:, rx:, ry:, width:)
+        draw_deep_sky_ellipse(svg, x: x, y: y, rx: rx, ry: ry, width: width)
+        reach = (DEEP_SKY_BAR_RATIO * rx).round(2)
+        svg.line(x1: (x - reach).round(2), y1: y, x2: (x + reach).round(2),
+          y2: y)
+      end
+
+      def draw_cross(svg, x:, y:, rx:, ry:, **)
+        svg.line(x1: (x - rx).round(2), y1: y, x2: (x + rx).round(2), y2: y)
+        svg.line(x1: x, y1: (y - ry).round(2), x2: x, y2: (y + ry).round(2))
+      end
+
       def draw_label(svg, label)
         draw_text(svg, label, @theme.label)
       end
@@ -241,6 +356,7 @@ module Skymap
         when :planet then @theme.planet_name
         when :field then @theme.field_circle
         when :scale then @theme.scale
+        when :deep_sky then @theme.deep_sky
         else raise ArgumentError, "unknown caption kind: #{kind}"
         end
       end
