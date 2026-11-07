@@ -101,8 +101,8 @@ canvas = Skymap::Canvas.new(
 )
 ```
 
-The SVG gets `width="190mm"` and `height="190mm"`, and its `viewBox` stays in the
-units of the canvas, so the map is the same and a browser or a print dialog
+The SVG gets `width="190mm"` and `height="190mm"`, and its `viewBox` stays in
+the units of the canvas, so the map is the same and a browser or a print dialog
 prints it at 190 mm.
 
 `Skymap::PrintSize.paper` gives the largest square that fits in the width of a
@@ -141,24 +141,25 @@ chart = Skymap::Chart.new(
 )
 ```
 
-Equatorial coordinates at any other epoch raise an `ArgumentError`. The field
-of view is an `Astronoby::Angle` of more than 0 and up to 180 degrees. The sky
-is still seen from the observer. By default, the zenith is at the top of the
-map, except when the zenith is in the view: the north is at the top then, as in
-the whole sky. The next section changes that. With
+Equatorial coordinates at any other epoch raise an `ArgumentError`. With
 horizontal coordinates, only the altitude and the azimuth are used, as seen by
-the observer of the chart. The layers draw what is in the view only. The
-horizon is drawn as a line when it is in the view, and the edge of the map is a
-thin outline. It is no longer the horizon, so the cardinal directions are not
-drawn. The Sun and the Moon are drawn at their size in the sky once it is
-larger than their usual size on the map. The stars come from a catalog that
-goes down to magnitude 9: draw them with `magnitude_limit: 9` in a zoomed view
-to fill it.
+the observer of the chart. The field of view is an `Astronoby::Angle` of more
+than 0 and up to 180 degrees.
+
+The sky is still seen from the observer. By default, the zenith is at the top of
+the map, except when the zenith is in the view: the north is at the top then, as
+in the whole sky. The next section changes that. The layers draw what is in the
+view only. The horizon is drawn as a line when it is in the view, and the edge
+of the map is a thin outline. It is no longer the horizon, so the cardinal
+directions are not drawn. The Sun and the Moon are drawn at their size in the
+sky once it is larger than their usual size on the map. The stars come from a
+catalog that goes down to magnitude 9: draw them with `magnitude_limit: 9` in a
+zoomed view to fill it.
 
 #### Orientation
 
 A map in a telescope is turned in a way that depends on the telescope and on
-its mount. Three options of `View` give the same orientation on the map:
+its mount. Three options of `View` give the map the same orientation:
 
 - `orientation: :zenith_up` (the default) keeps the zenith at the top, like an
   alt-az mount does at the meridian.
@@ -206,12 +207,12 @@ the first step, as `Astronoby::Coordinates::Equatorial` at J2000. A star without
 a proper motion stays where it is, at any epoch; with a proper motion, its
 coordinates must be at J2000, or `Skymap::Star` raises an `ArgumentError`. For a
 star that has a proper motion but no parallax or no radial velocity, which is
-the case of a third of the stars for the parallax in the Bright Star Catalogue
-and of a fifth of the others for the radial velocity, a parallax of 1
+the case of two thirds of the stars of the Bright Star Catalogue for the
+parallax and of a fifth of the others for the radial velocity, a parallax of 1
 milliarcsecond and a radial velocity of 0 are assumed: the position changes by
-less than 0.1 arcsecond. To keep the charts fast, the proper motion is left out of a star that
-it moves by less than 0.005 pixel on the chart, so a star is drawn within 0.005
-pixel of where the full propagation puts it.
+less than 0.1 arcsecond. To keep the charts fast, the proper motion is left out
+of a star that it moves by less than 0.005 pixel on the chart, so a star is
+drawn within 0.005 pixel of where the full propagation puts it.
 
 These are not applied:
 
@@ -621,7 +622,8 @@ over it.
 
 `Skymap::Layers::FieldCircles` draws circles that show what a finder scope or an
 eyepiece covers in the sky. Give it the fields to draw, as `Skymap::Field` or
-`Skymap::Setup` objects (see [Telescope, eyepiece and fields](#telescope-eyepiece-and-fields)):
+`Skymap::Setup` objects (see
+[Telescope, eyepiece and fields](#telescope-eyepiece-and-fields)):
 
 ```ruby
 Skymap::Layers::FieldCircles.new(fields: [finder, setup], labels: true)
@@ -637,10 +639,10 @@ Skymap::Layers::FieldCircles.new(fields: [setup], center: target)
 ```
 
 A circle has the size of its field on the sphere, then it is projected, so it
-keeps its size and its shape anywhere in the map. Each circle and its label are drawn in
-the `field_circle` color of the [theme](#themes). In a view, a circle is
-drawn whole, even below the horizon, and a circle that does not reach the view
-is left out. In the whole sky, which has no center unless you give a `center:`,
+keeps its size and its shape anywhere in the map. Each circle and its label are
+drawn in the `field_circle` color of the [theme](#themes). In a view, a circle
+is drawn whole, even below the horizon, and a circle that does not reach the
+view is left out. In the whole sky, which has no center unless you give a `center:`,
 a circle stops at the horizon.
 
 With `labels: true`, the label of each field is written next to its circle.
@@ -665,9 +667,9 @@ Skymap::Layers::Scale.new
 
 The bar is the longest of 1, 2, 5, 10, 20 and 30 arc-seconds, arc-minutes or
 degrees that is at most a fifth of the width of the map. It stays horizontal
-and the same in every [orientation](#orientation) of the view. The scale of the map
-changes from the center to the edge, and the bar follows it: its length is the
-angle it says at the place where it is drawn. A straight bar on the map is a
+and the same in every [orientation](#orientation) of the view. The scale of the
+map changes from the center to the edge, and the bar follows it: its length is
+the angle it says at the place where it is drawn. A straight bar on the map is a
 small circle on the sky, not the shortest path between its ends, so the angle
 between the ends is a little smaller than the label on wide fields. The
 difference is below 0.01% up to a field of view of 90 degrees, which covers
@@ -761,8 +763,8 @@ The [examples](https://github.com/rhannequin/skymap/tree/main/examples)
 folder has scripts and the maps they draw, for
 different combinations of layers, themes and observers: the naked-eye sky, a
 printable map of the constellations, the planets, a night vision map for
-outdoors, the southern sky, the galaxies of Virgo and more. Start from the one closest to what you
-want to draw.
+outdoors, the southern sky, the galaxies of Virgo and more. Start from the one
+closest to what you want to draw.
 
 ## Data sources
 
@@ -795,12 +797,12 @@ The file merges the stars of two sources:
   Bright Star Catalogue to 0.001 at the median. The proper motion is the one of
   Tycho-2, and the parallax and the radial velocity are the ones of [Gaia
   DR3][gaia], or the parallax of the new reduction of [Hipparcos][hipparcos]
-  when Gaia has none: 100% of the stars have a proper motion, 97% a parallax
-  and 79% a radial velocity. The position of the few hundred stars for which
-  Tycho-2 only gives the position observed around 1991 comes from Gaia or
-  Hipparcos, brought to J2000 with their proper motion. A star of Tycho-2 is left out when it is
-  already in the Bright Star Catalogue: within 5 arcseconds, plus 5 years of
-  its proper motion, and 0.5 magnitude
+  when Gaia has none: all but 6 of the stars have a proper motion, 97% a
+  parallax and 79% a radial velocity. The position of the few hundred stars for
+  which Tycho-2 only gives the position observed around 1991 comes from Gaia or
+  Hipparcos, brought to J2000 with their proper motion. A star of Tycho-2 is
+  left out when it is already in the Bright Star Catalogue: within 5
+  arcseconds, plus 5 years of its proper motion, and 0.5 magnitude
 
 The file is generated with `bin/build_stars`, which reads `data/stars.csv` and
 queries the [ESA Gaia archive][esa-archive], where ESA also serves Tycho-2 and
@@ -988,8 +990,8 @@ at CDS, Strasbourg, France.
 
 The tests of the Sun, the Moon and the planets use
 `spec/fixtures/de440s_2025_2030_excerpt.bsp`, an excerpt of DE440s, the
-planetary and lunar ephemeris of the [Jet Propulsion Laboratory][jpl-ephemerides],
-distributed by [NAIF][naif]. It only keeps the barycenters of the planets, the
+planetary and lunar ephemeris of the
+[Jet Propulsion Laboratory][jpl-ephemerides], distributed by [NAIF][naif]. It only keeps the barycenters of the planets, the
 Sun, the Moon and the Earth, from 2025 to 2030. As NAIF asks for modified
 kernels, its comment area names this project as the last to modify it, and
 points to the original kernel. It is not part of the gem.
@@ -1013,10 +1015,13 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run
 
 ### Releasing
 
-1. Update the version number in `lib/skymap/version.rb` and `CHANGELOG.md`.
-2. Commit, then tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.
-3. The [Release workflow](.github/workflows/release.yml) builds and publishes
-   the gem to RubyGems.org using [trusted publishing].
+1. Update the version number in `lib/skymap/version.rb`, date the section of
+   the version in `CHANGELOG.md` and run `bundle install` to update
+   `Gemfile.lock`.
+2. Merge it, then tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+3. The [Release workflow](.github/workflows/release.yml) checks that the tag
+   matches the version, then builds and publishes the gem to RubyGems.org using
+   [trusted publishing].
 
 ## Contributing
 
@@ -1029,7 +1034,7 @@ the [code of conduct](CODE_OF_CONDUCT.md).
 
 The gem is available as open source under the terms of the [MIT License]. The
 data file `data/deep_sky_objects.csv` is adapted from OpenNGC and released under
-[CC BY-SA 4.0][cc-by-sa-4] (see [Data sources](#deep-sky-objects)). The data
+[CC BY-SA 4.0][cc-by-sa-4] (see [Data sources](#deep-sky-objects-1)). The data
 file `data/stars.bin` merges data of ESA missions and is released under
 [CC BY-NC 3.0 IGO][cc-by-nc-igo]: it is free to use with credit, and a use that
 generates a financial gain needs the authorization of ESA (see [Data
