@@ -53,6 +53,73 @@ RSpec.describe Skymap::Catalog::StarRecords do
     expect(read.parallax).to eq(0.4)
   end
 
+  it "keeps a star at the north celestial pole in the north" do
+    star = record(declination: 90.0)
+    records = catalog(star)
+
+    read = records.each.first
+
+    expect(read.declination).to be_within(1e-6).of(90.0)
+  end
+
+  it "keeps a star at the south celestial pole in the south" do
+    star = record(declination: -90.0)
+    records = catalog(star)
+
+    read = records.each.first
+
+    expect(read.declination).to be_within(1e-6).of(-90.0)
+  end
+
+  it "does not write a proper motion that does not fit in the file" do
+    fast = record(proper_motion_ra: 40_000, proper_motion_dec: 1)
+
+    expect { described_class.encode([fast]) }
+      .to raise_error(ArgumentError, /proper_motion is out of the range/)
+  end
+
+  it "does not write a proper motion that looks like a missing one" do
+    unknown = record(proper_motion_ra: -32_768, proper_motion_dec: 1)
+
+    expect { described_class.encode([unknown]) }
+      .to raise_error(ArgumentError, /proper_motion is out of the range/)
+  end
+
+  it "does not write a radial velocity that does not fit in the file" do
+    fast = record(radial_velocity: 40_000)
+
+    expect { described_class.encode([fast]) }
+      .to raise_error(ArgumentError, /radial_velocity is out of the range/)
+  end
+
+  it "does not write a parallax that does not fit in the file" do
+    near = record(parallax: 7000.0)
+
+    expect { described_class.encode([near]) }
+      .to raise_error(ArgumentError, /parallax is out of the range/)
+  end
+
+  it "does not write a negative parallax" do
+    behind = record(parallax: -1.0)
+
+    expect { described_class.encode([behind]) }
+      .to raise_error(ArgumentError, /parallax is out of the range/)
+  end
+
+  it "does not write a magnitude that does not fit in the file" do
+    faint = record(magnitude: 400.0)
+
+    expect { described_class.encode([faint]) }
+      .to raise_error(ArgumentError, /magnitude is out of the range/)
+  end
+
+  it "does not write a Bright Star Catalogue number that does not fit" do
+    numbered = record(hr: 70_000)
+
+    expect { described_class.encode([numbered]) }
+      .to raise_error(ArgumentError, /hr is out of the range/)
+  end
+
   it "leaves out what a star does not have" do
     records = catalog(record)
 

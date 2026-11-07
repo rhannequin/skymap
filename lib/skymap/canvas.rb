@@ -3,7 +3,12 @@
 module Skymap
   Canvas = Data.define(:size, :padding, :print_size) do
     def initialize(size:, padding:, print_size: nil)
-      unless padding >= 0 && padding < size / 2.0
+      unless size.is_a?(Numeric) && size.real? && size.finite? && size > 0
+        raise ArgumentError, "size must be a number above 0"
+      end
+
+      unless padding.is_a?(Numeric) && padding.real? && padding >= 0 &&
+          padding < size / 2.0
         raise ArgumentError,
           "padding must not be negative and must be less than half the size"
       end

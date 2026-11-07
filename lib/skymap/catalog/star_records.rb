@@ -25,6 +25,13 @@ module Skymap
       DECLINATION_STEPS = 2**31
       MISSING = -32768
       PARALLAX_STEPS_PER_MAS = 10
+      STORED_RANGES = {
+        magnitude: -32768..32767,
+        proper_motion: -32767..32767,
+        parallax: 0..65535,
+        radial_velocity: -32767..32767,
+        hr: 0..65535
+      }.freeze
       Record = Data.define(
         :right_ascension,
         :declination,
@@ -91,16 +98,29 @@ module Skymap
         [
           (star.right_ascension / 360.0 * RIGHT_ASCENSION_STEPS).round %
             RIGHT_ASCENSION_STEPS,
-          (star.declination / 90.0 * DECLINATION_STEPS).round,
-          (star.magnitude * 100).round,
-          star.proper_motion_ra || MISSING,
-          star.proper_motion_dec || MISSING,
-          ((star.parallax || 0) * PARALLAX_STEPS_PER_MAS).round,
-          star.radial_velocity || MISSING,
-          star.hr || 0
+          [
+            (star.declination / 90.0 * DECLINATION_STEPS).round,
+            DECLINATION_STEPS - 1
+          ].min,
+          fit((star.magnitude * 100).round, :magnitude),
+          fit(star.proper_motion_ra, :proper_motion) || MISSING,
+          fit(star.proper_motion_dec, :proper_motion) || MISSING,
+          fit(
+            ((star.parallax || 0) * PARALLAX_STEPS_PER_MAS).round,
+            :parallax
+          ),
+          fit(star.radial_velocity, :radial_velocity) || MISSING,
+          fit(star.hr || 0, :hr)
         ].pack(FORMAT)
       end
-      private_class_method :pack
+
+      def self.fit(value, field)
+        return value if value.nil? || STORED_RANGES.fetch(field).cover?(value)
+
+        raise ArgumentError,
+          "#{field} is out of the range of the file: #{value}"
+      end
+      private_class_method :pack, :fit
 
       attr_reader :count
 

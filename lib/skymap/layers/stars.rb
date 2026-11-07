@@ -6,6 +6,8 @@ module Skymap
       DEFAULT_MAGNITUDE_LIMIT = 5
 
       def initialize(stars:, magnitude_limit: DEFAULT_MAGNITUDE_LIMIT)
+        MagnitudeLimit.check(magnitude_limit)
+
         @stars = stars
         @magnitude_limit = magnitude_limit
       end

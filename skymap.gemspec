@@ -11,7 +11,11 @@ Gem::Specification.new do |spec|
   spec.summary = "Sky maps in Ruby."
   spec.description = "Skymap is a Ruby library for generating maps of the sky."
   spec.homepage = "https://github.com/rhannequin/skymap"
-  spec.license = "MIT"
+  spec.licenses = [
+    "MIT",
+    "CC-BY-SA-4.0",
+    "LicenseRef-CC-BY-NC-3.0-IGO"
+  ]
   spec.required_ruby_version = ">= 3.3.0"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"

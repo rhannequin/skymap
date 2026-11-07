@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
 RSpec.describe Skymap::Layers::DeepSkyObjects do
+  describe ".new" do
+    it "rejects a magnitude limit that is not a number" do
+      expect { described_class.new(objects: [], magnitude_limit: nil) }
+        .to raise_error(ArgumentError, /magnitude_limit/)
+      expect { described_class.new(objects: [], magnitude_limit: "11") }
+        .to raise_error(ArgumentError, /magnitude_limit/)
+    end
+  end
+
   def canvas
     Skymap::Canvas.new(size: 800, padding: 24)
   end

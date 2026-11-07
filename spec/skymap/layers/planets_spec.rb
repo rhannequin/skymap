@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
 RSpec.describe Skymap::Layers::Planets do
+  describe ".new" do
+    it "rejects a magnitude limit that is not a number" do
+      expect { described_class.new(ephem: ephemeris, magnitude_limit: nil) }
+        .to raise_error(ArgumentError, /magnitude_limit/)
+      expect { described_class.new(ephem: ephemeris, magnitude_limit: "5") }
+        .to raise_error(ArgumentError, /magnitude_limit/)
+    end
+  end
+
   describe "#elements" do
     it "draws a planet where it is in the sky" do
       context = context_at(

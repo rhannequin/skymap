@@ -1,6 +1,31 @@
 # frozen_string_literal: true
 
 RSpec.describe Skymap::Layers::StarNames do
+  describe ".new" do
+    it "names every named star without a magnitude limit" do
+      context = context_at(
+        latitude: 48.8575,
+        canvas: Skymap::Canvas.new(size: 400, padding: 0)
+      )
+      polaris = star(right_ascension: 0, declination: 89, magnitude: 2, hr: 424)
+      layer = described_class.new(stars: [polaris], magnitude_limit: nil)
+
+      captions = layer.elements(context)
+
+      expect(captions.map(&:text)).to eq(["Polaris"])
+    end
+
+    it "rejects a magnitude limit that is not a number" do
+      expect { described_class.new(stars: [], magnitude_limit: "2") }
+        .to raise_error(ArgumentError, /\Amagnitude_limit/)
+    end
+
+    it "rejects a limit of the stars that is not a number" do
+      expect { described_class.new(stars: [], stars_magnitude_limit: nil) }
+        .to raise_error(ArgumentError, /stars_magnitude_limit/)
+    end
+  end
+
   describe "#elements" do
     it "names a star under it when it is in the upper half of the map" do
       context = context_at(
