@@ -67,7 +67,7 @@ module Skymap
         proper_motion_bound(star.proper_motion_ra),
         proper_motion_bound(star.proper_motion_dec)
       ) * Astronoby::Constants::SECONDS_PER_JULIAN_YEAR
-      velocity = (star.radial_velocity&.meters_per_second || 0).abs
+      velocity = (star.radial_velocity&.meters_per_second || 0).abs.to_f
       seconds = elapsed_years * Astronoby::Constants::SECONDS_PER_JULIAN_YEAR
       parallax = star.parallax&.radians || 0
       slack = velocity / Astronoby::Constants::LIGHT_SPEED_M_PER_S +
