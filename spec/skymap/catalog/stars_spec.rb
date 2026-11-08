@@ -85,6 +85,15 @@ RSpec.describe Skymap::Catalog::Stars do
 
       expect(second).to equal(first)
     end
+
+    it "gives the stars that a search gives" do
+      catalog = described_class.new
+
+      sirius = catalog.by_hr.fetch(2491)
+      found = catalog.search(magnitude_limit: 2).find { |star| star.hr == 2491 }
+
+      expect(found).to equal(sirius)
+    end
   end
 
   describe "#search" do

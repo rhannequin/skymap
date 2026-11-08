@@ -41,7 +41,7 @@ module Skymap
           next unless name
 
           radius = star_size.radius(star.magnitude)
-          next unless context.possibly_visible?(star, radius)
+          next unless context.possibly_visible?(star, radius: radius)
 
           next if context.horizontal(star).altitude.negative?
 

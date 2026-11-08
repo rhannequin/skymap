@@ -35,7 +35,7 @@ module Skymap
 
       def dot_for(star, context, star_size)
         radius = star_size.radius(star.magnitude)
-        return unless context.possibly_visible?(star, radius)
+        return unless context.possibly_visible?(star, radius: radius)
 
         return if context.horizontal(star).altitude.negative?
 

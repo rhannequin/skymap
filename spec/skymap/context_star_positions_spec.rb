@@ -336,8 +336,8 @@ RSpec.describe Skymap::Context do
       near = star(right_ascension: 19.5, declination: 29.04, magnitude: 5)
       far = star(right_ascension: 19.5, declination: 29.06, magnitude: 5)
 
-      expect(context.possibly_visible?(near, 10)).to be(true)
-      expect(context.possibly_visible?(far, 10)).to be(false)
+      expect(context.possibly_visible?(near, radius: 10)).to be(true)
+      expect(context.possibly_visible?(far, radius: 10)).to be(false)
     end
 
     it "accepts a star outside the view that moves into it" do

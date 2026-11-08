@@ -15,7 +15,7 @@ module Skymap
       def each
         return enum_for(:each) unless block_given?
 
-        records.each { |record| yield star_from(record) }
+        records.each { |record| yield star_for(record) }
       end
 
       def search(magnitude_limit: nil, cone: nil)
@@ -28,13 +28,13 @@ module Skymap
             cone.center.declination.degrees
           ],
           radius: cone.radius.degrees
-        ).map { |record| star_from(record) }
+        ).map { |record| star_for(record) }
       end
 
       def by_hr
-        @by_hr ||= Star.by_hr(
-          records.each_with_hr.map { |record| star_from(record) }
-        )
+        @by_hr ||= records.each_with_hr.to_h do |record|
+          [record.hr, star_for(record)]
+        end
       end
 
       private
@@ -55,7 +55,14 @@ module Skymap
       def band_stars(band)
         @band_stars ||= {}
         @band_stars[band] ||= records.each_in_band(band)
-          .map { |record| star_from(record) }.freeze
+          .map { |record| star_for(record) }.freeze
+      end
+
+      def star_for(record)
+        return star_from(record) unless record.hr
+
+        @hr_stars ||= {}
+        @hr_stars[record.hr] ||= star_from(record)
       end
 
       def star_from(record)
