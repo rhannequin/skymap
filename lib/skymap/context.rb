@@ -3,21 +3,8 @@
 module Skymap
   class Context
     MAX_ANGLE_FROM_VIEW_COSINE = Math.cos(150 * Math::PI / 180)
-    STAR_POSITION_TOLERANCE = 0.005
-    SHIFT_SLACK = 1e-6
-    SECONDS_PER_JULIAN_YEAR = Astronoby::Constants::SECONDS_PER_JULIAN_YEAR
-    ASTRONOMICAL_UNIT = 149_597_870_700.0
-    SPEED_OF_LIGHT = 299_792_458.0
-    PROPER_MOTION_ROUNDING = 1e-15
     POSITION_ANGLE_STEP = 1e-4
-    PRECESSION_ARCSECONDS_PER_YEAR = 50.3
-    FASTEST_PROPER_MOTION_ARCSECONDS_PER_YEAR = 10.4
-    NUTATION_AND_ABERRATION_ARCSECONDS = 60.0
-    private_constant :PRECESSION_ARCSECONDS_PER_YEAR,
-      :FASTEST_PROPER_MOTION_ARCSECONDS_PER_YEAR,
-      :NUTATION_AND_ABERRATION_ARCSECONDS, :STAR_POSITION_TOLERANCE,
-      :SHIFT_SLACK, :SECONDS_PER_JULIAN_YEAR, :ASTRONOMICAL_UNIT,
-      :SPEED_OF_LIGHT, :PROPER_MOTION_ROUNDING, :POSITION_ANGLE_STEP
+    private_constant :POSITION_ANGLE_STEP
 
     attr_reader :observer, :instant, :canvas, :view
 
@@ -31,23 +18,25 @@ module Skymap
         instant: instant
       )
       @horizontal = {}
-      @star_horizontals = {}.compare_by_identity
-      @catalog_horizontals = {}.compare_by_identity
-      @star_shifts = {}.compare_by_identity
       @projections = {}
+      @star_positions = StarPositions.new(
+        instant: instant,
+        convert: method(:convert),
+        scale: method(:scale_at)
+      )
     end
 
     def horizontal(star)
-      @star_horizontals[star] ||= star_horizontal(star)
+      @star_positions.horizontal(star)
     end
 
-    def possibly_visible?(star, margin = 0)
-      catalog = catalog_horizontal(star)
-      shift = star_shift(star) + SHIFT_SLACK
+    def possibly_visible?(star, radius: 0)
+      catalog = @star_positions.catalog_horizontal(star)
+      shift = @star_positions.maximum_shift(star)
       return false if catalog.altitude.radians < -shift
       return true if full_sky?
 
-      reach = view_reach(margin) + shift
+      reach = view_reach(radius) + shift
       return true if reach >= Math::PI
 
       cosine_from_view(catalog) >= Math.cos(reach)
@@ -118,7 +107,7 @@ module Skymap
         center: view_equatorial,
         radius: Astronoby::Angle.from_radians(
           [view_reach(StarSize::MAX_RADIUS_RATIO * @canvas.radius) +
-            cone_drift, Math::PI].min
+            @star_positions.drift, Math::PI].min
         )
       )
     end
@@ -182,15 +171,6 @@ module Skymap
       )
     end
 
-    def cone_drift
-      arcseconds = elapsed_years * (
-        PRECESSION_ARCSECONDS_PER_YEAR +
-        FASTEST_PROPER_MOTION_ARCSECONDS_PER_YEAR
-      ) + NUTATION_AND_ABERRATION_ARCSECONDS
-
-      Astronoby::Angle.from_degree_arcseconds(arcseconds).radians
-    end
-
     def project_horizontal(horizontal)
       project(altitude: horizontal.altitude, azimuth: horizontal.azimuth)
     end
@@ -228,58 +208,14 @@ module Skymap
       )
     end
 
-    def star_horizontal(star)
-      catalog = catalog_horizontal(star)
-      shift = star_shift(star)
-      return catalog if shift.zero?
-
-      scale = projection(@canvas.radius)
-        .scale_at(altitude: catalog.altitude, azimuth: catalog.azimuth)
-      return catalog if shift * scale < STAR_POSITION_TOLERANCE
-
-      convert(star.coordinates_at(@instant))
+    def scale_at(altitude:, azimuth:)
+      projection(@canvas.radius).scale_at(altitude: altitude, azimuth: azimuth)
     end
 
-    def catalog_horizontal(star)
-      @catalog_horizontals[star] ||= convert(star.equatorial_coordinates)
-    end
-
-    def star_shift(star)
-      @star_shifts[star] ||= compute_star_shift(star)
-    end
-
-    def compute_star_shift(star)
-      return 0.0 if star.proper_motion_ra.nil? || elapsed_years.zero?
-
-      rate = Math.hypot(
-        proper_motion_bound(star.proper_motion_ra),
-        proper_motion_bound(star.proper_motion_dec)
-      ) * SECONDS_PER_JULIAN_YEAR
-      velocity = (star.radial_velocity&.meters_per_second || 0).abs
-      seconds = elapsed_years * SECONDS_PER_JULIAN_YEAR
-      parallax = star.parallax&.radians || 0
-      slack = velocity / SPEED_OF_LIGHT +
-        velocity * seconds * parallax / ASTRONOMICAL_UNIT
-      return Float::INFINITY if slack >= 0.5
-
-      rate * elapsed_years / (1 - slack)
-    end
-
-    def proper_motion_bound(proper_motion)
-      rate = proper_motion.radians_per_second
-
-      rate.negative? ? -rate + PROPER_MOTION_ROUNDING : rate
-    end
-
-    def elapsed_years
-      @elapsed_years ||= (@instant.tt - Astronoby::JulianDate::J2000).abs /
-        Astronoby::Constants::DAYS_PER_JULIAN_YEAR
-    end
-
-    def view_reach(margin)
+    def view_reach(radius)
       quarter = @view.field_of_view.radians / 4.0
 
-      2 * Math.atan(Math.tan(quarter) * (1 + margin / @canvas.radius))
+      2 * Math.atan(Math.tan(quarter) * (1 + radius / @canvas.radius))
     end
 
     def cosine_from_view(horizontal)
